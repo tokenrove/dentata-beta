@@ -1,7 +1,7 @@
 /* 
  * eventx11.c
  * Created: Sun Feb 25 01:04:11 2001 by tek@wiw.org
- * Revised: Sat Jun 23 04:09:21 2001 by tek@wiw.org
+ * Revised: Wed Jul 18 23:11:05 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -36,15 +36,19 @@ static int transtable[D_KBD_LAST+1] = {
     XK_9, XK_0, XK_minus, XK_equal, XK_BackSpace, XK_Tab, XK_Q, XK_W, /* 17 */
     XK_E, XK_R, XK_T, XK_Y, XK_U, XK_I, XK_O, XK_P, XK_bracketleft,
     XK_bracketright, XK_Return, XK_Control_L, /* 29 */
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* 39 */
-    0, 0, 0, 0, 0, XK_Z, XK_X, 0, 0, 0, /* 49 */
-    0, 0, 0, 0, 0, 0, XK_Alt_L, XK_space, 0, 0, /* 59 */
+    XK_A, XK_S, XK_D, XK_F, XK_G, XK_H, XK_J, XK_K, XK_L,
+    XK_semicolon, /* 39 */
+    XK_apostrophe, XK_grave, XK_Shift_L, XK_backslash, XK_Z, XK_X, XK_C,
+    XK_V, XK_B, XK_N, /* 49 */
+    XK_M, XK_comma, XK_period, XK_slash, XK_Shift_R, XK_asterisk, XK_Alt_L,
+    XK_space, 0, 0, /* 59 */
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* 69 */
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* 79 */
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* 89 */
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* 99 */
-    0, 0, 0, XK_Up, 0, XK_Left, XK_Right, 0, XK_Down, 0, /* 109 */
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* 119 */
+    0, 0, 0, 0, 0, 0, 0, XK_Control_R, XK_slash, XK_Sys_Req, /* 99 */
+    XK_Alt_R, XK_Break, XK_Home, XK_Up, XK_Page_Up, XK_Left, XK_Right, XK_End,
+    XK_Down, XK_Page_Down, /* 109 */
+    XK_Insert, XK_Delete, 0, 0, 0, 0, 0, 0, 0, 0, /* 119 */
     0, 0, 0, 0, 0, 0, 0, 0        /* 127 */
 };
 

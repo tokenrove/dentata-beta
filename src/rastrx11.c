@@ -1,7 +1,7 @@
 /* 
  * rastrx11.c
  * Created: Mon Jan  8 05:12:00 2001 by tek@wiw.org
- * Revised: Fri Jul 13 15:23:34 2001 by tek@wiw.org
+ * Revised: Wed Jul 18 23:05:13 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -187,10 +187,10 @@ bool d_raster_setmode(d_rasterdescription_t mode)
 
     if(mode.bpp == 8) {
         cmap = XCreateColormap(_d_x11_display, _d_x11_window,
-                               DefaultVisualOfScreen(screen), True);
+                               DefaultVisualOfScreen(screen), AllocAll);
         XSetWindowColormap(_d_x11_display, _d_x11_window, cmap);
         for(i = 0; i < D_NCLUTITEMS; i++) {
-            colors[i].red = colors[i].blue = colors[i].green = 0;
+            colors[i].red = colors[i].blue = colors[i].green = i<<8;
             colors[i].pixel = i; colors[i].flags = DoRed | DoGreen | DoBlue;
         }
         XStoreColors(_d_x11_display, cmap, colors, D_NCLUTITEMS);
@@ -265,9 +265,9 @@ void d_raster_setpalette(d_palette_t *p)
 
     if(curmode.bpp == 8) {
         for(i = 0; i < D_NCLUTITEMS; i++) {
-            colors[i].red = p->clut[3*i+0];
-            colors[i].green = p->clut[3*i+1];
-            colors[i].blue = p->clut[3*i+2];
+            colors[i].red = p->clut[3*i+0]<<8;
+            colors[i].green = p->clut[3*i+1]<<8;
+            colors[i].blue = p->clut[3*i+2]<<8;
             colors[i].pixel = i;
             colors[i].flags = DoRed|DoGreen|DoBlue;
         }
@@ -281,9 +281,9 @@ void d_raster_getpalette(d_palette_t *p)
     int i;
 
     for(i = 0; i < D_NCLUTITEMS; i++) {
-        p->clut[3*i+0] = colors[i].red;
-        p->clut[3*i+1] = colors[i].green;
-        p->clut[3*i+2] = colors[i].blue;
+        p->clut[3*i+0] = colors[i].red>>8;
+        p->clut[3*i+1] = colors[i].green>>8;
+        p->clut[3*i+2] = colors[i].blue>>8;
     }
     return;
 }
