@@ -9,12 +9,22 @@
 #
 
 ### raster and event
-ifeq ($(TARGETGFX),x11)
+ifeq ($(TARGETOS),unix-x11)
+RASTERMODS=rastrx11.o
+EVENTMODS=eventx11.o
+AUDIOMODS=audnul.o
+endif
+ifeq ($(TARGETOS),linux-x11)
 RASTERMODS=rastrx11.o
 EVENTMODS=eventx11.o
 AUDIOMODS=audoss.o
 endif
-ifeq ($(TARGETGFX),svgalib)
+ifeq ($(TARGETOS),unix-svgalib)
+RASTERMODS=rastrvgl.o
+EVENTMODS=eventvgl.o
+AUDIOMODS=audnul.o
+endif
+ifeq ($(TARGETOS),linux-svgalib)
 RASTERMODS=rastrvgl.o
 EVENTMODS=eventvgl.o
 AUDIOMODS=audoss.o
@@ -29,6 +39,7 @@ endif
 ifndef RASTERMODS
 RASTERMODS=rastrnul.o
 EVENTMODS=eventnul.o
+AUDIOMODS=audnul.o
 endif
 
 ### system dependant stuff

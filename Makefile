@@ -30,17 +30,12 @@ LDFLAGS=$(LIBS)
 #   dos
 #   unix-svgalib
 #   unix-x11
+#   linux-svgalib
+#   linux-x11
 #   gba
 TARGET=unix-x11
 
 # Some of the things that can be tweaked below are:
-###
-# TARGETGFX -- graphics system
-#   x11     -- X11
-#   svgalib -- SVGAlib
-#   dos     -- VGA/SVGA under MSDOS
-#   gba     -- Gameboy Advance
-#   null    -- empty stubs
 ###
 # TARGETOS -- operating system
 #   unix    -- UNIX/POSIX (Linux, OpenBSD, DOS w/DJGPP, et cetera)
@@ -55,7 +50,6 @@ TARGET=unix-x11
 ifeq ($(TARGET),dos)
 AS=nasm
 ASFLAGS=-f coff
-TARGETGFX=dos
 TARGETARCH=generic
 TARGETOS=unix
 endif
@@ -64,7 +58,6 @@ ifeq ($(TARGET),unix-svgalib)
 AS=nasm
 # Change this as appropriate for the OS
 ASFLAGS=-f elf
-TARGETGFX=svgalib
 # Use x86 if you like.
 TARGETARCH=generic
 TARGETOS=unix
@@ -75,7 +68,6 @@ ifeq ($(TARGET),unix-x11)
 AS=nasm
 # Change this as appropriate for the OS
 ASFLAGS=-f elf
-TARGETGFX=x11
 # Use x86 if you like.
 TARGETARCH=generic
 TARGETOS=unix
@@ -84,7 +76,6 @@ CPPFLAGS:=$(CPPFLAGS) -I/usr/X11R6/include
 endif
 
 ifeq ($(TARGET),gba)
-TARGETGFX=gba
 TARGETARCH=arm
 TARGETOS=gba
 LIBS=
