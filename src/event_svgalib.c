@@ -9,6 +9,7 @@
  * Event module for dentata gen beta SVGAlib port.
  */
 
+#include <dentata/types.h>
 #include <dentata/event.h>
 #include <dentata/set.h>
 #include <dentata/memory.h>

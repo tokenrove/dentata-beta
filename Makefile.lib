@@ -1,0 +1,72 @@
+# 
+# Makefile.lib
+# Created: Mon Jan  8 07:18:08 2001 by tek@wiw.org
+# Revised: Sat May 19 12:37:30 2001 by tek@wiw.org
+# Copyright 2001 Julian E. C. Squires (tek@wiw.org)
+# This program comes with ABSOLUTELY NO WARRANTY.
+# $Id$
+# 
+#
+
+### raster and event
+ifeq ($(TARGETGFX),x11)
+RASTERMODS=raster_x11.o
+EVENTMODS=event_x11.o
+endif
+ifeq ($(TARGETGFX),svgalib)
+RASTERMODS=raster_svgalib.o
+EVENTMODS=event_svgalib.o
+endif
+
+# default
+ifndef RASTERMODS
+RASTERMODS=raster_null.o
+EVENTMODS=event_null.o
+endif
+
+### system dependant stuff
+ifeq ($(TARGETOS),unix)
+SYSTEMMODS=memory_stdlib.o error_stdlib.o file_stdlib.o time_unix.o \
+           random_stdlib.o
+endif
+
+# default
+ifndef SYSTEMMODS
+SYSTEMMODS=memory_null.o error_null.o file_null.o time_null.o \
+           random_null.o
+endif
+
+### generic stuff
+GENERICMODS=error_stack.o set.o util.o font.o sample.o wav.o s3m.o
+
+### image related modules
+IMAGEMODS=color_rgb.o image.o sprite.o tga.o pcx.o blit_common.o \
+          collide_common.o
+
+ifeq ($(TARGETARCH),x86)
+IMAGEMODS := $(IMAGEMODS) blit_x86.o collide_generic.o \
+             alphacomp_generic.o
+endif
+
+ifeq ($(TARGETARCH),generic)
+IMAGEMODS := $(IMAGEMODS) blit_generic.o collide_generic.o \
+             alphacomp_generic.o
+endif
+
+### libdentata
+
+MODULES=$(RASTERMODS) $(EVENTMODS) $(SYSTEMMODS) $(GENERICMODS) $(IMAGEMODS)
+
+libdentata.a: $(MODULES)
+	rm -f $@
+	ar rc $@ $(MODULES)
+	ranlib $@
+
+libclean:
+	rm -f $(CURDIR)/lib/*.o
+	rm -f *~ $(CURDIR)/src/*~ $(CURDIR)/include/dentata/*~
+
+librealclean: libclean
+	rm -f libdentata.a
+
+# EOF Makefile.lib

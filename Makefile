@@ -8,70 +8,73 @@
 # 
 #
 
-.EXPORT_ALL_VARIABLES:
 TOPDIR=$(CURDIR)
-#
+
+###
 # Defines:
-#  -DUSE_X86_ASM  - use x86 optimized assembler versions where possible
-#                   (requires nasm)
-#  -DUSE_MIPS_ASM - use MIPS optimized assembler versions where possible
-#  -DUSE_SH_ASM   - use SuperH asm
-#
 #  -DDEBUG        - see error_debug() messages
 #  -DTHIRTYTWOBIT - word size is 32-bits
 #  -DSIXTYFOURBIT - word size is 64-bits
 #
-DEFINES=-DTHIRTYTWOBIT -DDEBUG -DUSE_X86_ASM
-DENT_CPPFLAGS=-I$(TOPDIR)/include -L$(TOPDIR)/lib $(DEFINES)
-DENT_CFLAGS=-Wall -pedantic -g -O6 $(DENT_CPPFLAGS)
-DENT_LDFLAGS=$(LIBS)
+DEFINES=-DTHIRTYTWOBIT -DDEBUG
+CPPFLAGS=-I$(TOPDIR)/include -L$(TOPDIR)/lib $(DEFINES)
+CFLAGS=-Wall -pedantic -g -O6 $(CPPFLAGS)
+LDFLAGS=$(LIBS)
+# Comment this out if you aren't using the x86 specific code. (see
+# TARGETARCH below)
 AS=nasm
-ASFLAGS=-f elf -g
+ASFLAGS=-f elf
 
-### Targets
-# X11
-TARGET=x11
+###
+# TARGETGFX -- graphics system
+#   x11     -- X11
+#   svgalib -- SVGAlib
+#   null    -- empty stubs
+TARGETGFX=x11
+
+###
+# TARGETOS -- operating system
+#   unix    -- UNIX (Linux, OpenBSD, DOS w/DJGPP, et cetera)
+#   null    -- empty stubs
+TARGETOS=unix
+
+###
+# TARGETARCH -- architecture
+#   generic -- don't use architecture specific code
+#   x86     -- use IA32 specific code
+TARGETARCH=generic
+
+###
+# LIBS
+#   X11 should use:
+#LIBS=-L/usr/X11R6/lib -lXext -lX11
+#   SVGAlib should use:
+#LIBS=lvga
 LIBS=-L/usr/X11R6/lib -lXext -lX11
-# SVGAlib
-#TARGET=svgalib
-#LIBS=-lvga
-# null
-#TARGET=null
-#LIBS=-lefence
 
-DIRS=lib tests docs tools
+###
+# CPPFLAGS
+#   X11 should use:
+#CPPFLAGS:=$(CPPFLAGS) -I/usr/X11R6/include
+# SVGAlib and null shouldn't need other flags.
+CPPFLAGS:=$(CPPFLAGS) -I/usr/X11R6/include
+
+
+### End of user configurable section ###
+
+
+VPATH=$(CURDIR)/src $(CURDIR)/include $(CURDIR)/tools $(CURDIR)/tests
+
+include Makefile.lib Makefile.tools Makefile.tests Makefile.docs
 
 default: all
 
-svgalib:
-	$(MAKE) default TARGET=svgalib LIBS='-lvga'
+.PHONY: default all clean realclean tests profile tools docs
 
-x11:
-	$(MAKE) default TARGET=x11 LIBS='-L/usr/X11R6/lib -lXext -lX11'
+all: libdentata.a tools docs tests
 
-null:
-	$(MAKE) default TARGET=null LIBS='-lefence'
+clean: libclean toolsclean testsclean docsclean
 
-.PHONY: default svgalib x11 all clean realclean test profile $(DIRS)
-
-all: $(DIRS)
-
-test: tests
-
-profile:
-	$(MAKE) -C tests profile
-
-$(DIRS):
-	$(MAKE) -C $@
-
-tests: lib
-
-clean:
-	for i in $(DIRS); do make -C $$i clean; done
-	rm -f *~
-
-realclean:
-	for i in $(DIRS); do make -C $$i realclean; done
-	rm -f *~
+realclean: librealclean
 
 # EOF Makefile
