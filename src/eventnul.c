@@ -9,6 +9,7 @@
  * Null implementation of the event module for testing/porting purposes.
  */
 
+#include <dentata/types.h>
 #include <dentata/event.h>
 #include <dentata/set.h>
 #include <dentata/memory.h>

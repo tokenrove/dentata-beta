@@ -1,7 +1,7 @@
 /* 
  * imagegen.c
  * Created: Sun Feb 25 01:57:37 2001 by tek@wiw.org
- * Revised: Sat Jun 23 04:12:11 2001 by tek@wiw.org
+ * Revised: Sun Jun 24 00:59:52 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -22,7 +22,7 @@ bool d_image_setdataptr(d_image_t *, byte *, bool);
 void d_image_plot(d_image_t *p, d_point_t pt, d_color_t c, byte alpha);
 void d_image_wipe(d_image_t *p, d_color_t c, byte alpha);
 void d_image_silhouette(d_image_t *image, d_color_t color, byte alpha);
-bool d_image_extendalpha(d_image_t *p, byte alpha);
+bool d_image_convertalpha(d_image_t *p, byte alpha);
 bool d_image_convertdepth(d_image_t *p, byte bpp);
 byte d_image_getpelalpha(d_image_t *p, d_point_t pt);
 d_color_t d_image_getpelcolor(d_image_t *p, d_point_t pt);
@@ -35,7 +35,8 @@ d_image_t *d_image_new(d_rasterdescription_t desc)
 
     /* sanity checks */
     if(desc.w == 0 || desc.h == 0 || desc.bpp == 0) {
-        d_error_push("d_image_new: zero was given for an important dimension (width, height, or bpp).");
+        d_error_push("d_image_new: zero was given for an important "
+                     "dimension (width, height, or bpp).");
         return NULL;
     }
 
@@ -165,13 +166,14 @@ void d_image_silhouette(d_image_t *p, d_color_t color, byte alpha)
     return;
 }
 
-bool d_image_extendalpha(d_image_t *p, byte alpha)
+/* FIXME this routine is underdocumented given its complexity */
+bool d_image_convertalpha(d_image_t *p, byte alpha)
 {
     int i;
     byte *newalpha, t, o;
 
     if(alpha > 8) {
-        d_error_push("d_image_extendalpha: desired alpha is too high.");
+        d_error_push("d_image_convertalpha: desired alpha is too high.");
         return failure;
     }
 
@@ -217,6 +219,7 @@ bool d_image_extendalpha(d_image_t *p, byte alpha)
     return success;
 }
 
+/* FIXME this routine is underdocumented given its complexity */
 bool d_image_convertdepth(d_image_t *p, byte bpp)
 {
     byte *newdat, g;
@@ -356,7 +359,7 @@ void d_image_setpelcolor(d_image_t *p, d_point_t pt, d_color_t c)
         break;
 
     default:
-        d_error_push("d_image_setpelcolor: unsupport bpp (report this as a bug).");
+        d_error_push("d_image_setpelcolor: unsupported bpp.");
         return;
     }
     return;
@@ -384,7 +387,7 @@ void d_image_setpelalpha(d_image_t *p, d_point_t pt, byte alpha)
         break;
 
     default:
-        d_error_push("d_image_setpelalpha: unsupported alpha (report this as a bug).");
+        d_error_push("d_image_setpelalpha: unsupported alpha");
         return;
     }
     return;
@@ -392,42 +395,42 @@ void d_image_setpelalpha(d_image_t *p, d_point_t pt, byte alpha)
 
 d_color_t d_image_getpelcolor(d_image_t *p, d_point_t pt)
 {
-    int i = pt.x+pt.y*p->desc.w;
     d_color_t c;
+    int i = pt.x+pt.y*p->desc.w;
 
     if(i < 0 || i >= p->desc.w*p->desc.h)
         return 0;
 
+    /* Note that we just need to suck in the bytes, as we return
+     * local format anyway. */
     switch(p->desc.bpp) {
     case 8:
         c = p->data[i];
         break;
         
-    /* FIXME: I'm unsure about packing order here and below */
     case 15: /* fall thru */
     case 16:
         i *= 2;
         c = p->data[i++];
-        c |= p->data[i++]<<8;
+        c |= p->data[i]<<8;
         break;
 
     case 24:
         i *= 3;
         c = p->data[i++];
         c |= p->data[i++]<<8;
-        c |= p->data[i++]<<16;
+        c |= p->data[i]<<16;
         break;
 
     case 32:
         i *= 4;
         c = p->data[i++];
         c |= p->data[i++]<<8;
-        c |= p->data[i++]<<16;
+        c |= p->data[i]<<16;
         break;
 
-
     default:
-        d_error_push("d_image_getpelcolor: unsupported bpp (report this as a bug).");
+        d_error_push("d_image_getpelcolor: unsupported bpp.");
         return 0;
     }
 
@@ -459,7 +462,7 @@ byte d_image_getpelalpha(d_image_t *p, d_point_t pt)
         break;
 
     default:
-        d_error_push("d_image_getpelalpha: unsupport alpha (report this as a bug).");
+        d_error_push("d_image_getpelalpha: unsupported alpha.");
         return 0;
     }
 
@@ -497,8 +500,9 @@ d_image_t *d_image_rotate(d_image_t *p, byte theta)
         break;
 
     default:
-        /* FIXME */
-        d_error_fatal("d_image_rotate: sorry, we don't handle complex rotation yet.\n");
+        /* FIXME this does not need to be the case */
+        d_error_fatal("d_image_rotate: sorry, we don't handle complex "
+                      "rotation yet.\n");
     }
     q = d_image_new(desc);
 

@@ -1,14 +1,17 @@
 /**
  * error.h
  * Created: Mon Jan  8 04:22:57 2001 by tek@wiw.org
- * Revised: Sat Jun 23 03:27:10 2001 by tek@wiw.org
+ * Revised: Sun Jun 24 10:14:50 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
  *
  * Module: error
  *
- * Include dentata/types.h before this file. 
+ * Note: This module is expected to increase in complexity as error
+ * values and callbacks are integrated.
+ *
+ * Include dentata/types.h before dentata/error.h. 
  */
 
 #ifndef DENTATA_ERROR_H

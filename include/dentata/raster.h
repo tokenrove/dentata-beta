@@ -1,12 +1,17 @@
 /**
  * raster.h
  * Created: Sat Jan  8 23:40:41 2000 by tek@wiw.org
- * Revised: Sat Jun 23 03:26:40 2001 by tek@wiw.org
+ * Revised: Sun Jun 24 02:51:54 2001 by tek@wiw.org
  * Copyright 2000 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
  *
  * Module: raster
+ *
+ * Notable changes to this module in the near future include
+ * the addition of a call to hook the vertical blank on some
+ * systems, and support for setting window titles and other such
+ * stuff.
  *
  * Include dentata/types.h before this file.
  */
@@ -45,7 +50,9 @@ extern bool                   d_raster_setmode(d_rasterdescription_t);
 
 /**
  * d_raster_getmodes(int *nmodes)
- * Gets a list of modes accessable on this raster device.
+ * Gets a list of modes accessable on this raster device. Note
+ * that some displays (notably, windowing systems) allow more modes
+ * than are returned here.
  *
  * Takes: nmodes - a pointer to an integer in which the number of modes
  *                 available will be stored.

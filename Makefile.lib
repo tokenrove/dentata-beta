@@ -1,7 +1,7 @@
 # 
 # Makefile.lib
 # Created: Mon Jan  8 07:18:08 2001 by tek@wiw.org
-# Revised: Sun Jun 17 02:20:30 2001 by tek@wiw.org
+# Revised: Sun Jun 24 01:47:41 2001 by tek@wiw.org
 # Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 # This program comes with ABSOLUTELY NO WARRANTY.
 # $Id$
@@ -40,17 +40,18 @@ endif
 GENERICMODS=errorsk.o set.o util.o fontgen.o samplgen.o wav.o s3mgen.o
 
 ### image related modules
-IMAGEMODS=colorgen.o imagegen.o spritgen.o tga.o pcx.o blitcom.o \
-          collicom.o
+IMAGEMODS=colorgen.o imagegen.o tga.o pcx.o blitcom.o collicom.o
 
 ifeq ($(TARGETARCH),x86)
 IMAGEMODS := $(IMAGEMODS) blitx86.o colligen.o \
              acompgen.o
+SYSTEMMODS := $(SYSTEMMODS) memcpstd.o #memcpx86.o
 endif
 
 ifeq ($(TARGETARCH),generic)
 IMAGEMODS := $(IMAGEMODS) blitgen.o colligen.o \
              acompgen.o
+SYSTEMMODS := $(SYSTEMMODS) memcpstd.o
 endif
 
 ### libdentata

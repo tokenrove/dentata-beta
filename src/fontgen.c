@@ -1,7 +1,7 @@
 /* 
  * fontgen.c
  * Created: Fri Apr 13 20:38:07 2001 by tek@wiw.org
- * Revised: Sat Jun 23 04:09:46 2001 by tek@wiw.org
+ * Revised: Sun Jun 24 01:51:06 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -19,11 +19,11 @@
 
 d_font_t *d_font_load(char *);
 d_font_t *d_font_dup(d_font_t *);
+void d_font_delete(d_font_t *);
 void d_font_printf(d_image_t *, d_font_t *, d_point_t, byte *, ...);
 word d_font_gettextwidth(d_font_t *, byte *, ...);
-void d_font_delete(d_font_t *);
-void d_font_convertdepth(d_font_t *fnt, byte bpp);
-void d_font_extendalpha(d_font_t *fnt, byte alpha);
+bool d_font_convertdepth(d_font_t *fnt, byte bpp);
+bool d_font_convertalpha(d_font_t *fnt, byte alpha);
 void d_font_silhouette(d_font_t *fnt, d_color_t c, byte alpha);
 
 static bool loadv0font(d_file_t *fp, d_font_t *fnt);
@@ -59,6 +59,17 @@ d_font_t *d_font_load(char *filename)
 
     d_file_close(fp);
     return fnt;
+}
+
+void d_font_delete(d_font_t *fnt)
+{
+    int i;
+
+    for(i = 0; i < fnt->nchars; i++)
+        d_image_delete(fnt->chars[i]);
+    d_memory_delete(fnt->chars);
+    d_memory_delete(fnt);
+    return;
 }
 
 d_font_t *d_font_dup(d_font_t *fnt)
@@ -101,6 +112,8 @@ bool loadv0font(d_file_t *fp, d_font_t *fnt)
         if(fnt->chars[i] == NULL) return failure;
         d_file_read(fp, fnt->chars[i]->data, fnt->desc.h);
         for(j = 0; j < fnt->desc.h; j++) {
+            /* Unfortunately, this mess exists because the bits are
+             * in exactly the wrong order for our purposes. */
             for(k = 0, l = 0; k < 8; k++) {
                 l |= ((fnt->chars[i]->data[j]&(1<<k))>>k)<<(7-k);
             }
@@ -141,22 +154,24 @@ word d_font_gettextwidth(d_font_t *fnt, byte *fmt, ...)
     return d_util_printflen(fmt, args)*(fnt->desc.w+1);
 }
 
-void d_font_convertdepth(d_font_t *fnt, byte bpp)
+bool d_font_convertdepth(d_font_t *fnt, byte bpp)
 {
     int i;
+    bool status = success;
 
     for(i = fnt->start; i < fnt->start+fnt->nchars; i++)
-        d_image_convertdepth(fnt->chars[i], bpp);
-    return;
+        status &= d_image_convertdepth(fnt->chars[i], bpp);
+    return status;
 }
 
-void d_font_extendalpha(d_font_t *fnt, byte alpha)
+bool d_font_convertalpha(d_font_t *fnt, byte alpha)
 {
     int i;
+    bool status = success;
 
     for(i = fnt->start; i < fnt->start+fnt->nchars; i++)
-        d_image_extendalpha(fnt->chars[i], alpha);
-    return;
+        status &= d_image_convertalpha(fnt->chars[i], alpha);
+    return status;
 }
 
 void d_font_silhouette(d_font_t *fnt, d_color_t c, byte alpha)
@@ -165,17 +180,6 @@ void d_font_silhouette(d_font_t *fnt, d_color_t c, byte alpha)
 
     for(i = fnt->start; i < fnt->start+fnt->nchars; i++)
         d_image_silhouette(fnt->chars[i], c, alpha);
-    return;
-}
-
-void d_font_delete(d_font_t *fnt)
-{
-    int i;
-
-    for(i = 0; i < fnt->nchars; i++)
-        d_image_delete(fnt->chars[i]);
-    d_memory_delete(fnt->chars);
-    d_memory_delete(fnt);
     return;
 }
 

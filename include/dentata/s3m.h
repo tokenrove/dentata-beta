@@ -1,12 +1,19 @@
 /**
  * s3m.h
  * Created: Sun Jan 28 14:37:46 2001 by tek@wiw.org
- * Revised: Sat Jun 23 03:28:05 2001 by tek@wiw.org
+ * Revised: Sun Jun 24 03:00:23 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
  *
  * Module: s3m
+ *
+ * Directly calling this module will become deprecated in the
+ * near future upon completion of the music module, which will
+ * provide more platform and format independant music playback.
+ * Another change will be the addition of triggers, so that
+ * functions can be called every time a specific musical event
+ * occurs.
  *
  * Include dentata/types.h and dentata/sample.h before this file.
  */
@@ -54,13 +61,73 @@ typedef struct d_s3m_s {
     d_s3m_instrument_t *instruments;
 } d_s3m_t;
 
+typedef void d_s3mhandle_t;
+
+/**
+ * d_s3m_load(char *filename)
+ * Loads a screamtracker 3 module.
+ *
+ * Takes: filename - the name of the module to load.
+ *
+ * Returns: the s3m structure of the loaded module, or NULL if something
+ *          went wrong.
+ */
 extern d_s3m_t *d_s3m_load(char *);
-extern void     d_s3m_delete(d_s3m_t *);
-extern void     d_s3m_play(d_s3m_t *);
-extern void d_s3m_pause(void);
-extern void d_s3m_resume(void);
-extern void d_d3m_stop(void);
-extern void d_s3m_update(void);
+
+/**
+ * d_s3m_delete(d_s3m_t *p)
+ * Frees the memory taken up by an S3M.
+ *
+ * Takes: p - the module to free.
+ */
+extern void d_s3m_delete(d_s3m_t *);
+
+/**
+ * d_s3m_play(d_s3m_t *p)
+ * Begins playing an S3M. This will obviously cause quite a few errors
+ * if it is attempted without initializing the audio device. See also
+ * d_s3m_update(). Note that currently, playing multiple s3ms simultaneously
+ * is impossible.
+ *
+ * Takes: p - the module to play.
+ *
+ * Returns: a handle by which to refer to this s3m.
+ */
+extern d_s3mhandle_t *d_s3m_play(d_s3m_t *);
+
+/**
+ * d_s3m_stop(d_s3mhandle_t *sh)
+ * Stops a playing or paused s3m and frees the handle.
+ *
+ * Takes: sh - the handle which refers to this s3m. No longer valid
+ *             after this function has been called.
+ */
+extern void d_d3m_stop(d_s3mhandle_t *);
+
+/**
+ * d_s3m_update(d_s3mhandle_t *sh)
+ * Updates an s3m. This should be called once per frame, before
+ * d_audio_update().
+ *
+ * Takes: sh - the handle which refers to this s3m.
+ */
+extern void d_s3m_update(d_s3mhandle_t *);
+
+/**
+ * d_s3m_pause(d_s3mhandle_t *sh)
+ * Pauses a playing s3m. No effect if the s3m is already paused.
+ *
+ * Takes: sh - the handle which refers to this s3m.
+ */
+extern void d_s3m_pause(d_s3mhandle_t *);
+
+/**
+ * d_s3m_resume(d_s3mhandle_t *sh)
+ * Resumes a paused s3m. No effect if the s3m is already playing.
+ *
+ * Takes: sh - the handle which refers to this s3m.
+ */
+extern void d_s3m_resume(d_s3mhandle_t *);
 
 #endif
 

@@ -86,7 +86,7 @@ bool d_image_collide(d_image_t *a, d_image_t *b, d_point_t p,
         d_error_fatal("d_image_collide: Conversion (%d -> %d) occurred.\n",
                       a->desc.alpha, b->desc.alpha);
         a = d_image_dup(a);
-        d_image_extendalpha(a, b->desc.alpha);
+        d_image_convertalpha(a, b->desc.alpha);
         adirty = true;
     }
 

@@ -2,7 +2,7 @@
 # 
 # genfref.pl
 # Created: Sat Jun 23 02:29:42 2001 by tek@wiw.org
-# Revised: Sat Jun 23 03:47:59 2001 by tek@wiw.org
+# Revised: Sun Jun 24 10:26:30 2001 by tek@wiw.org
 # Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 # This program comes with ABSOLUTELY NO WARRANTY.
 # $Id$
@@ -24,45 +24,35 @@ for(glob($ARGV[0].'/*.h')) {
   # Parse comments
   for($i = 0; $i <= $#com; $i++) {
     $_ = $com[$i];
+
     # mangle for TeX
-    s/\\/\$\\backslash\$/g;
-    s/[{}]/\\&/g;
-    s/"/\"/g;
-    s/_/\\_/g;
+    &texmangle;
+
     if($i == 0) {
-      s/Module: (.*)\n//;
+      s/.*Module: ([^\n]*)\n//s;
       # Create a section
       if($1 ne '') {
 	print "\\section{$1}\n\\label{sec:fref$1}\n";
       }
       # Write top-of-file notes in.
-      if(/ \*\n \* ((?:.*\n)+)\n \*\//) {
-	print "$1\n";
-      }
+      s/ \*\//\n/;
+      s/ \*\n/\n/g;
+      s/ \* //g;
+      print "$_\n";
     } else {
       @_ = split /\n/;
-      if($_[1] =~ /(d\\_\w+.*?)\(/) {
+      if($_[1] =~ /(d\\_\w+.*?)\(/ ||
+         $_[1] =~ /(d\\_\w+\\_t)/) {
 	print "\\subsection{$1}\n";
-	$j = $1;
-	$j =~ s/\\_//g;
-	print "\\label{sec:frefsub$j}\n\n";
+	$_ = $1;
+	s/\\_//g;
+	print "\\label{sec:frefsub$_}\n\n";
       }
-      for($j = 0; $j <= $#_; $j++) {
+      for($j = 1; $j <= $#_; $j++) {
 	$_ = $_[$j];
-	
+
 	# Write function fu
-	if(/ \*[ \/]?/) {
-	  s/ \*[ \/]?//;
-
-	  s/(Takes): /{\\bf $1}: /;
-	  s/(Returns): /{\\bf $1}: /;
-
-	  if($j == 1) {
-	    print "{\\tt $_}\n\n";
-	  } else {
-	    print "$_\n";
-	  }
-	}
+        print writefuncinfo($j, @_);
       }
     }
   }
@@ -84,6 +74,47 @@ sub extractcom {
   }
 
   return @_;
+}
+
+sub writefuncinfo {
+  my $i = shift;
+  $_ = $_[$i];
+  $i++;
+
+  if(/ \*[ \/]?/) {
+    s/ \*[ \/]?//;
+
+    s/(Takes): /\\noindent {\\bf $1}: /;
+    s/(Returns): /\\noindent {\\bf $1}: /;
+    s/(Members): /\\noindent {\\bf $1}: /;
+
+    if($i == 2) {
+      $_ = "{\\tt $_}\n\n";
+    } else {
+      if($_[$i] =~ /\w+ - /) {
+	if($_[$i] !~ /Takes/ &&
+	   $_[$i] !~ /Returns/ &&
+	   $_[$i] !~ /Members/) {
+	  $_[$i] =~ s/(\w+) - /\\indent {\\tt $1} - /;
+	} else {
+	  $_[$i] =~ s/([\w,]+) - /{\\tt $1} - /;
+	}
+	$_ .= "\n";
+      }
+      $_ .= "\n";
+    }
+  }
+
+  return $_;
+}
+
+sub texmangle {
+  s/\\/\$\\backslash\$/g;
+  s/[{}]/\\&/g;
+  s/_/\\_/g;
+  s/\"/\\\"/g;
+  s/</\$<\$/g;
+  s/>/\$>\$/g;
 }
 
 # EOF genfref.pl

@@ -1,7 +1,7 @@
 /* 
  * audoss.c
  * Created: Sat Apr 14 23:22:27 2001 by tek@wiw.org
- * Revised: Sat Jun 23 04:10:53 2001 by tek@wiw.org
+ * Revised: Sat Jun 23 23:14:57 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -51,12 +51,15 @@ bool d_audio_new(d_audiomode_t mode)
 {
     int i;
 
+    /* FIXME: This might need some tweaking */
     dspbuflen = (mode.frequency < 22050)?8:(mode.frequency > 32000)?10:9;
     if(mode.nchannels == 2) dspbuflen++;
     if(mode.bitspersample == 16) dspbuflen++;
 
     dspfd = open(DSP_DEVICE, O_WRONLY, 0);
     if(dspfd == -1) {
+        d_error_push("d_audio_new: Unable to open DSP device ("
+                     DSP_DEVICE ").");
         return failure;
     }
 
@@ -77,13 +80,12 @@ bool d_audio_new(d_audiomode_t mode)
         break;
     default:
         d_error_push("d_audio_new: Unsupported bits-per-sample.");
-        return failure;
+        goto error;
     }
 
     if(ioctl(dspfd, SNDCTL_DSP_SETFMT, &i) == -1) {
         d_error_push("d_audio_new: Unable to set format.");
-        close(dspfd);
-        return failure;
+        goto error;
     }
 
     switch(mode.nchannels) {
@@ -93,31 +95,35 @@ bool d_audio_new(d_audiomode_t mode)
         break;
     default:
         d_error_push("d_audio_new: Unsupported number of channels.");
-        return failure;
+        goto error;
     }
 
     if(ioctl(dspfd, SNDCTL_DSP_CHANNELS, &i) == -1) {
         d_error_push("d_audio_new: Unable to set number of channels.");
-        close(dspfd);
-        return failure;
+        goto error;
     }
 
     i = mode.frequency;
     if(ioctl(dspfd, SNDCTL_DSP_SPEED, &i) == -1) {
         d_error_push("d_audio_new: Unable to set rate.");
-        close(dspfd);
-        return failure;
+        goto error;
     }
 
     nchannels = 0;
     channels = NULL;
     dspbuf = d_memory_new(dspbuflen);
-    if(dspbuf == NULL)
-        return failure;
+    if(dspbuf == NULL) {
+        d_error_push("d_audio_new: Failed to allocate DSP buffer.");
+        goto error;
+    }
 
     curmode = mode;
 
     return success;
+
+error:
+    close(dspfd);
+    return failure;
 }
 
 void d_audio_delete(void)
@@ -215,6 +221,7 @@ void d_audio_playsample(byte chan, d_sample_t *p, dword frequency)
     channels[chan].sample = p;
     channels[chan].samplenum = 0;
     channels[chan].sampledenom = curmode.frequency;
+    /* FIXME this should take into account p->mode.frequency */
     channels[chan].samplestep = frequency;
     return;
 }

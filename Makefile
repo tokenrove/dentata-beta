@@ -1,7 +1,7 @@
 # 
 # Makefile
 # Created: Mon Jan  8 07:00:27 2001 by tek@wiw.org
-# Revised: Sat Jun 23 02:24:11 2001 by tek@wiw.org
+# Revised: Sun Jun 24 01:47:49 2001 by tek@wiw.org
 # Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 # This program comes with ABSOLUTELY NO WARRANTY.
 # $Id$
@@ -45,7 +45,7 @@ TARGETOS=unix
 # TARGETARCH -- architecture
 #   generic -- don't use architecture specific code
 #   x86     -- use IA32 specific code
-TARGETARCH=generic
+TARGETARCH=x86
 
 ###
 # LIBS

@@ -1,7 +1,7 @@
 /* 
  * s3mgen.c
  * Created: Sun Apr 15 16:06:01 2001 by tek@wiw.org
- * Revised: Sat Jun 23 04:11:51 2001 by tek@wiw.org
+ * Revised: Sun Jun 24 04:08:53 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -16,15 +16,23 @@
 #include <dentata/memory.h>
 #include <dentata/error.h>
 #include <dentata/time.h>
+#include <dentata/image.h>
+
+#include "internal.h"
 
 d_s3m_t *d_s3m_load(char *filename);
 void d_s3m_delete(d_s3m_t *s3m);
-void d_s3m_pause(void);
-void d_s3m_resume(void);
-void d_d3m_stop(void);
-void d_s3m_update(void);
+d_s3mhandle_t *d_s3m_play(d_s3m_t *s3m);
+void d_s3m_pause(d_s3mhandle_t *);
+void d_s3m_resume(d_s3mhandle_t *);
+void d_d3m_stop(d_s3mhandle_t *);
+void d_s3m_update(d_s3mhandle_t *);
 static bool readinstrument(d_file_t *fp, d_s3m_instrument_t *inst);
 static bool readpattern(d_file_t *fp, d_s3m_pattern_t *pat);
+
+/*
+ * loading routines
+ */
 
 d_s3m_t *d_s3m_load(char *filename)
 {
@@ -120,8 +128,11 @@ bool readinstrument(d_file_t *fp, d_s3m_instrument_t *inst)
     d_file_read(fp, inst->filename, S3M_FILENAMELEN);
 
     /* memseg is a special case because it's 3 bytes, but this is
-     * really messed up (FIXME). seems that only the last two bytes
-     * are used. WTF? */
+     * really messed up (FIXED: see below). seems that only the last two bytes
+     * are used. WTF?
+     *
+     * FIXED: This is an error in the S3M document used as a reference. */
+
     d_file_seek(fp, 1, current);
     memseg = d_file_getword(fp);
     memseg *= 16;
@@ -231,133 +242,207 @@ void d_s3m_delete(d_s3m_t *s3m)
     return;
 }
 
-/* playback section */
-/* FIXME -- excessive statics, prefer more threadsafe system of passing
-   playback information with each call */
-static word curorder, currow, counter, speed, tempo, gvolume;
-static d_s3m_t *cursong;
-static void *qh;
-static bool playing = false;
-static d_s3m_instrument_t *lastinst[S3M_NCHANNELS];
+
+/*
+ * playback routines
+ */
+
+
+typedef struct s3mplayback_s {
+    dword magic;
+    word curorder, currow, counter, speed, tempo, gvolume;
+    d_s3m_t *cursong;
+    void *qh;
+    bool playing;
+    d_s3m_instrument_t *lastinst[S3M_NCHANNELS];
+} s3mplayback_t;
+
+/* From FC's S3M tech doc */
 static dword periods[12*2] = {
     1712*16,1616*16,1524*16,1440*16,1356*16,1280*16,1208*16,1140*16,
     1076*16,1016*16,960*16,907*16
 };
 
-void d_s3m_play(d_s3m_t *s3m)
+static void updatechannel(s3mplayback_t *pb, byte chan);
+
+d_s3mhandle_t *d_s3m_play(d_s3m_t *s3m)
 {
     int i;
     d_channelprops_t props;
+    s3mplayback_t *pb;
+    bool status;
 
     props.mute = false;
     props.volume = 192;
     props.panning = 0;
 
-    if(d_audio_nchannels() < S3M_NCHANNELS) {
+    status = success;
+    if(d_audio_nchannels() < S3M_NCHANNELS)
         for(i = d_audio_nchannels(); i < S3M_NCHANNELS; i++)
-            d_audio_addchannel(props);
+            status &= d_audio_addchannel(props);
+    if(status != success) {
+        d_error_push(__FUNCTION__": Unable to allocate sufficient audio "
+                     "channels.");
+        return NULL;
     }
+
+    pb = d_memory_new(sizeof(s3mplayback_t));
+    if(pb == NULL) {
+        d_error_push("d_s3m_play: Unable to allocate internal data.");
+        return NULL;
+    }
+    d_memory_set(pb, 0, sizeof(s3mplayback_t));
+    pb->magic = S3MMAGIC;
+
     for(i = 0; i < S3M_NCHANNELS; i++)
-        lastinst[i] = NULL;
-    curorder = 0;
-    currow = 0;
-    cursong = s3m;
-    playing = true;
-    speed = s3m->speed;
-    tempo = s3m->tempo;
-    gvolume = s3m->gvolume;
-    counter = speed;
-    qh = d_time_startcount(2*tempo/5, false);
-    return;
+        pb->lastinst[i] = NULL;
+    pb->curorder = 0;
+    pb->currow = 0;
+    pb->cursong = s3m;
+    pb->playing = true;
+    pb->speed = s3m->speed;
+    pb->tempo = s3m->tempo;
+    pb->gvolume = s3m->gvolume;
+    pb->counter = pb->speed;
+    pb->qh = d_time_startcount(2*pb->tempo/5, false);
+    
+    return pb;
 }
 
-void d_s3m_pause(void)
+void d_s3m_pause(d_s3mhandle_t *p_)
 {
-    playing = false;
+    s3mplayback_t *p = (s3mplayback_t *)p_;
+    if(p->magic != S3MMAGIC)
+        d_error_fatal(__FUNCTION__": Internal magic doesn't match!");
+    p->playing = false;
     return;
 }
 
-void d_s3m_resume(void)
+void d_s3m_resume(d_s3mhandle_t *p_)
 {
-    if(cursong != NULL)
-        playing = true;
+    s3mplayback_t *p = (s3mplayback_t *)p_;
+    if(p->magic != S3MMAGIC)
+        d_error_fatal(__FUNCTION__": Internal magic doesn't match!");
+    if(p->cursong != NULL)
+        p->playing = true;
     return;
 }
 
-void d_s3m_stop(void)
+void d_s3m_stop(d_s3mhandle_t *p_)
 {
-    playing = false;
-    cursong = NULL;
+    s3mplayback_t *p = (s3mplayback_t *)p_;
+
+    if(p->magic != S3MMAGIC)
+        d_error_fatal(__FUNCTION__": Internal magic doesn't match!");
+    d_memory_delete(p);
     return;
 }
 
-void d_s3m_update(void)
+void d_s3m_update(d_s3mhandle_t *pb_)
+{
+    s3mplayback_t *pb = (s3mplayback_t *)pb_;
+    byte chan;
+
+    if(pb->magic != S3MMAGIC)
+        d_error_fatal(__FUNCTION__": Internal magic doesn't match!");
+
+    /* No point going ahead and messing up the playback if it's
+     * too early */
+    if(d_time_iscountfinished(pb->qh) != true) return;
+    d_time_endcount(pb->qh);
+    
+    pb->counter++;
+    if(pb->counter >= pb->speed) {
+
+        /* If we're at (or past) the end, loop to the beginning of the track */
+        if(pb->cursong->orders[pb->curorder] > pb->cursong->npatterns ||
+           pb->curorder >= pb->cursong->norders) {
+            pb->curorder = 0;
+            pb->tempo = pb->cursong->tempo;
+            pb->speed = pb->cursong->speed;
+        }
+
+        for(chan = 0; chan < S3M_NCHANNELS; chan++)
+            updatechannel(pb, chan);
+
+        pb->currow++;
+        if(pb->currow >= S3M_NROWS) {
+            pb->currow = 0;
+            pb->curorder++;
+        }
+        pb->counter = 0;
+    }
+
+    pb->qh = d_time_startcount(2*pb->tempo/5, false);
+    return;
+}
+
+#define MAXVOLUME 64
+
+void updatechannel(s3mplayback_t *pb, byte chan)
 {
     d_s3m_pattern_t *p;
     d_channelprops_t props;
-    int i;
-    dword freq, note, octave;
+    dword freq;
+    byte inst;
 
-    if(cursong == NULL) return;
+    props = d_audio_getchanprops(chan);
+    p = &pb->cursong->patterns[pb->cursong->orders[pb->curorder]];
 
-    if(d_time_iscountfinished(qh) != true) return;
-    d_time_endcount(qh);
-    counter++;
-    if(counter >= speed) {
-        if(cursong->orders[curorder] > cursong->npatterns ||
-           curorder >= cursong->norders) {
-            curorder = 0;
-            tempo = cursong->tempo;
-            speed = cursong->speed;
-        }
-        p = &cursong->patterns[cursong->orders[curorder]];
-        for(i = 0; i < S3M_NCHANNELS; i++) {
-            props = d_audio_getchanprops(i);
-            if(p->volume[currow][i] != 255) {
-                if(p->volume[currow][i] > 0x40) p->volume[currow][i] = 0x40;
-                props.volume = gvolume*p->volume[currow][i]>>6;
-            }
-            if(p->instrument[currow][i] > 0 && p->instrument[currow][i] != 255)
-                lastinst[i] = &cursong->instruments[p->instrument[currow][i]-1];
-            if(p->note[currow][i] != 255 && lastinst[i] != NULL) {
-                if(p->note[currow][i] == 254)
-                    d_audio_stopsample(i);
-                else {
-                    freq = 8363L*periods[p->note[currow][i]&0x0f];
-                    freq >>= p->note[currow][i]>>4;
-                    freq /= lastinst[i]->c2speed;
-                    freq = 14317456L/(freq?freq:1);
-                    d_audio_playsample(i, lastinst[i]->sample, freq);
-                }
-            }
-
-            switch(p->command[currow][i]) {
-            case 0x01:
-                if(p->operand[currow][i] < 0x20) {
-                    speed = p->operand[currow][i];
-                }
-                break;
-
-            case 0x14:
-                tempo = p->operand[currow][i];
-                break;
-
-            case 0x16:
-                if(p->operand[currow][i] <= 0x40)
-                    gvolume = p->operand[currow][i];
-                break;
-            }
-
-            d_audio_setchanprops(i, props);
-        }
-        currow++;
-        if(currow >= S3M_NROWS) {
-            currow = 0;
-            curorder++;
-        }
-        counter = 0;
+    if(p->volume[pb->currow][chan] != 255) {
+        if(p->volume[pb->currow][chan] > MAXVOLUME)
+            p->volume[pb->currow][chan] = MAXVOLUME;
+        
+        props.volume = pb->gvolume*p->volume[pb->currow][chan]>>6;
     }
-    qh = d_time_startcount(2*tempo/5, false);
+    
+    inst = p->instrument[pb->currow][chan];
+    if(inst != 255)
+        pb->lastinst[chan] = &pb->cursong->instruments[inst-1];
+
+    if(p->note[pb->currow][chan] != 255 && pb->lastinst[chan] != NULL) {
+        if(p->note[pb->currow][chan] == 254) {
+            /* note end */
+            d_audio_stopsample(chan);
+        } else {
+            /* This set of code is somewhat explained in the S3M
+             * tech doc, if you're curious. The magic numbers might
+             * be carcinogenic, though. */
+            freq = 8363L*periods[p->note[pb->currow][chan]&0x0f];
+            freq >>= p->note[pb->currow][chan]>>4;
+            freq /= pb->lastinst[chan]->c2speed;
+            freq = 14317456L/(freq?freq:1);
+
+            d_audio_playsample(chan, pb->lastinst[chan]->sample, freq);
+        }
+    }
+    
+    switch(p->command[pb->currow][chan]) {
+    case 0x01: /* Axx -- set speed */
+        if(p->operand[pb->currow][chan] < 0x20) {
+            pb->speed = p->operand[pb->currow][chan];
+        }
+        break;
+
+    case 0x14: /* Txx -- set tempo to xx */
+        pb->tempo = p->operand[pb->currow][chan];
+        break;
+
+    case 0x16: /* Vxx -- set global volume */
+        if(p->operand[pb->currow][chan] <= MAXVOLUME)
+            pb->gvolume = p->operand[pb->currow][chan];
+        break;
+
+    case 0x02: /* Bxx -- jump to order xx */
+    case 0x03: /* Cxx -- break pattern to row xx */
+    case 0x0F: /* Oxy -- set sample offset */
+    default:
+        d_error_debug(__FUNCTION__": hit effect %x\n",
+                      p->command[pb->currow][chan]);
+    }
+    
+    d_audio_setchanprops(chan, props);
+    return;
 }
 
 /* EOF s3mgen.c */

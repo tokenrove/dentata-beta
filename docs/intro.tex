@@ -2,11 +2,11 @@
 % intro.tex
 % 
 % Created: Fri Jun 22 17:12:01 2001 by tek@wiw.org
-% Revised: Fri Jun 22 20:51:57 2001 by tek@wiw.org
+% Revised: Sun Jun 24 04:14:12 2001 by tek@wiw.org
 % Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 % 
 \def\FileCreated{Fri Jun 22 17:12:01 2001}
-\def\FileRevised{Fri Jun 22 20:51:57 2001}
+\def\FileRevised{Sun Jun 24 04:14:12 2001}
 
 Dentata is a library of modules for game developers. Its principle
 aim is to provide a comprehensive set of services to allow game
@@ -65,10 +65,14 @@ cleanly shuts down the raster device.
 \begin{verbatim}
     bool status;
 
-    status = d_raster_new();  /* setup the raster device */
-    if(status != success)     /* if the call failed, bomb out */
-        d_error_fatal("Unable to initialize the raster device.\n");
-    d_raster_delete();        /* shut down the raster device */
+    /* setup the raster device */
+    status = d_raster_new();
+    /* if the call failed, bomb out */
+    if(status != success)
+        d_error_fatal("Unable to initialize the raster"
+                      " device.\n");
+    /* shut down the raster device */
+    d_raster_delete();
 \end{verbatim}
 
 Assuming that worked acceptably, the next step is to find out what
@@ -85,10 +89,8 @@ d\_raster\_delete}() in the code above.
     modes = d_raster_getmodes(&nmodes);
 \end{verbatim}
 
-It might be of interest for the reader to now look at the source code for
-the {\tt listmodes} tool included in the dentata distribution. Also,
-section \ref{chap:graphics} discusses the {\tt d\_rasterdescription\_t}
-type.
+One might now find it of interest to look at the source code for
+the {\tt lstmodes} tool included in the dentata distribution.
 
 The final step is to actually set a mode. One of the problems of
 writing portable game code is that raster capabilities vary wildly
@@ -106,22 +108,26 @@ A very simplistic way of choosing a mode is as follows:
     /* assume the previous snippet is here */
 
     for(i = 0; i < nmodes; i++) {
-        /* the only particularly important aspects of a mode are
-	 * its width, height, and bits per pixel. */
+        /* the only particularly important aspects of
+         * a mode are its width, height, and bits per
+         * pixel. */
         if(modes[i].w == desiredwidth &&
            modes[i].h == desiredheight &&
            modes[i].bpp == desiredbpp) {
              /* attempt to set the mode */
              status = d_raster_setmode(modes[i]);
-             /* if we succeeded, break out of the loop early. */
+             /* if we succeeded, break out of the loop
+              * early. */
              if(status == success)
                  break;
         }
     }
-    if(i >= nmodes)           /* did we exit the loop normally? */
-        d_error_fatal("Unable to setup an appropriate graphics "
-                      "mode (desired: %dx%dx%d)\n",
-                      desiredwidth, desiredheight, desiredbpp);
+    /* did we exit the loop normally? */
+    if(i >= nmodes)
+        d_error_fatal("Unable to setup a suitable raster"
+                      " mode (desired: %dx%dx%d)\n",
+                      desiredwidth, desiredheight,
+                      desiredbpp);
 \end{verbatim}
 
 Before we go any further into display, we need to take a look at
@@ -136,7 +142,7 @@ exclusively either on or off. The event module also deals with analog
 inputs, but we will only concern ourselves with digital in this
 section.
 
-The first step is, once again, initializing the module, but in this
+The first step is, as before, initializing the module, but in this
 case, {\tt d\_event\_new}() takes an argument, {\tt byte \it mask}.
 The header file {\tt dentata/event.h} defines a number of event masks,
 each for a different class of devices supported. In this case, we'd
@@ -144,11 +150,13 @@ liketo initialize event handling for keyboards and controllers, so
 the following code is used.
 
 \begin{verbatim}
-    byte mask, desiredmask = D_EVENT_KEYBOARD|D_EVENT_CONTROLLER;
+    byte mask, desiredmask;
 
+    desiredmask = D_EVENT_KEYBOARD|D_EVENT_CONTROLLER;
     mask = d_event_new(desiredmask);
     if(mask == 0)
-        d_error_fatal("Unable to initialize any input devices.\n");
+        d_error_fatal("Unable to initialize any input "
+                      "devices.\n");
 
      /* program body continues here... */
 
@@ -168,19 +176,21 @@ events, and redefinable keys.
 A typical use of mappings is demonstrated in the next snippet.
 
 \begin{verbatim}
-/* This would typically be put in a header file for the project. */
+/* This would typically be put in a header file for the
+ * project. */
 enum { EV_QUIT = 0, EV_LEFT, EV_RIGHT, EV_UP, EV_DOWN };
 
 /* ... */
-    /* skip to just after the event module has been initialized */
+    /* skip to just after the event module has been
+     * initialized */
     d_event_map(EV_QUIT, D_KBD_ESCAPE);
     d_event_map(EV_QUIT, D_KBD_Q);
     d_event_map(EV_QUIT, D_CTRLR_START);
 
     d_event_map(EV_LEFT, D_KBD_CURSORLEFT);
     d_event_map(EV_LEFT, D_CTRLR_LEFT);
-    /* likewise mappings for EV_RIGHT, EV_UP, EV_DOWN would be
-     * here */
+    /* likewise mappings for EV_RIGHT, EV_UP, EV_DOWN
+     * would be here */
 \end{verbatim}
 
 Now, the remaining question is: how does one actually check for events?
@@ -196,9 +206,10 @@ The following code snippet shows a skeleton of a typical game loop.
     }
 \end{verbatim}
 
-Note that while event handling will work fine without regular calls to
-{\tt d\_event\_update}() on many platforms, to write portable code one
-{\bf must} call it every time the program needs fresh event data.
+One should note that while event handling will work fine without regular
+calls to the {\tt d\_event\_update}() function on many platforms, to write
+portable code one {\bf must} call it every time the program needs fresh
+event data.
 
 \subsection{Accessing the Framebuffer}
 
@@ -207,26 +218,27 @@ graphics mode and waits for the user to signal for them to quit.
 However, the part that is probably the most interesting to most
 readers is how to actually get things happening on the screen.
 
-The raster module in dentata implicitly provides a double-buffer.  How
-that double-buffer is implemented depends on the platform, but one can
-call the {\tt d\_raster\_getgfxptr}() function to access it
-directly. Usually, though, one wants dentata to handle all the issues
-of figuring out how to pack pixels with this mode and other such
-details. While there are a number of ways of doing this, the kosher,
-100\% approved way is to setup a dummy image, as demonstrated in the
-following piece of code.
+The raster module in dentata implicitly provides a double-buffer. How
+that double-buffer is implemented depends on the platform, but direct
+access can be obtained by calling {\tt d\_raster\_getgfxptr}(). Usually,
+though, one wants dentata to handle all the issues of figuring out how
+to pack pixels with this mode and other such details. While there are a
+number of ways of doing this, the kosher, 100\% approved way is to setup
+a dummy image, as demonstrated in the following piece of code.
 
 \begin{verbatim}
     d_image_t *raster;
 
     /* raster init code goes here */
 
-    /* create a new image of the same size as the raster display */
+    /* create a new image of the same size as the raster
+     * display */
     raster = d_image_new(d_raster_getcurrentmode());
 
-    /* set the image to directly access the raster internal
+    /* set the image to directly access the raster's
      * double buffer */
-    d_image_setdataptr(raster, d_raster_getgfxptr(), false);
+    d_image_setdataptr(raster, d_raster_getgfxptr(),
+                       false);
 
     /* use the image as you wish */
 
@@ -263,17 +275,17 @@ d\_time\_startcount}() and {\tt d\_time\_endcount}() functions with a
 static framerate. This is shown below.
 
 \begin{verbatim}
-    void *th = NULL;          /* th stands for time handle */
+    d_timehandle_t *th = NULL;
 
     while(1) {
         th = d_time_startcount(framespersecond, false);
-        /* game is updated, the raster is redrawn, et cetera */
+        /* game is updated, raster is redrawn, etc. */
         d_time_endcount(th);
         th = NULL;
     }
 
-    /* just in case the loop terminated prematurely. avoids a
-     * potential memory leak. */
+    /* just in case the loop terminated prematurely.
+     * avoids a potential memory leak. */
     if(th) d_time_endcount(th);
 \end{verbatim}
 

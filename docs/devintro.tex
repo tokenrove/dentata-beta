@@ -2,11 +2,11 @@
 % devintro.tex
 % 
 % Created: Sat Jun 23 00:06:03 2001 by tek@wiw.org
-% Revised: Sat Jun 23 04:10:44 2001 by tek@wiw.org
+% Revised: Sun Jun 24 07:39:26 2001 by tek@wiw.org
 % Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 % 
 \def\FileCreated{Sat Jun 23 00:06:03 2001}
-\def\FileRevised{Sat Jun 23 04:10:44 2001}
+\def\FileRevised{Sun Jun 24 07:39:26 2001}
 
 \section{The dentata Source}
 
@@ -54,5 +54,88 @@ x11 & X Window System specific \\
 oss & OSS (Open Sound System) specific \\
 \hline
 \end{tabular}
-
 \end{table}
+
+\subsection{Coding Style}
+
+The C coding style used within dentata is basically four-space
+K\&R. The best way of determining the general coding style is to
+look at the code itself. There are a number of much more strict
+rules in place on the naming of identifiers, however. These
+rules are summarized in table \ref{tab:idconvsummary}.
+
+In general, anything visible to the user is prefixed with {\tt d\_},
+even defined constants.
+
+Module functions which are visible to the user are always prefixed with
+{\tt d\_}, with the module name in the center, followed by the function
+name, seperated by an underscore. No module data should be explicitly
+visible to the user.
+
+Internal routines which need to be shared between files should be similar
+in form to the user-level module routines, save for prefixing with an
+underscore to indicate that it is an internal routine.
+Internal routines which are only used by one file should be declared
+static and should not have any prefixes, that is, just {\tt
+function}().
+
+Structures are almost always typedef'd into types. Defined types (except
+for the basic types listed in table \ref{tab:denttypes}) have the
+suffix {\tt \_t}, like {\tt d\_type\_t}. The convention in defining
+structures is demonstrated in the following code snippet. (note the
+prefixes and suffixes used)
+
+\begin{verbatim}
+typedef struct d_type_s {
+    /* members */
+} d_type_t;
+\end{verbatim}
+
+Types visible by users or shared between modules are in the
+form {\tt d\_type\_t}. Types used by a single module (which may
+span multiple files) should be of the form {\tt type\_t}.
+
+Defined constants are all uppercase, in the form {\tt D\_MODULE\_CONSTANT}
+when visible outside a module, or, less commonly, {\tt D\_CONSTANT} when
+the constant applies to multiple modules. Internal constants do not have
+any prefix, and so are more like: {\tt CONSTANT}.
+
+\begin{table}
+\caption{Identifier Conventions Summary}
+\label{tab:idconvsummary}
+\begin{tabular}{|c|c|}
+\hline
+Type of Identifier & Example \\
+\hline\hline
+User-visible module functions & {\tt d\_module\_function}() \\
+Internal routines (shared) & {\tt \_d\_module\_function}() or {\tt
+\_d\_function}() \\
+Internal routines (static) & {\tt function}() \\
+User-visible or shared types & {\tt d\_type\_t} \\
+Module-internal types & {\tt type\_t} \\
+Module defined constant & {\tt D\_MODULE\_CONSTANT} \\
+General defined constant & {\tt D\_CONSTANT} \\
+Internal defined constant & {\tt CONSTANT} \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Important Practices}
+
+\begin{description}
+\item [Keeping Documentation Up-to-Date]
+Keep in mind that developers depend on this manual being up to date, and a
+large portion of it (the function reference) is generated from
+comments. {\bf Every} modification to a public (API) function should
+cause you to think: ``Do I need to update the header comments due to
+this change?''. Adding a module or adding new public functions to an
+existing module without updating the headers is unthinkable.
+
+\item [Using CVS]
+Read the guide to CVS which is on the rhombus website. Learning to
+use CVS effectively is something which can make a huge difference in
+productivity, especially in cases where hardware dies and data is
+lost, or when bugs are introduced to previously stable code. Commit
+your changes frequently.
+
+\end{description}

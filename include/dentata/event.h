@@ -1,13 +1,11 @@
 /**
  * event.h
  * Created: Wed Jan 24 11:40:52 2001 by tek@wiw.org
- * Revised: Sat Jun 23 03:27:06 2001 by tek@wiw.org
+ * Revised: Sun Jun 24 10:15:03 2001 by tek@wiw.org
  * Copyright 2001 Rhombus Software/Julian E. C. Squires (tek@wiw.org)
  * $Id$
  *
  * Module: event
- *
- * One must include dentata/types.h before this file.
  *
  * Note that some implementations require that the raster module
  * be initialized before they may be initialized. Implementations which
@@ -16,6 +14,8 @@
  * the side of safety, this should be obeyed. Additionally, the event
  * module should be closed and reinitialized every time the raster
  * mode is changed.
+ *
+ * Include dentata/types.h before dentata/event.h.
  */
 
 #ifndef DENTATA_EVENT_H

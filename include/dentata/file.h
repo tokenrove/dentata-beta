@@ -1,14 +1,18 @@
 /**
  * file.h
  * Created: Mon Feb  5 15:51:30 2001 by tek@wiw.org
- * Revised: Sat Jun 23 03:50:30 2001 by tek@wiw.org
+ * Revised: Sun Jun 24 10:15:17 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
  *
  * Module: file
  *
- * Include dentata/types.h before this file.
+ * This module is not expected to change greatly, save for the
+ * addition of helper functions for big endian, and some facilities
+ * for saving data.
+ *
+ * Include dentata/types.h before dentata/file.h.
  */
 
 #ifndef DENTATA_FILE_H

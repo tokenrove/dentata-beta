@@ -1,11 +1,12 @@
 /* 
  * colorgen.c
  * Created: Wed Jan 31 13:08:59 2001 by tek@wiw.org
- * Revised: Sat Jun 23 04:07:27 2001 by tek@wiw.org
+ * Revised: Sun Jun 24 00:51:29 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
- * 
+ *
+ * See the dentata reference manual on packings used internally.
  */
 
 #include <dentata/types.h>
@@ -67,23 +68,30 @@ d_color_t d_color_frompackedrgb(d_image_t *p, dword rgb)
 void d_color_unpack(byte bpp, d_color_t c, byte *r, byte *g, byte *b)
 {
     switch(bpp) {
+        /* MBBBBBGG GGGRRRRR */
     case 15:
-        *r = c&((1<<6)-1);
-        *g = (c>>5)&((1<<6)-1);
-        *b = (c>>10)&((1<<6)-1);
+        *r = c&31;
+        *g = (c>>5)&31;
+        *b = (c>>10)&31;
         break;
 
+        /* BBBBBGGG GGGRRRRR */
     case 16:
-        *r = c&((1<<6)-1);
-        *g = (c>>5)&((1<<7)-1);
-        *b = (c>>11)&((1<<6)-1);
+        *r = c&31;
+        *g = (c>>5)&63;
+        *b = (c>>11)&31;
         break;
 
+        /* BBBBBBBB GGGGGGGG RRRRRRRR */
     case 24:
         *r = c;
         *g = c >> 8;
         *b = c >> 16;
         break;
+
+    default:
+        d_error_push("d_color_unpack: Attempted to convert with an "
+                     "unsupported depth.");
     }
 
     return;
@@ -94,18 +102,18 @@ d_color_t d_color_pack(byte bpp, byte r, byte g, byte b)
     d_color_t c;
 
     switch(bpp) {
-    case 15: /* MBBBBBGG GGGRRRRR I think? FIXME */
+    case 15: /* MBBBBBGG GGGRRRRR */
         c = 0;
-        c |= r&((1<<6)-1);
-        c |= (g&((1<<6)-1))<<5;
-        c |= (b&((1<<6)-1))<<10;
+        c |= r&31;
+        c |= (g&31)<<5;
+        c |= (b&31)<<10;
         break;
 
     case 16: /* BBBBBGGG GGGRRRRR */
         c = 0;
-        c |= b&((1<<6)-1);
-        c |= (g&((1<<7)-1))<<5;
-        c |= (r&((1<<6)-1))<<11;
+        c |= r>>3;
+        c |= (g>>2)<<5;
+        c |= (b>>3)<<11;
         break;
 
     case 24: /* B G R */
@@ -123,8 +131,14 @@ d_color_t d_color_pack(byte bpp, byte r, byte g, byte b)
     return c;
 }
 
+void d_color_torgb(d_image_t *p, d_color_t c, byte *r, byte *g, byte *b)
+{
+    d_color_unpack(p->desc.bpp, c, r, g, b);
+}
+
 #define abs(x) ((x)>0?(x):-(x))
 
+/* FIXME broken for non-24bpp palettes */
 static void getclosestinpalette(d_image_t *p, byte *r, byte *g, byte *b,
                                 d_color_t *c)
 {
