@@ -18,7 +18,7 @@
 #
 # Create a set, add 100 elements, check set integrity,
 # remove 100 elements, delete the set.
-./test-set -q n a100 c r100 d
+./test-set -q -c n a100 c r100 d
 if [ $? != 0 ]; then
     echo "test-set.sh: Test 1 failed!"
     exit 1

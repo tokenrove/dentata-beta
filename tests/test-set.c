@@ -1,7 +1,7 @@
 /* 
  * test-set.c
  * Created: Sat Feb 24 23:52:05 2001 by tek@wiw.org
- * Revised: Sun Feb 25 00:24:22 2001 by tek@wiw.org
+ * Revised: Sun Feb 25 00:40:50 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -30,25 +30,21 @@ void usage(void);
 
 void usage(void)
 {
-    printf("\
-usage: test-set [options] <command> [commands...]
-
-The following are valid options:
-  -q                    Quiet (don't output status messages)
-  -c                    Careful mode (abort on any call's failure, not just
-                        when errors have been pushed or the check command
-                        fails)
-
-The following are valid commands:
-  n[sizehint]           Creates a new set, with specified sizehint. (default 0)
-  a[n]                  Adds n new elements to the set. (default 1)
-  c                     Checks set integrity, exiting with EXIT_FAILURE if
-                        something has gone wrong.
-  r[n]                  Removes n arbitrary elements from the set. (default 1)
-  d                     Deletes the set.
-  i[n]                  Iterate through n elements from the set. (default:
-                        the entire set)
-");
+    printf("usage: test-set [options] <command> [commands...]\n\n");
+    printf("The following are valid options:\n");
+    printf("  -q                    Quiet (don't output status messages)\n");
+    printf("  -c                    Careful mode (abort on any call's failure, not just\n");
+    printf("                        when errors have been pushed or the check command\n");
+    printf("                        fails)\n\n");
+    printf("The following are valid commands:\n");
+    printf("  n[sizehint]           Creates a new set, with specified sizehint. (default 0)\n");
+    printf("  a[n]                  Adds n new elements to the set. (default 1)\n");
+    printf("  c                     Checks set integrity, exiting with EXIT_FAILURE if\n");
+    printf("                        something has gone wrong.\n");
+    printf("  r[n]                  Removes n arbitrary elements from the set. (default 1)\n");
+    printf("  d                     Deletes the set.\n");
+    printf("  i[n]                  Iterate through n elements from the set. (default:\n");
+    printf("                        the entire set)\n");
     exit(EXIT_FAILURE);
     return;
 }
@@ -77,6 +73,7 @@ int main(int argc, char **argv)
             default:
                 usage();
             }
+            break;
 
         case 'n': /* new */
             if(isdigit(argv[i][1])) {
@@ -106,7 +103,7 @@ int main(int argc, char **argv)
                 j = 1;
 
             ret = success;
-            for(; j >= 0; j--) {
+            for(; j > 0; j--) {
                 ret &= d_set_add(set, k, NULL);
                 k++;
             }
@@ -125,9 +122,9 @@ int main(int argc, char **argv)
                 j = 1;
 
             ret = success;
-            for(; j >= 0; j--) {
-                --k;
-                ret &= d_set_add(set, k, NULL);
+            for(; j > 0; j--) {
+                k--;
+                ret &= d_set_remove(set, k);
             }
             checkerr(verbose);
             if(ret == failure) {
