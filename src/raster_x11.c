@@ -1,7 +1,7 @@
 /* 
  * x11.c
  * Created: Mon Jan  8 05:12:00 2001 by tek@wiw.org
- * Revised: Sat Apr 14 23:44:34 2001 by tek@wiw.org
+ * Revised: Thu Apr 19 07:52:56 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -31,9 +31,10 @@ void d_raster_update(void);
 
 /* static variables */
 static byte *vbuf;
-enum { NAVAILMODES = 7 };
+enum { NAVAILMODES = 8 };
 static d_rasterdescription_t availmodes[NAVAILMODES] = {
   { 320, 200, 0, 0, false, RGB },
+  { 320, 240, 0, 0, false, RGB },
   { 640, 400, 0, 0, false, RGB },
   { 640, 480, 0, 0, false, RGB },
   { 800, 600, 0, 0, false, RGB },

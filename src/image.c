@@ -1,7 +1,7 @@
 /* 
  * image.c
  * Created: Sun Feb 25 01:57:37 2001 by tek@wiw.org
- * Revised: Thu Apr 19 04:34:34 2001 by tek@wiw.org
+ * Revised: Fri Apr 27 20:20:34 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -29,7 +29,7 @@ d_image_t *d_image_new(d_rasterdescription_t desc)
     d_image_t *p;
 
     /* sanity checks */
-    if(desc.w == 0 || desc.h == 0) {
+    if(desc.w == 0 || desc.h == 0 || desc.bpp == 0) {
         d_error_push("d_image_new: zero was given for an important dimension (width, height, or bpp).");
         return NULL;
     }
