@@ -1,7 +1,7 @@
 /* 
  * set.c
  * Created: Sat Feb 24 21:37:59 2001 by tek@wiw.org
- * Revised: Sun Apr  8 00:27:23 2001 by tek@wiw.org
+ * Revised: Wed Jul 18 16:47:30 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -241,7 +241,7 @@ dword d_set_nextkey(d_set_t *p_)
 
     if(p->iteratorvalid == false) {
         d_error_push("d_set_nextkey: iterator is not valid.");
-        return false;
+        return D_SET_INVALIDKEY;
     }
 
     if(p->iteratorep != NULL) {
