@@ -1,0 +1,27 @@
+%
+% gfxintrn.tex
+% 
+% Created: Fri Jun 22 17:09:00 2001 by tek@wiw.org
+% Revised: Fri Jun 22 18:25:00 2001 by tek@wiw.org
+% Copyright 2001 Julian E. C. Squires (tek@wiw.org)
+% 
+\def\FileCreated{Fri Jun 22 17:09:00 2001}
+\def\FileRevised{Fri Jun 22 18:25:00 2001}
+
+\section{Packing}
+
+8bpp: Only zero and one bit alphas are valid, and unlike other depths,
+one bit alpha does not store the alpha values independently of the data.
+The value of zero is considered transparent when the alpha is set to
+zero in eight bits per pixel. This depth implies the use of a palette.
+
+15bpp: Undecided -- this is reserved for future expansion.
+
+16bpp: Data contains RGB packed into little endian groupings of 16-bits,
+$^{15}BBBBBGGG^8 G^7GGRRRRR^0$. Alpha depths of one, two, four, and
+eight bits are valid, and are stored independantly of the data. Alpha is
+packed from least to greatest, so four bit alpha is split as $2^72221111^0$,
+two bit alpha as $4^74332211^0$, and so forth.
+
+24bpp: Packing is one component per byte, BGR. Alpha is seperate, and
+is the same as for 16bpp, above.

@@ -1,7 +1,7 @@
 /* 
  * x11.c
  * Created: Mon Jan  8 05:12:00 2001 by tek@wiw.org
- * Revised: Thu May  3 04:02:10 2001 by tek@wiw.org
+ * Revised: Fri Jun 22 20:55:14 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -26,13 +26,14 @@ void d_raster_delete(void);
 bool d_raster_setmode(d_rasterdescription_t);
 d_rasterdescription_t *d_raster_getmodes(int *);
 d_rasterdescription_t d_raster_getcurrentmode(void);
-byte *d_raster_getgfxpointer(void);
+byte *d_raster_getgfxptr(void);
 void d_raster_update(void);
 
 /* static variables */
 static byte *vbuf;
-enum { NAVAILMODES = 8 };
+enum { NAVAILMODES = 9 };
 static d_rasterdescription_t availmodes[NAVAILMODES] = {
+  { 240, 160, 0, 0, false, RGB },
   { 320, 200, 0, 0, false, RGB },
   { 320, 240, 0, 0, false, RGB },
   { 640, 400, 0, 0, false, RGB },
@@ -242,7 +243,7 @@ d_rasterdescription_t d_raster_getcurrentmode(void)
     return curmode;
 }
 
-byte *d_raster_getgfxpointer(void)
+byte *d_raster_getgfxptr(void)
 {
     return vbuf;
 }

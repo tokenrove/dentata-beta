@@ -1,7 +1,7 @@
 /* 
  * image.h
  * Created: Tue Jan  9 05:11:42 2001 by tek@wiw.org
- * Revised: Sat May  5 09:24:28 2001 by tek@wiw.org
+ * Revised: Fri Jun 22 20:31:13 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -16,7 +16,10 @@
 #define DENTATA_IMAGE_H
 
 typedef struct d_image_s {
+    /* private */
     byte *data, *alpha;
+    bool imageownsdata;
+    /* public */
     d_rasterdescription_t desc;
     d_palette_t palette;
 } d_image_t;
@@ -51,6 +54,23 @@ extern void d_image_delete(d_image_t *);
  * Returns: a pointer to the copy of p.
  */
 extern d_image_t *d_image_dup(d_image_t *);
+
+/**
+ * d_image_setdataptr(d_image_t *p, byte *ptr, bool imageownsdata)
+ * Changes the data pointer for this image to the one specified by ptr.
+ * This frees the space used by the previous data pointer, assuming
+ * it was handled by the image module. (if the data pointer had previously
+ * been set by setdataptr with imageownsdata set to false, the data
+ * will not be freed)
+ *
+ * Takes: p - a pointer to the image to change.
+ *        ptr - the new data pointer.
+ *        imageownsdata - a bool specifying whether to handle the
+ *                        new data pointer on delete or not.
+ *
+ * Returns: failure if anything went wrong, success otherwise.
+ */
+extern bool d_image_setdataptr(d_image_t *, byte *, bool);
 
 /**
  * d_image_plot(d_image_t *image, d_point_t point, d_color_t color,

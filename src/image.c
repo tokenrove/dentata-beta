@@ -1,7 +1,7 @@
 /* 
  * image.c
  * Created: Sun Feb 25 01:57:37 2001 by tek@wiw.org
- * Revised: Sat May 19 12:29:07 2001 by tek@wiw.org
+ * Revised: Fri Jun 22 20:55:32 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -18,6 +18,7 @@
 d_image_t *d_image_new(d_rasterdescription_t desc);
 void d_image_delete(d_image_t *p);
 d_image_t *d_image_dup(d_image_t *p);
+bool d_image_setdataptr(d_image_t *, byte *, bool);
 void d_image_plot(d_image_t *p, d_point_t pt, d_color_t c, byte alpha);
 void d_image_wipe(d_image_t *p, d_color_t c, byte alpha);
 void d_image_silhouette(d_image_t *image, d_color_t color, byte alpha);
@@ -51,13 +52,14 @@ d_image_t *d_image_new(d_rasterdescription_t desc)
     if(p->data == NULL ||
        (p->alpha == NULL && desc.alpha > 0))
         return NULL;
+    p->imageownsdata = true;
 
     return p;
 }
 
 void d_image_delete(d_image_t *p)
 {
-    d_memory_delete(p->data);
+    if(p->imageownsdata && p->data) d_memory_delete(p->data);
     if(p->alpha) d_memory_delete(p->alpha);
     d_memory_delete(p);
     return;
@@ -73,9 +75,19 @@ d_image_t *d_image_dup(d_image_t *p)
     d_memory_copy(q->data, p->data, (q->desc.w*q->desc.h*q->desc.bpp+7)/8);
     d_memory_copy(q->alpha, p->alpha, (q->desc.w*q->desc.h*q->desc.alpha+7)/8);
 
+    q->imageownsdata = true;
     q->palette = p->palette;
 
     return q;
+}
+
+bool d_image_setdataptr(d_image_t *p, byte *ptr, bool imageownsdata)
+{
+    if(p->data && p->imageownsdata)
+        d_memory_delete(p->data);
+    p->data = ptr;
+    p->imageownsdata = imageownsdata;
+    return success;
 }
 
 void d_image_plot(d_image_t *p, d_point_t pt, d_color_t c, byte alpha)

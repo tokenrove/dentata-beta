@@ -1,7 +1,7 @@
 /* 
  * viewtga.c
  * Created: Wed Apr 11 07:08:12 2001 by tek@wiw.org
- * Revised: Thu Apr 19 05:24:49 2001 by tek@wiw.org
+ * Revised: Fri Jun 22 20:30:03 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -61,7 +61,6 @@ int main(int argc, char **argv)
 
     d_event_delete();
     d_raster_delete();
-    raster->data = NULL;
     d_image_delete(raster);
 
     d_image_delete(tga);
@@ -82,8 +81,7 @@ bool modehaggle(d_rasterdescription_t mode, d_image_t **raster,
            haggledimensions&(modes[i].h >= mode.h)) {
             if(d_raster_setmode(modes[i]) == success) {
                 *raster = d_image_new(modes[i]);
-                d_memory_delete((*raster)->data);
-                (*raster)->data = d_raster_getgfxpointer();
+                d_image_setdataptr(*raster, d_raster_getgfxptr(), false);
                 break;
             }
         }

@@ -1,7 +1,7 @@
 # 
 # Makefile
 # Created: Mon Jan  8 07:00:27 2001 by tek@wiw.org
-# Revised: Sun Jun 17 02:25:37 2001 by tek@wiw.org
+# Revised: Fri Jun 22 21:15:08 2001 by tek@wiw.org
 # Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 # This program comes with ABSOLUTELY NO WARRANTY.
 # $Id$
@@ -94,7 +94,8 @@ TAGS:
 	etags ./src/*.c ./include/dentata/*.h
 
 clean: libclean toolsclean testsclean docsclean
+	rm -f src/*~ docs/*~ tests/*~ tools/*~ include/dentata/*~
 
-distclean: libdistclean toolsdistclean testsdistclean docsdistclean
+distclean: libdistclean toolsdistclean testsdistclean docsdistclean clean
 
 # EOF Makefile

@@ -228,8 +228,9 @@ _blit161:
 
 ;;
 ;; _blit162
-;; Based on the generic implementation, uses the _blit_onethird and
-;; _blit_twothird tables defined at the end of this file.
+;; Vaguely based on the generic implementation, uses the _blit_onethird and
+;; _blit_twothird tables defined at the end of this file. The heart of
+;; the routine is in .docombine.
 ;;
 _blit162:
 	push ebp
@@ -375,6 +376,56 @@ _blit162:
 	ret
 
 _blit164:
+	push ebp
+	mov ebp, esp
+	push edi
+	push esi
+	push ebx
+
+	mov edi, [ebp+8]	; destination
+	mov eax, [ebp+24]
+	lea edi, [edi+2*eax]
+
+	mov eax, [ebp+36]	; end offset
+	lea eax, [edi+2*eax]
+	mov [ebp+36], eax
+
+	mov esi, [ebp+16]	; source
+	mov eax, [ebp+40]	; soffs
+	lea esi, [esi+2*eax]
+
+	mov bl, al
+	and bl, 1
+	shr eax, 1
+	add [ebp+20], eax	; add soffs to source alpha
+
+.beginscan:
+	mov ecx, [ebp+32]
+.beginpel:
+	;; none of this is real
+	lodsw
+	mov edx, eax
+	and al, 31		; red
+	xchg dl, al
+	shr ax, 5
+	and ax, 63		; green
+	xlatb
+	shl ax, 5
+	or al, dl
+	xchg dx, ax
+	shr ax, 11		; blue
+	xlatb
+	shl ax, 11
+	or dh, ah
+
+.endpel:
+	loop .beginpel
+	
+
+	pop ebx
+	pop esi
+	pop edi
+	pop ebp
 	ret
 
 _blit168:
@@ -524,10 +575,164 @@ _blit241:
 	pop ebp
 	ret
 
+;;
+;; _blit242
+;; Based on _blit162, see the comments therein.
+;;
 _blit242:
+	push ebp
+	mov ebp, esp
+	sub esp, 32
+	push edi
+	push esi
+	push ebx
+
+	mov edi, [ebp+8]	; dest data
+	mov ebx, [ebp+36]	; endoffs
+	lea ebx, [3*ebx]
+	add ebx, edi		; setting up the end offset
+	mov [ebp-16], ebx
+	mov eax, [ebp+24]	; doffs
+	lea eax, [3*eax]
+	add edi, eax
+
+	; mask table
+	mov dword [ebp-4], 0xFF3F0F03
+
+	mov edx, [ebp+40]	; soffs
+	lea esi, [3*edx]
+	add esi, [ebp+16]	; source data
+
+	mov al, dl
+	and al, 3		; low two bits of source offset
+	mov [ebp-9], al		; ebp-9 == finetune
+
+	shr edx, 2		; soffs/4
+	add [ebp+20], edx	; source alpha offset
+
+	mov edx, [ebp+28]	; dscan offset
+	lea edx, [3*edx]
+	mov [ebp-20], edx	; ebp-20 == dscan*3
+
+	mov ecx, [ebp+44]	; sscanoffset
+	lea eax, [3*ecx]
+	mov [ebp-24], eax	; ebp-24 == sscan*3
+	mov [ebp-28], ecx	; ebp-28 == sscan/4
+	shr dword [ebp-28], 2
+	and cl, 3
+	mov byte [ebp-10], cl	; ebp-10 == low 2 bits of sscan
+
+.beginscan:
+	mov edx, [ebp+32]	; scanlen
+	mov [ebp-8], edx	; ebp-8 == scanlen
+	; note:	scanlen can never be zero, so we don't worry about it.
+
+.beginpel:
+	movzx edx, byte [ebp-9]	; load finetune
+	mov ecx, [ebp+20]	; read alpha
+	movzx eax, byte [ecx]
+	and al, [ebp-4+edx]	; index into mask table
+	lea ecx, [2*edx]
+	shr eax, cl		; shift right by finetune*2
+	; jump table (eax should never be > 3)
+	jmp [.switch+4*eax]
+.switch: dd .case0, .case1, .case2, .case3
+
+.case0:	add edi, 3		; transparent, so skip to the next pixel
+	add esi, 3
+	jmp .endpel
+
+.case1:	lodsb
+	shl eax, 8
+	lodsb
+	shl eax, 8
+	lodsb
+	mov edx, eax
+	movzx ecx, byte [edi]
+	mov ch, [edi+1]
+	bswap ecx
+	mov ch, [edi+2]
+	shr ecx, 8
+	jmp .docombine
+
+.case2:	lodsb
+	shl eax, 8
+	lodsb
+	shl eax, 8
+	lodsb
+	mov ecx, eax
+	movzx edx, byte [edi]
+	mov dh, [edi+1]
+	bswap edx
+	mov dh, [edi+2]
+	shr edx, 8
+	mov eax, edx
+
+.docombine:
+	mov ebx, _blit_onethird
+	xlatb			; red
+	ror eax, 8
+	xlatb			; green
+	ror eax, 8
+	xlatb			; blue
+
+	mov eax, ecx
+	mov ebx, _blit_twothird
+	xlatb			; red
+	ror eax, 8
+	xlatb			; green
+	ror eax, 8
+	xlatb			; blue
+
+	add eax, ecx
+	ror eax, 16
+	stosb
+	shr eax, 8
+	stosb
+	shr eax, 8
+	stosb
+	jmp .endpel
+
+.case3:	movsb			; simple.
+	movsb
+	movsb
+
+.endpel:
+	inc byte [ebp-9]	; increment finetune
+	cmp byte [ebp-9], 4	; have we hit four yet?
+	jl .l2
+	mov byte [ebp-9], 0	; yes, zero out finetune
+	inc dword [ebp+20]	; add one to coarse salp address
+.l2:	dec dword [ebp-8]	; decrement scanlen
+	jz .l3			; out of pixels in this scan?
+	jmp .beginpel
+
+.l3:	; end of scanline
+	add edi, [ebp-20]	; add dscanoff*3
+	add esi, [ebp-24]	; add sscanoff*3
+
+	mov edx, [ebp-28]	; add sscanoff>>2 to salp
+	add [ebp+20], edx
+	mov cl, [ebp-10]	; add sscanoff%4 to finetune
+	add [ebp-9], cl
+	cmp byte [ebp-9], 4	; are we over 3?
+	jl .l4
+	inc dword [ebp+20]	; increment salp
+	and byte [ebp-9], 3	; finetune mod 4
+.l4:	cmp edi, [ebp-16]	; are we at the end?
+	jge .l5
+	jmp .beginscan		; do another scanline if not
+
+.l5:	pop ebx
+	pop esi
+	pop edi
+	add esp, 32
+	pop ebp
 	ret
+
 _blit244:
 	ret
+
 _blit248:
 	ret
 

@@ -1,7 +1,7 @@
 /* 
  * raster.h
  * Created: Sat Jan  8 23:40:41 2000 by tek@wiw.org
- * Revised: Thu Apr 19 04:20:00 2001 by tek@wiw.org
+ * Revised: Fri Jun 22 19:42:38 2001 by tek@wiw.org
  * Copyright 2000 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -65,12 +65,12 @@ extern d_rasterdescription_t *d_raster_getmodes(int *);
 extern d_rasterdescription_t  d_raster_getcurrentmode(void);
 
 /**
- * d_raster_getgfxpointer()
+ * d_raster_getgfxptr()
  * Gets a pointer to the internal double buffer.
  *
  * Returns: a pointer to the internal double buffer.
  */
-extern byte *                 d_raster_getgfxpointer(void);
+extern byte *                 d_raster_getgfxptr(void);
 
 /**
  * d_raster_update()

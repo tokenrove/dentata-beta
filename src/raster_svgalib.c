@@ -1,7 +1,7 @@
 /* 
  * svgalib.c
  * Created: Sat Jan  8 23:52:54 2000 by tek@wiw.org
- * Revised: Sat Apr  7 22:50:31 2001 by tek@wiw.org
+ * Revised: Fri Jun 22 19:43:17 2001 by tek@wiw.org
  * Copyright 2000 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -24,7 +24,7 @@ bool d_raster_setmode(d_rasterdescription_t);
 d_rasterdescription_t *d_raster_getmodes(int *);
 d_rasterdescription_t d_raster_getcurrentmode(void);
 
-byte *d_raster_getgfxpointer(void);
+byte *d_raster_getgfxptr(void);
 void d_raster_update(void);
 
 /* static variables */
@@ -144,7 +144,7 @@ d_rasterdescription_t d_raster_getcurrentmode(void)
     return raster_curmode;
 }
 
-byte *d_raster_getgfxpointer(void)
+byte *d_raster_getgfxptr(void)
 {
     return raster_vbuf;
 }

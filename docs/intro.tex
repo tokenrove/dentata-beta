@@ -1,0 +1,325 @@
+%
+% intro.tex
+% 
+% Created: Fri Jun 22 17:12:01 2001 by tek@wiw.org
+% Revised: Fri Jun 22 20:51:57 2001 by tek@wiw.org
+% Copyright 2001 Julian E. C. Squires (tek@wiw.org)
+% 
+\def\FileCreated{Fri Jun 22 17:12:01 2001}
+\def\FileRevised{Fri Jun 22 20:51:57 2001}
+
+Dentata is a library of modules for game developers. Its principle
+aim is to provide a comprehensive set of services to allow game
+development, without hindering portability. Secondarily, dentata
+provides highly optimized implementations on many platforms, with
+the intent of drastically reducing game development time.
+
+\section{Where to Start}
+\label{sec:wheretostart}
+
+This chapter is written with the intent of providing 70\% of the
+information required for a new developer to produce their first
+demo with dentata. The remaining 30\% should be covered by the
+following chapters.
+
+\subsection{Basic Types}
+
+First of all, both to facillitate game development and to
+enhance portability, dentata uses its own set of types, each
+with a specific size, independant of platform. Table \ref{tab:denttypes}
+enumerates the types of primary importance.
+
+\begin{table}[hbt]
+\caption{Basic types in dentata}
+\label{tab:denttypes}
+\begin{tabular}{|c|c|c|}
+\hline
+Type name & Size & Range of values \\
+\hline\hline
+{\tt bool} & 1 bit & {\tt true}, {\tt success} or {\tt false}, {\tt failure} \\
+{\tt byte} & 8 bits & 0 to 255 \\
+{\tt word} & 16 bits & 0 to 65535 \\
+{\tt dword} & 32 bits & 0 to 4294967296 \\
+\hline
+\end{tabular}
+\end{table}
+
+Most modules will have a {\tt new}() function which initializes
+internal state, and which returns a {\tt bool} to indicate whether it
+was successful.
+
+Generally, all the routines are in the form of {\tt d\_}{\it
+module}{\tt \_}{\it function}.
+
+\subsection{Getting a Display}
+
+Given that the primary mode of communication from a game to its
+user is via graphics, the first priority of a developer is to
+enable a graphical display. Within dentata, the raster module is
+responsible for providing the interface to the display.
+
+The first step is to simply initialize the raster device. The following
+snippet of code does this, aborts if the initialization failed, and then
+cleanly shuts down the raster device.
+
+\begin{verbatim}
+    bool status;
+
+    status = d_raster_new();  /* setup the raster device */
+    if(status != success)     /* if the call failed, bomb out */
+        d_error_fatal("Unable to initialize the raster device.\n");
+    d_raster_delete();        /* shut down the raster device */
+\end{verbatim}
+
+Assuming that worked acceptably, the next step is to find out what
+graphics modes are available to us. The {\tt d\_raster\_getmodes}()
+routine is used for this purpose. The following routine would go in
+between the call to {\tt d\_error\_fatal}() and the call to {\tt
+d\_raster\_delete}() in the code above.
+
+\begin{verbatim}
+    int nmodes;
+    d_rasterdescription_t *modes;
+
+    /* get a list of supported modes */
+    modes = d_raster_getmodes(&nmodes);
+\end{verbatim}
+
+It might be of interest for the reader to now look at the source code for
+the {\tt listmodes} tool included in the dentata distribution. Also,
+section \ref{chap:graphics} discusses the {\tt d\_rasterdescription\_t}
+type.
+
+The final step is to actually set a mode. One of the problems of
+writing portable game code is that raster capabilities vary wildly
+between systems. Therefore, developers are expected to write code
+which intelligently chooses the mode to use, and from that, adapts
+image data and algorithms to fit this mode.\footnote{Luckily, the rhombus
+snippets library includes a snippet called {\tt smarthaggle}, which does
+most of the legwork for you.}
+
+A very simplistic way of choosing a mode is as follows:
+\begin{verbatim}
+    int i, desiredwidth = 320, desiredheight = 200,
+        desiredbpp = 16;
+
+    /* assume the previous snippet is here */
+
+    for(i = 0; i < nmodes; i++) {
+        /* the only particularly important aspects of a mode are
+	 * its width, height, and bits per pixel. */
+        if(modes[i].w == desiredwidth &&
+           modes[i].h == desiredheight &&
+           modes[i].bpp == desiredbpp) {
+             /* attempt to set the mode */
+             status = d_raster_setmode(modes[i]);
+             /* if we succeeded, break out of the loop early. */
+             if(status == success)
+                 break;
+        }
+    }
+    if(i >= nmodes)           /* did we exit the loop normally? */
+        d_error_fatal("Unable to setup an appropriate graphics "
+                      "mode (desired: %dx%dx%d)\n",
+                      desiredwidth, desiredheight, desiredbpp);
+\end{verbatim}
+
+Before we go any further into display, we need to take a look at
+dealing with user input.
+
+\subsection{Trivial Event Handling}
+
+The event handling system in dentata attempts to support as many input
+devices as could conceivably be used in a game. Principally, game
+developers are interested in digital inputs, that is, inputs which are
+exclusively either on or off. The event module also deals with analog
+inputs, but we will only concern ourselves with digital in this
+section.
+
+The first step is, once again, initializing the module, but in this
+case, {\tt d\_event\_new}() takes an argument, {\tt byte \it mask}.
+The header file {\tt dentata/event.h} defines a number of event masks,
+each for a different class of devices supported. In this case, we'd
+liketo initialize event handling for keyboards and controllers, so
+the following code is used.
+
+\begin{verbatim}
+    byte mask, desiredmask = D_EVENT_KEYBOARD|D_EVENT_CONTROLLER;
+
+    mask = d_event_new(desiredmask);
+    if(mask == 0)
+        d_error_fatal("Unable to initialize any input devices.\n");
+
+     /* program body continues here... */
+
+     d_event_delete();
+\end{verbatim}
+
+Note that we don't compare the return value of {\tt d\_event\_new}()
+with the desired mask, as we want support for keyboard {\bf or}
+controller, but we do not need both.
+
+The next step in adding digital input handling to your program is
+to setup {\bf mappings}. Mappings are associations between input
+events and arbitrary handles of the programmer's choosing. This
+allows one to easily support multiple input devices, aliases for
+events, and redefinable keys.
+
+A typical use of mappings is demonstrated in the next snippet.
+
+\begin{verbatim}
+/* This would typically be put in a header file for the project. */
+enum { EV_QUIT = 0, EV_LEFT, EV_RIGHT, EV_UP, EV_DOWN };
+
+/* ... */
+    /* skip to just after the event module has been initialized */
+    d_event_map(EV_QUIT, D_KBD_ESCAPE);
+    d_event_map(EV_QUIT, D_KBD_Q);
+    d_event_map(EV_QUIT, D_CTRLR_START);
+
+    d_event_map(EV_LEFT, D_KBD_CURSORLEFT);
+    d_event_map(EV_LEFT, D_CTRLR_LEFT);
+    /* likewise mappings for EV_RIGHT, EV_UP, EV_DOWN would be
+     * here */
+\end{verbatim}
+
+Now, the remaining question is: how does one actually check for events?
+The following code snippet shows a skeleton of a typical game loop.
+
+\begin{verbatim}
+    while(1) {
+        d_event_update();
+        if(d_event_ispressed(EV_QUIT))
+            break;
+        /* game content update would be here */
+        /* graphics and audio updates would be here */
+    }
+\end{verbatim}
+
+Note that while event handling will work fine without regular calls to
+{\tt d\_event\_update}() on many platforms, to write portable code one
+{\bf must} call it every time the program needs fresh event data.
+
+\subsection{Accessing the Framebuffer}
+
+By this point, one should be able to write a program which sets up a
+graphics mode and waits for the user to signal for them to quit.
+However, the part that is probably the most interesting to most
+readers is how to actually get things happening on the screen.
+
+The raster module in dentata implicitly provides a double-buffer.  How
+that double-buffer is implemented depends on the platform, but one can
+call the {\tt d\_raster\_getgfxptr}() function to access it
+directly. Usually, though, one wants dentata to handle all the issues
+of figuring out how to pack pixels with this mode and other such
+details. While there are a number of ways of doing this, the kosher,
+100\% approved way is to setup a dummy image, as demonstrated in the
+following piece of code.
+
+\begin{verbatim}
+    d_image_t *raster;
+
+    /* raster init code goes here */
+
+    /* create a new image of the same size as the raster display */
+    raster = d_image_new(d_raster_getcurrentmode());
+
+    /* set the image to directly access the raster internal
+     * double buffer */
+    d_image_setdataptr(raster, d_raster_getgfxptr(), false);
+
+    /* use the image as you wish */
+
+    /* free the image */
+    d_raster_delete();
+    d_image_delete(raster);
+\end{verbatim}
+
+Now one can use dentata's image module to operate on the raster
+double buffer. Only one thing remains -- how do we swap the double
+buffer onto the display? The following snippet illustrates the use
+of {\tt d\_raster\_update}(), which is the function to update the
+screen with the contents of the double buffer.
+
+\begin{verbatim}
+    int i = 0;
+
+    while(1) {
+       d_event_update();
+       if(d_event_ispressed(EV_QUIT))
+           break;
+
+       d_image_wipe(raster, i++, 255);
+       d_raster_update();
+    }
+\end{verbatim}
+
+\subsection{Frame Timing}
+
+Dentata includes a few useful timer related functions, but the most
+essential for a game programmer is the code to keep frames on a
+constant time. The most basic form of this is to use the {\tt
+d\_time\_startcount}() and {\tt d\_time\_endcount}() functions with a
+static framerate. This is shown below.
+
+\begin{verbatim}
+    void *th = NULL;          /* th stands for time handle */
+
+    while(1) {
+        th = d_time_startcount(framespersecond, false);
+        /* game is updated, the raster is redrawn, et cetera */
+        d_time_endcount(th);
+        th = NULL;
+    }
+
+    /* just in case the loop terminated prematurely. avoids a
+     * potential memory leak. */
+    if(th) d_time_endcount(th);
+\end{verbatim}
+
+Most of the usage of these functions should be fairly obvious from
+the above snippet (if not, see section \ref{sec:time}), except for
+the second argument to {\tt d\_time\_startcount}(). When this is
+{\tt true}, {\tt d\_time\_endcount}() will return an {\tt int} which
+specifies how many microseconds were left for the current frame.
+This value can be positive or negative, and is intended to allow
+developers to adjust their framerate on the fly, to cope with systems
+with variable performance.\footnote{The rhombus snippets contain this
+code, under {\tt autofps}.}
+
+\section{General Game Structure}
+
+\subsection{Initialization}
+
+\subsection{Game Loop}
+\subsection{Shutdown}
+
+\section{Notes on Portability}
+
+Avoid using the standard C library. Dentata is targetted at many
+platforms which lack an implementation of the standard C library, and
+so includes more game-oriented replacements for a large degree of the
+functionality. For example, the file module. By default, on a PC, it
+uses the standard C library to perform operations on files. However,
+on a gameboy advance, it acts as a symbol table for addresses in
+ROM. In fact, there is even a module to allow one to use data packed
+into a single file on the PC, in a fasion similar to the DAT or
+WAD systems used by many commercial games.
+
+One cannot depend on {\tt argc} or {\tt argv} being usable by the
+user, as well, one cannot depend on the user being able to see
+debugging messages or the like, which is why no direct {\tt printf}()
+replacement exists. A combination of the error module and the font
+module provide for the needs of programs to output debugging
+information.
+
+Do not assume things like images and samples go into the same place
+in memory as everything else. Many console systems do not allow this,
+and so the modules are tuned appropriately on those platforms.
+Also, remember that video and audio memory may be quite limited,
+and while dentata will attempt to intelligently cache the data which
+has been least recently used in order to free enough space, this
+is not a license to keep unused images lying around in memory.\footnote{A
+forthcoming rhombus snippet will demonstrate good practice with
+respect to this issue in a game divided into different parts (with
+little shared data).}

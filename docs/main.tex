@@ -2,11 +2,11 @@
 % main.tex
 % 
 % Created: Mon Jan  8 02:41:24 2001 by tek@wiw.org
-% Revised: Mon Jan  8 03:05:13 2001 by tek@wiw.org
+% Revised: Sat Jun 23 00:05:49 2001 by tek@wiw.org
 % Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 % 
 \def\FileCreated{Mon Jan  8 02:41:24 2001}
-\def\FileRevised{Mon Jan  8 03:05:13 2001}
+\def\FileRevised{Sat Jun 23 00:05:49 2001}
 
 \documentclass{book}
 \usepackage{times}
@@ -17,8 +17,85 @@
 \begin{document}
 \maketitle
 \tableofcontents
+\newpage
 
-\input{raster.tex}
+\section{Introduction and Conventions}
+\label{sec:mainintro}
+
+This manual is divided into two parts, the User part and the Developer
+part. The former is a description of the library from the point of
+view of a game developer attempting to use it for a project, while the
+latter is aimed at programmers attempting to understand or modify the
+library itself.
+
+{\bf Warning!} The API covered in this document is not static, and
+it is known that some parts will change, and suspected that other
+parts may change. Do not take this as verbatim -- if you want stable,
+use dentata gen $\alpha$.
+
+C snippets are in general rendered in typewriter style, for example:
+\begin{verbatim}
+    int foo;
+\end{verbatim}
+
+This is also true of functions, program names, types, and many other
+things.
+
+Functions are denoted by the open and close parenthesis suffix, for
+example: {\tt function}().
+
+When discussing functions, the argument names will typically be italicized,
+as {\it this}. Emphasis is provided by bold, as {\bf this}.
+
+The order of bits in a bit string is denoted by superscripting the bit
+number (indexing from 0). For example, $M^{7}RRGGGBB^0$ indicates that
+bit $M$ is the seventh (most significant) bit in this byte.
+
+\part{User}
+\label{part:user}
+
+\chapter{Overview}
+\label{chap:overview}
+
+\input{docs/intro.tex}
+
+\chapter{Graphics}
+\label{chap:graphics}
+
+\input{docs/graphics.tex}
+
+\chapter{Input}
+\label{chap:input}
+
+\input{docs/input.tex}
+
+\chapter{Sound}
+\label{chap:sound}
+
+\input{docs/sound.tex}
+
+\chapter{Everything Else}
+\label{chap:everythingelse}
+
+\input{docs/evrythng.tex}
+
+\chapter{Reference}
+\label{chap:reference}
+
+\input{docs/funcref.tex}
+
+\part{Developer}
+\label{part:developer}
+
+\chapter{Overview}
+\label{chap:devoverview}
+
+\input{docs/devintro.tex}
+
+\chapter{Graphics Internals}
+\label{chap:gfxinternals}
+
+\input{docs/gfxintrn.tex}
 
 \end{document}
 

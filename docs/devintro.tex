@@ -1,0 +1,57 @@
+%
+% devintro.tex
+% 
+% Created: Sat Jun 23 00:06:03 2001 by tek@wiw.org
+% Revised: Sat Jun 23 01:16:20 2001 by tek@wiw.org
+% Copyright 2001 Julian E. C. Squires (tek@wiw.org)
+% 
+\def\FileCreated{Sat Jun 23 00:06:03 2001}
+\def\FileRevised{Sat Jun 23 01:16:20 2001}
+
+\section{The dentata Source}
+
+\subsection{File Names}
+
+During the MSDOS port, all the filenames were abbreviated to
+8.3 style, so they may not be immediately parsable at first
+glance.
+
+Most of the names are a combination of a five-letter identifier
+(for example, ``image'' or ``rastr'') and a three-letter suffix.
+Table \ref{tab:tlsuffixes} shows the various three letter suffixes
+in use.
+
+\begin{table}[hpt]
+\caption{Three Letter Suffixes Used in Source Naming in dentata}
+\label{tab:tlsuffixes}
+\begin{tabular}{|c|c|}
+\hline
+Suffix & Meaning \\
+\hline\hline
+gen & Generic \\
+com & Common \\
+nul & Null (skeleton) \\
+std & Standard C Library specific \\
+\hline\hline
+arm & ARM/Thumb specific \\
+mip & MIPS specific \\
+sh3 & SuperH 3 specific \\
+sh4 & SuperH 4 specific \\
+x86 & Intel x86 specific \\
+\hline\hline
+dc & Dreamcast specific \\
+dos & MSDOS specific \\
+gba & Gameboy Advance specific \\
+lnx & Linux specific \\
+psx & Playstation specific \\
+ps2 & Playstation 2 specific \\
+sat & Sega Saturn specific \\
+unx & UNIX/POSIX specific \\
+w32 & Windows 95/98/NT specific \\
+\hline\hline
+dx<n> & DirectX <n> specific \\
+x11 & X Window System specific \\
+\hline
+\end{tabular}
+
+\end{table}
