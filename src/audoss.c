@@ -53,7 +53,7 @@ bool d_audio_new(d_audiomode_t mode)
 {
     int i, j;
 
-    for(i = 0; i < D_MAXVOLUME; i++)
+    for(i = 0; i <= D_MAXVOLUME; i++)
         for(j = 0; j < 256; j++)
             volumetable[i][j] = i*(j-128)/64;
 

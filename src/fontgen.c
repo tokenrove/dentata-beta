@@ -1,7 +1,7 @@
 /* 
  * fontgen.c
  * Created: Fri Apr 13 20:38:07 2001 by tek@wiw.org
- * Revised: Sun Jun 24 01:51:06 2001 by tek@wiw.org
+ * Revised: Sun Jul 15 10:02:19 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -140,7 +140,7 @@ void d_font_printf(d_image_t *image, d_font_t *fnt, d_point_t pt, byte *fmt,
 
     for(i = 0; i < len; i++) {
         d_image_blit(image, fnt->chars[(unsigned)p[i]-fnt->start], pt);
-        pt.x += fnt->desc.w+1;
+        pt.x += fnt->desc.w;
     }
     d_memory_delete(p);
     return;
@@ -151,7 +151,7 @@ word d_font_gettextwidth(d_font_t *fnt, byte *fmt, ...)
     void *args;
 
     args = fmt+sizeof(byte *);
-    return d_util_printflen(fmt, args)*(fnt->desc.w+1);
+    return d_util_printflen(fmt, args)*(fnt->desc.w);
 }
 
 bool d_font_convertdepth(d_font_t *fnt, byte bpp)

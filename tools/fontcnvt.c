@@ -1,7 +1,7 @@
 /* 
  * fontcnvt.c
  * Created: Fri Apr 13 23:14:18 2001 by tek@wiw.org
- * Revised: Sat Jun 23 04:15:58 2001 by tek@wiw.org
+ * Revised: Mon Jul 16 18:19:17 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -26,7 +26,7 @@ int main(int argc, char **argv)
     FILE *in, *out;
     char *outname = NULL, *inname = NULL;
     unsigned short w, h;
-    int i, j;
+    int i, j, c;
 
     w = 8;
     h = 8;
@@ -109,11 +109,13 @@ int main(int argc, char **argv)
     }
 
     while(!feof(in)) {
-        fputc(fgetc(in), out); /* not exactly the most efficient
-                                  implementation */
+        c = fgetc(in);
+        if(c != EOF)
+            fputc(c, out); /* not exactly the most efficient
+                              implementation */
     }
-    if((ftell(in)-1)/w != 256*h) {
-        fprintf(stderr, "Got %d instead of %d.\n", (ftell(in)-1)/w, 256*h);
+    if(ftell(in) != 256*h) {
+        fprintf(stderr, "Got %d instead of %d.\n", ftell(in), 256*h);
     }
 
     fclose(in);

@@ -1,7 +1,7 @@
 # 
 # Makefile.lib
 # Created: Mon Jan  8 07:18:08 2001 by tek@wiw.org
-# Revised: Fri Jul 13 03:08:15 2001 by tek@wiw.org
+# Revised: Sun Jul 15 02:03:35 2001 by tek@wiw.org
 # Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 # This program comes with ABSOLUTELY NO WARRANTY.
 # $Id$
@@ -55,7 +55,8 @@ SYSTEMMODS=memnul.o errornul.o filenul.o timenul.o \
 endif
 
 ### generic stuff
-GENERICMODS=errorsk.o set.o util.o fontgen.o samplgen.o wav.o s3mgen.o
+GENERICMODS=errorsk.o set.o util.o fontgen.o samplgen.o wav.o s3mgen.o \
+            spritgen.o tilegen.o mangrgen.o
 
 ### image related modules
 IMAGEMODS=colorgen.o imagegen.o tga.o pcx.o blitcom.o collicom.o

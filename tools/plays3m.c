@@ -1,7 +1,7 @@
 /* 
  * plays3m.c
  * Created: Wed Jun 27 08:55:21 2001 by tek@wiw.org
- * Revised: Fri Jul 13 03:19:06 2001 by tek@wiw.org
+ * Revised: Mon Jul 16 02:55:32 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -23,7 +23,7 @@ int main(int argc, char **argv)
     d_s3m_t *s3m;
     d_s3mhandle_t *sh;
 
-    mode.frequency = 22050;
+    mode.frequency = 44100;
     mode.bitspersample = 8;
     mode.nchannels = 1;
     mode.encoding = PCM;
@@ -45,8 +45,11 @@ int main(int argc, char **argv)
 
     sh = d_s3m_play(s3m);
     for(i = 0; ; i++) {
-        d_s3m_update(sh);
+        status = d_s3m_update(sh);
         d_audio_update();
+
+        if(status == true)
+            break;
     }
     d_s3m_stop(sh);
     

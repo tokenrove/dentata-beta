@@ -1,7 +1,7 @@
 # 
 # Makefile
 # Created: Mon Jan  8 07:00:27 2001 by tek@wiw.org
-# Revised: Fri Jul 13 03:07:38 2001 by tek@wiw.org
+# Revised: Mon Jul 16 04:06:53 2001 by tek@wiw.org
 # Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 # This program comes with ABSOLUTELY NO WARRANTY.
 # $Id$
@@ -33,7 +33,7 @@ LDFLAGS=$(LIBS)
 #   linux-svgalib
 #   linux-x11
 #   gba
-TARGET=unix-x11
+TARGET=linux-svgalib
 
 # Some of the things that can be tweaked below are:
 ###

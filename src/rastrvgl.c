@@ -1,7 +1,7 @@
 /* 
  * rastrvgl.c
  * Created: Sat Jan  8 23:52:54 2000 by tek@wiw.org
- * Revised: Sat Jun 23 04:11:25 2001 by tek@wiw.org
+ * Revised: Sun Jul 15 06:32:36 2001 by tek@wiw.org
  * Copyright 2000 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -38,7 +38,7 @@ bool d_raster_new(void)
     
     ret = vga_init();
     if(ret != 0) {
-        d_error_push("d_raster_new: vga_init failed.");
+        d_error_push(__FUNCTION__": vga_init failed.");
         return failure;
     }
     raster_vbuf = NULL;
@@ -58,7 +58,7 @@ bool d_raster_setmode(d_rasterdescription_t mode)
     int i, ret;
 
     if(mode.cspace == grayscale) {
-        d_error_push("d_raster_setmode: grayscale modes are not supported "
+        d_error_push(__FUNCTION__": grayscale modes are not supported "
                      "with this driver.");
         return failure;
     }
@@ -69,12 +69,11 @@ bool d_raster_setmode(d_rasterdescription_t mode)
         minf = vga_getmodeinfo(i);
         if(minf->width         == mode.w   &&
            minf->height        == mode.h   &&
-           minf->bytesperpixel == mode.bpp/8 &&
            minf->colors        == 1<<mode.bpp) {
             
             ret = vga_setmode(i);
             if(ret != 0) {
-                d_error_push("d_raster_setmode: vga_setmode failed.");
+                d_error_push(__FUNCTION__": vga_setmode failed.");
                 return failure;
             }
 
@@ -85,7 +84,7 @@ bool d_raster_setmode(d_rasterdescription_t mode)
 
             raster_vbuf = d_memory_new((mode.w*mode.h*mode.bpp+7)/8);
             if(raster_vbuf == NULL) {
-                d_error_push("d_raster_setmode: memory allocation failed for "
+                d_error_push(__FUNCTION__": memory allocation failed for "
                              "raster_vbuf.");
                 return failure;
             }
@@ -93,7 +92,7 @@ bool d_raster_setmode(d_rasterdescription_t mode)
             return success;
         }
     }
-    d_error_push("d_raster_setmode: no such mode available.");
+    d_error_push(__FUNCTION__": no such mode available.");
     return failure;
 }
 
@@ -167,8 +166,9 @@ void d_raster_setpalette(d_palette_t *p)
 {
     int i, pal[D_NCLUTITEMS*D_BYTESPERCOLOR];
 
-    for(i = 0; i < D_NCLUTITEMS; i++)
-        pal[i] = p->clut[i];
+    for(i = 0; i < D_NCLUTITEMS*D_BYTESPERCOLOR; i++) {
+        pal[i] = p->clut[i]>>2;
+    }
     vga_setpalvec(0, D_NCLUTITEMS, pal);
     return;
 }
@@ -178,8 +178,8 @@ void d_raster_getpalette(d_palette_t *p)
     int i, pal[D_NCLUTITEMS*D_BYTESPERCOLOR];
 
     vga_getpalvec(0, D_NCLUTITEMS, pal);
-    for(i = 0; i < D_NCLUTITEMS; i++)
-        p->clut[i] = pal[i];
+    for(i = 0; i < D_NCLUTITEMS*D_BYTESPERCOLOR; i++)
+        p->clut[i] = pal[i]<<2;
     return;
 }
 

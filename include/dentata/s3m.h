@@ -1,7 +1,7 @@
 /**
  * s3m.h
  * Created: Sun Jan 28 14:37:46 2001 by tek@wiw.org
- * Revised: Sun Jun 24 03:00:23 2001 by tek@wiw.org
+ * Revised: Mon Jul 16 02:54:39 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -110,8 +110,10 @@ extern void d_s3m_stop(d_s3mhandle_t *);
  * d_audio_update().
  *
  * Takes: sh - the handle which refers to this s3m.
+ *
+ * Returns: true if the song has completed playback, false otherwise.
  */
-extern void d_s3m_update(d_s3mhandle_t *);
+extern bool d_s3m_update(d_s3mhandle_t *);
 
 /**
  * d_s3m_pause(d_s3mhandle_t *sh)

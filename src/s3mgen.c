@@ -1,7 +1,7 @@
 /* 
  * s3mgen.c
  * Created: Sun Apr 15 16:06:01 2001 by tek@wiw.org
- * Revised: Fri Jul 13 05:48:45 2001 by tek@wiw.org
+ * Revised: Mon Jul 16 18:59:55 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -26,7 +26,7 @@ d_s3mhandle_t *d_s3m_play(d_s3m_t *s3m);
 void d_s3m_pause(d_s3mhandle_t *);
 void d_s3m_resume(d_s3mhandle_t *);
 void d_d3m_stop(d_s3mhandle_t *);
-void d_s3m_update(d_s3mhandle_t *);
+bool d_s3m_update(d_s3mhandle_t *);
 static bool readinstrument(d_file_t *fp, d_s3m_instrument_t *inst);
 static bool readpattern(d_file_t *fp, d_s3m_pattern_t *pat);
 
@@ -350,7 +350,7 @@ void d_s3m_stop(d_s3mhandle_t *p_)
     return;
 }
 
-void d_s3m_update(d_s3mhandle_t *pb_)
+bool d_s3m_update(d_s3mhandle_t *pb_)
 {
     s3mplayback_t *pb = (s3mplayback_t *)pb_;
     byte chan;
@@ -358,10 +358,13 @@ void d_s3m_update(d_s3mhandle_t *pb_)
     if(pb->magic != S3MMAGIC)
         d_error_fatal(__FUNCTION__": Internal magic doesn't match!");
 
+    if(pb->cursong->orders[pb->curorder] == 255)
+        return true;
+
     /* No point going ahead and messing up the playback if it's
      * too early */
     if(d_time_iscountfinished(pb->qh) != true)
-        return;
+        return false;
     d_time_endcount(pb->qh);
 
     pb->counter++;
@@ -372,7 +375,13 @@ void d_s3m_update(d_s3mhandle_t *pb_)
             pb->dobreak = false;
         }
 
-        /* FIXME, should sanity check order and row here */
+        /* FIXED [should sanity check order and row here] */
+        /* If we're at (or past) the end, loop to the beginning of the track */
+        if(pb->curorder >= pb->cursong->norders ||
+           pb->cursong->orders[pb->curorder] > pb->cursong->npatterns ||
+           pb->currow > S3M_NROWS) {
+            return true;
+        }
 
         for(chan = 0; chan < S3M_NCHANNELS; chan++)
             updatechannel(pb, chan);
@@ -388,21 +397,13 @@ void d_s3m_update(d_s3mhandle_t *pb_)
             pb->curorder++;
         }
         pb->counter = 0;
-
-        /* If we're at (or past) the end, loop to the beginning of the track */
-        if(pb->cursong->orders[pb->curorder] > pb->cursong->npatterns ||
-           pb->curorder >= pb->cursong->norders) {
-            pb->curorder = 0;
-            pb->tempo = pb->cursong->tempo;
-            pb->speed = pb->cursong->speed;
-        }
     } else {
         for(chan = 0; chan < S3M_NCHANNELS; chan++)
             updatechanneltick(pb, chan);
     }
 
     pb->qh = d_time_startcount(2*pb->tempo/5, false);
-    return;
+    return false;
 }
 
 void updatechannel(s3mplayback_t *pb, byte chan)
@@ -563,19 +564,23 @@ void updatechanneltick(s3mplayback_t *pb, byte chan)
         break;
 
     case 0x05:
+        /*
         if((p->operand[pb->currow][chan]>>4) <= 0xd) {
-            playatpitch(chan, pb->lastinst[chan],
-                        p->note[pb->currow][chan]-
-                        p->operand[pb->currow][chan]);
-        }
+            if(pb->lastinst[chan] != NULL)
+                playatpitch(chan, pb->lastinst[chan],
+                            p->note[pb->currow][chan]-
+                            p->operand[pb->currow][chan]);
+                            } */
         break;
 
     case 0x06:
+        /*
         if((p->operand[pb->currow][chan]>>4) <= 0xd) {
-            playatpitch(chan, pb->lastinst[chan],
-                        p->note[pb->currow][chan]+
-                        p->operand[pb->currow][chan]);
-        }
+            if(pb->lastinst[chan] != NULL)
+                playatpitch(chan, pb->lastinst[chan],
+                            p->note[pb->currow][chan]+
+                            p->operand[pb->currow][chan]);
+                            } */
         break;
 
     case 0x07:
