@@ -13,14 +13,11 @@ GENERATEDTESTS=./tests/test-image
 TESTS=./tests/test-set.sh
 PROFILES=
 
-check: $(TESTS) $(GENERATEDTESTS)
+check: $(TESTTOOLS) $(TESTS) $(GENERATEDTESTS)
 profile: $(PROFILES)
 
 $(TESTS) $(PROFILES): libdentata.a
 	./$@
-
-# dependencies for individual tests
-test-set.sh: test-set
 
 $(GENERATEDTESTS): %: %.o
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS) -ldentata
@@ -33,6 +30,6 @@ testsclean:
 	rm -f ./tests/*~ ./tests/*.o
 
 testsdistclean: testsclean
-	rm -f $(GENERATEDTESTS)
+	rm -f $(GENERATEDTESTS) $(TESTTOOLS)
 
 # EOF Makefile
