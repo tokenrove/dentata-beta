@@ -1,7 +1,7 @@
 /* 
  * error.h
  * Created: Mon Jan  8 04:22:57 2001 by tek@wiw.org
- * Revised: Mon Jan 29 12:10:47 2001 by tek@wiw.org
+ * Revised: Sun Feb 25 00:06:30 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$

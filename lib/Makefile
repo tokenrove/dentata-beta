@@ -1,7 +1,7 @@
 # 
 # Makefile
 # Created: Mon Jan  8 07:18:08 2001 by tek@wiw.org
-# Revised: Sat Feb 24 19:59:02 2001 by tek@wiw.org
+# Revised: Sat Feb 24 23:23:12 2001 by tek@wiw.org
 # Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 # This program comes with ABSOLUTELY NO WARRANTY.
 # $Id$
@@ -33,11 +33,15 @@ COLORMODS=color_rgb.o
 ### sprite
 SPRITEMODS=sprite.o
 
+### data structure modules
+DATASTRUCTMODS=set.o #seq.o
+
 ### libdentata
 
 VPATH=$(TOPDIR)/src
 CFLAGS=$(DENT_CFLAGS)
-MODULES=$(RASTERMODS) $(MEMORYMODS) $(ERRORMODS) $(COLORMODS) $(SPRITEMODS)
+MODULES=$(RASTERMODS) $(MEMORYMODS) $(ERRORMODS) $(COLORMODS) $(SPRITEMODS) \
+        $(DATASTRUCTMODS)
 
 libdentata.a: $(MODULES)
 	ar rcs libdentata.a $(MODULES)

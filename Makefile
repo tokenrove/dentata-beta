@@ -1,7 +1,7 @@
 # 
 # Makefile
 # Created: Mon Jan  8 07:00:27 2001 by tek@wiw.org
-# Revised: Sat Feb 24 19:58:12 2001 by tek@wiw.org
+# Revised: Sun Feb 25 00:23:21 2001 by tek@wiw.org
 # Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 # This program comes with ABSOLUTELY NO WARRANTY.
 # $Id$
@@ -21,7 +21,7 @@ TOPDIR=$(CURDIR)
 #  -DDEBUG        - see error_debug() messages
 #
 DEFINES=-DUSE_X86_ASM -DDEBUG
-DENT_CPPFLAGS=-I$(TOPDIR)/include $(DEFINES)
+DENT_CPPFLAGS=-I$(TOPDIR)/include -L$(TOPDIR)/lib $(DEFINES)
 DENT_CFLAGS=-Wall -pedantic -g $(DENT_CPPFLAGS)
 DIRS=lib tests docs demos
 
