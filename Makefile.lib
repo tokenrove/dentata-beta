@@ -1,7 +1,7 @@
 # 
 # Makefile.lib
 # Created: Mon Jan  8 07:18:08 2001 by tek@wiw.org
-# Revised: Sat May 19 12:37:30 2001 by tek@wiw.org
+# Revised: Sun Jun 17 02:20:30 2001 by tek@wiw.org
 # Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 # This program comes with ABSOLUTELY NO WARRANTY.
 # $Id$
@@ -59,14 +59,13 @@ MODULES=$(RASTERMODS) $(EVENTMODS) $(SYSTEMMODS) $(GENERICMODS) $(IMAGEMODS)
 
 libdentata.a: $(MODULES)
 	rm -f $@
-	ar rc $@ $(MODULES)
+	$(AR) rc $@ $(MODULES)
 	ranlib $@
 
 libclean:
-	rm -f $(CURDIR)/lib/*.o
-	rm -f *~ $(CURDIR)/src/*~ $(CURDIR)/include/dentata/*~
+	rm -f *.o
 
-librealclean: libclean
+libdistclean: libclean
 	rm -f libdentata.a
 
 # EOF Makefile.lib

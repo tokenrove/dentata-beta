@@ -1,14 +1,12 @@
 # 
 # Makefile
 # Created: Mon Jan  8 07:00:27 2001 by tek@wiw.org
-# Revised: Sun May  6 06:27:02 2001 by tek@wiw.org
+# Revised: Sun Jun 17 02:25:37 2001 by tek@wiw.org
 # Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 # This program comes with ABSOLUTELY NO WARRANTY.
 # $Id$
 # 
 #
-
-TOPDIR=$(CURDIR)
 
 ###
 # Defines:
@@ -17,7 +15,7 @@ TOPDIR=$(CURDIR)
 #  -DSIXTYFOURBIT - word size is 64-bits
 #
 DEFINES=-DTHIRTYTWOBIT -DDEBUG
-CPPFLAGS=-I$(TOPDIR)/include -L$(TOPDIR)/lib $(DEFINES)
+CPPFLAGS=-I$(CURDIR)/include -L$(CURDIR) $(DEFINES)
 CFLAGS=-Wall -pedantic -g -O6 $(CPPFLAGS)
 LDFLAGS=$(LIBS)
 # Comment this out if you aren't using the x86 specific code. (see
@@ -62,19 +60,25 @@ CPPFLAGS:=$(CPPFLAGS) -I/usr/X11R6/include
 
 ### End of user configurable section ###
 
+SHELL=/bin/sh
+.SUFFIXES=.c .o
 
-VPATH=$(CURDIR)/src $(CURDIR)/include $(CURDIR)/tools $(CURDIR)/tests
+VPATH=./src ./include ./tools ./tests
+.PHONY: default all clean distclean check profile tools docs \
+        libclean libdistclean toolsclean toolsdistclean testsclean \
+        testsdistclean docsclean docsdistclean
 
 include Makefile.lib Makefile.tools Makefile.tests Makefile.docs
 
 default: all
 
-.PHONY: default all clean realclean tests profile tools docs
+all: libdentata.a tools docs check
 
-all: libdentata.a tools docs tests
+TAGS:
+	etags ./src/*.c ./include/dentata/*.h
 
 clean: libclean toolsclean testsclean docsclean
 
-realclean: librealclean
+distclean: libdistclean toolsdistclean testsdistclean docsdistclean
 
 # EOF Makefile
