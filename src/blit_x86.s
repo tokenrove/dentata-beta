@@ -293,21 +293,13 @@ _blit162:
 	jmp .endpel
 
 .case1:	lodsw
-	bswap eax
-	shr eax, 16
 	mov edx, eax
 	movzx ecx, word [edi]
-	bswap ecx
-	shr ecx, 16
 	jmp .docombine
 
 .case2:	lodsw
-	bswap eax
-	shr eax, 16
 	mov ecx, eax
 	movzx edx, word [edi]
-	bswap edx
-	shr edx, 16
 	mov eax, edx
 
 .docombine:	
