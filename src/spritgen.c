@@ -1,7 +1,7 @@
 /* 
  * spritgen.c
  * Created: Sat Jul 14 22:29:09 2001 by tek@wiw.org
- * Revised: Sun Jul 15 04:58:12 2001 by tek@wiw.org
+ * Revised: Thu Jul 19 18:52:02 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -64,6 +64,9 @@ d_sprite_t *d_sprite_new(void)
     p->curanim = 0;
     p->curframe = 0;
     p->framelag = 1;
+    p->nanims = 0;
+    p->frames = NULL;
+    p->nframes = NULL;
 
     return (d_sprite_t *)p;
 }
@@ -82,6 +85,8 @@ void d_sprite_delete(d_sprite_t *p_)
         d_memory_delete(p->frames[i]);
         p->frames[i] = NULL;
     }
+    d_memory_delete(p->nframes);
+    p->nframes = NULL;
     d_memory_delete(p->frames);
     p->frames = NULL;
     p->magic = DEADMAGIC;
@@ -136,7 +141,9 @@ int d_sprite_addanim(d_sprite_t *p_)
 
     p->nanims++;
     p->nframes = d_memory_resize(p->nframes, p->nanims*sizeof(word));
+    p->nframes[p->nanims-1] = 0;
     p->frames = d_memory_resize(p->frames, p->nanims*sizeof(d_image_t **));
+    p->frames[p->nanims-1] = NULL;
     return p->nanims-1;
 }
 
