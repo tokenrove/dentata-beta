@@ -9,7 +9,7 @@
  * Module: font
  *
  * Include dentata/types.h, dentata/color.h, and dentata/image.h
- * before this file.
+ * before dentata/font.h.
  */
 
 #ifndef DENTATA_FONT_H

@@ -8,7 +8,7 @@
  *
  * Module: util
  *
- * Include dentata/types.h and dentata/random.h before this file.
+ * Include dentata/types.h and dentata/random.h before dentata/util.h.
  */
 
 #ifndef DENTATA_UTIL_H

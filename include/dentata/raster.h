@@ -13,7 +13,7 @@
  * systems, and support for setting window titles and other such
  * stuff.
  *
- * Include dentata/types.h before this file.
+ * Include dentata/types.h before dentata/raster.h.
  */
 
 #include <dentata/types.h>

@@ -12,7 +12,7 @@
  * processing features such as format conversion, effects, and
  * filters.
  *
- * Include dentata/types.h before this file.
+ * Include dentata/types.h before dentata/sample.h.
  */
 
 #ifndef DENTATA_SAMPLE_H

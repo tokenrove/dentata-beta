@@ -8,7 +8,7 @@
  *
  * Module: time
  *
- * Include dentata/types.h before this file.
+ * Include dentata/types.h before dentata/time.h.
  */
 
 #ifndef DENTATA_TIME_H

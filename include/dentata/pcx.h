@@ -8,7 +8,7 @@
  *
  * Module: pcx
  *
- * Include dentata/image.h before this file.
+ * Include dentata/image.h before dentata/pcx.h.
  */
 
 #ifndef DENTATA_PCX_H

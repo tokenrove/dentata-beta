@@ -20,7 +20,7 @@
  * of functions providing scaling and cropping, among other
  * things.
  *
- * Include dentata/types.h before this file.
+ * Include dentata/types.h before dentata/image.h.
  */
 
 #ifndef DENTATA_IMAGE_H

@@ -8,7 +8,7 @@
  *
  * Module: random
  *
- * Include dentata/types.h before this file.
+ * Include dentata/types.h before dentata/random.h.
  */
 
 #ifndef DENTATA_RANDOM_H

@@ -8,7 +8,7 @@
  *
  * Module: tga
  *
- * Include dentata/image.h before this file.
+ * Include dentata/image.h before dentata/tga.h.
  */
 
 #ifndef DENTATA_TGA_H

@@ -8,7 +8,7 @@
  *
  * Module: wav
  *
- * Include dentata/sample.h before this file.
+ * Include dentata/sample.h before dentata/wav.h.
  */
 
 #ifndef DENTATA_WAV_H

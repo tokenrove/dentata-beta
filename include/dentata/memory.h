@@ -8,7 +8,7 @@
  *
  * Module: memory
  *
- * Include dentata/types.h before this file.
+ * Include dentata/types.h before dentata/memory.h.
  */
 
 #ifndef DENTATA_MEMORY_H

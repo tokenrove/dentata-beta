@@ -15,7 +15,7 @@
  * functions can be called every time a specific musical event
  * occurs.
  *
- * Include dentata/types.h and dentata/sample.h before this file.
+ * Include dentata/types.h and dentata/sample.h before dentata/s3m.h.
  */
 
 #ifndef DENTATA_S3M_H

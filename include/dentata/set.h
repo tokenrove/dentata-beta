@@ -8,7 +8,7 @@
  *
  * Module: set
  *
- * Include dentata/types.h before this file.
+ * Include dentata/types.h before dentata/set.h.
  */
 
 #ifndef DENTATA_SET_H
