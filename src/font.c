@@ -1,7 +1,7 @@
 /* 
  * font.c
  * Created: Fri Apr 13 20:38:07 2001 by tek@wiw.org
- * Revised: Sun Jun 17 20:57:11 2001 by tek@wiw.org
+ * Revised: Sun Jun 17 23:26:36 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -18,6 +18,7 @@
 #include <dentata/util.h>
 
 d_font_t *d_font_load(char *);
+d_font_t *d_font_dup(d_font_t *);
 void d_font_printf(d_image_t *, d_font_t *, d_point_t, byte *, ...);
 word d_font_gettextwidth(d_font_t *, byte *, ...);
 void d_font_delete(d_font_t *);
@@ -58,6 +59,25 @@ d_font_t *d_font_load(char *filename)
 
     d_file_close(fp);
     return fnt;
+}
+
+d_font_t *d_font_dup(d_font_t *fnt)
+{
+    d_font_t *fnt2;
+    int i;
+
+    fnt2 = d_memory_new(sizeof(d_font_t));
+    if(fnt2 == NULL) return NULL;
+
+    fnt2->desc = fnt->desc;
+    fnt2->start = fnt->start;
+    fnt2->nchars = fnt->nchars;
+    fnt2->chars = d_memory_new(sizeof(d_image_t *)*fnt2->nchars);
+    if(fnt2->chars == NULL) return NULL;
+    for(i = 0; i < fnt2->nchars; i++)
+        fnt2->chars[i] = d_image_dup(fnt->chars[i]);
+
+    return fnt2;
 }
 
 bool loadv0font(d_file_t *fp, d_font_t *fnt)

@@ -82,10 +82,10 @@ all: libdentata.a tools docs check install
 install: libdentata.a installlib installheaders
 
 installlib: libdentata.a
-	install libdentata.a $(INSTALLLIB)
+	install -m 644 libdentata.a $(INSTALLLIB)
 
 installheaders: $(INSTALLHEADERS)/dentata
-	install ./include/dentata/*.h $(INSTALLHEADERS)/dentata
+	install -m 644 ./include/dentata/*.h $(INSTALLHEADERS)/dentata
 
 $(INSTALLHEADERS)/dentata:
 	mkdir $(INSTALLHEADERS)/dentata
