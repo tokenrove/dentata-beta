@@ -1,7 +1,7 @@
 /* 
  * file_stdlib.c
  * Created: Sun Feb 25 03:46:39 2001 by tek@wiw.org
- * Revised: Sun Apr 15 17:11:27 2001 by tek@wiw.org
+ * Revised: Thu Apr 19 04:24:37 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -9,6 +9,7 @@
  * Standard C library version of dentata gen beta's file module
  */
 
+#include <dentata/types.h>
 #include <dentata/file.h>
 #include <dentata/memory.h>
 

@@ -1,20 +1,19 @@
 /* 
  * sprite.h
  * Created: Thu Jan 25 11:03:32 2001 by tek@wiw.org
- * Revised: Mon Jan 29 12:15:15 2001 by tek@wiw.org
+ * Revised: Thu Apr 19 04:32:58 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
  *
  * Dentata gen Beta
  * Sprite module
+ *
+ * Include dentata/anim.h and dentata/types.h before this file.
  */
 
 #ifndef DENTATA_SPRITE_H
 #define DENTATA_SPRITE_H
-
-#include <dentata/anim.h>
-#include <dentata/primitives.h>
 
 typedef struct d_sprite_s {
     word nanims, curanim;

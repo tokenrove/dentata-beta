@@ -1,20 +1,19 @@
 /* 
  * color.h
  * Created: Wed Jan 24 11:19:41 2001 by tek@wiw.org
- * Revised: Sun Feb 25 04:58:48 2001 by tek@wiw.org
+ * Revised: Thu Apr 19 04:15:59 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
  *
  * Dentata gen Beta
  * Colorspace module
+ *
+ * Include dentata/types.h and dentata/image.h before this file.
  */
 
 #ifndef DENTATA_COLOR_H
 #define DENTATA_COLOR_H
-
-#include <dentata/types.h>
-#include <dentata/image.h>
 
 /**
  * d_color_fromrgb(d_image_t *p, byte r, byte g, byte b)

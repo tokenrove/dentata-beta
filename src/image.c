@@ -1,7 +1,7 @@
 /* 
  * image.c
  * Created: Sun Feb 25 01:57:37 2001 by tek@wiw.org
- * Revised: Sat Apr 14 16:45:50 2001 by tek@wiw.org
+ * Revised: Thu Apr 19 04:34:34 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -9,10 +9,11 @@
  * Dentata gen Beta image module
  */
 
+#include <dentata/types.h>
 #include <dentata/image.h>
+#include <dentata/color.h>
 #include <dentata/memory.h>
 #include <dentata/error.h>
-#include <dentata/primitives.h>
 
 d_image_t *d_image_new(d_rasterdescription_t desc);
 void d_image_delete(d_image_t *p);

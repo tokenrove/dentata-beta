@@ -12,6 +12,7 @@
  * greater than two or so.
  */
 
+#include <dentata/types.h>
 #include <dentata/set.h>
 #include <dentata/memory.h>
 #include <dentata/error.h>

@@ -1,13 +1,14 @@
 /* 
  * time_unix.c
  * Created: Wed Apr  4 21:47:19 2001 by tek@wiw.org
- * Revised: Sun Apr 15 18:35:25 2001 by tek@wiw.org
+ * Revised: Thu Apr 19 04:24:54 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
  * 
  */
 
+#include <dentata/types.h>
 #include <dentata/time.h>
 #include <dentata/memory.h>
 

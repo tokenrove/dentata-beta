@@ -1,7 +1,7 @@
 /* 
  * blit_common.c
  * Created: Mon Jan 29 13:42:41 2001 by tek@wiw.org
- * Revised: Fri Apr 13 23:05:42 2001 by tek@wiw.org
+ * Revised: Tue Apr 17 22:27:05 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -9,6 +9,7 @@
  */
 
 #include <dentata/types.h>
+#include <dentata/image.h>
 #include <dentata/blit.h>
 #include <dentata/error.h>
 
@@ -31,16 +32,20 @@ extern void _blit168(byte *, byte *, byte *, byte *, dword, dword, dword,
                      dword, dword, dword);
 extern void _blit240(byte *, byte *, byte *, byte *, dword, dword, dword,
                      dword, dword, dword);
+extern void _blit241(byte *, byte *, byte *, byte *, dword, dword, dword,
+                     dword, dword, dword);
+extern void _blit242(byte *, byte *, byte *, byte *, dword, dword, dword,
+                     dword, dword, dword);
+extern void _blit244(byte *, byte *, byte *, byte *, dword, dword, dword,
+                     dword, dword, dword);
+extern void _blit248(byte *, byte *, byte *, byte *, dword, dword, dword,
+                     dword, dword, dword);
 
 static blitfunction_t blits[4][5] = {
-    /* 8 bpp */ { _blit80, _blit81, 0, 0, 0 },
+    /* 8 bpp */ { _blit80, _blit81, _blit80, _blit80, _blit80 },
     /* 15 bpp */ { 0, 0, 0, 0, 0 },
     /* 16 bpp */ { _blit160, _blit161, _blit162, _blit164, _blit168 },
-    /* 24 bpp */ { _blit240, 0, 0, 0, 0 }
-//    /*  8 bpp */ { _blit80,  _blit81,  _blit82,  _blit84,  _blit88 },
-//    /* 15 bpp */ { _blit150, _blit151, _blit152, _blit154, _blit158 },
-//    /* 16 bpp */ { _blit160, _blit161, _blit162, _blit164, _blit168 },
-//    /* 24 bpp */ { _blit240, _blit241, _blit242, _blit244, _blit248 }
+    /* 24 bpp */ { _blit240, _blit241, _blit242, _blit244, _blit248 }
 };
 
 void d_blit(d_image_t *, d_image_t *, d_point_t);

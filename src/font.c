@@ -8,12 +8,13 @@
  * 
  */
 
+#include <dentata/types.h>
+#include <dentata/image.h>
 #include <dentata/font.h>
 #include <dentata/file.h>
 #include <dentata/memory.h>
 #include <dentata/error.h>
 #include <dentata/blit.h>
-#include <dentata/image.h>
 
 d_font_t *d_font_load(char *);
 void d_font_printf(d_image_t *, d_font_t *, d_point_t, byte *, ...);

@@ -8,8 +8,9 @@
  * 
  */
 
-#include <dentata/pcx.h>
+#include <dentata/types.h>
 #include <dentata/image.h>
+#include <dentata/pcx.h>
 #include <dentata/memory.h>
 #include <dentata/file.h>
 #include <dentata/error.h>

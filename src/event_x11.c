@@ -1,7 +1,7 @@
 /* 
  * event_x11.c
  * Created: Sun Feb 25 01:04:11 2001 by tek@wiw.org
- * Revised: Thu Apr 12 03:42:19 2001 by tek@wiw.org
+ * Revised: Thu Apr 19 04:23:59 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -9,6 +9,7 @@
  * X11 implementation of the event module.
  */
 
+#include <dentata/types.h>
 #include <dentata/event.h>
 #include <dentata/set.h>
 #include <dentata/memory.h>

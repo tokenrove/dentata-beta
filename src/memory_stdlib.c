@@ -1,7 +1,7 @@
 /* 
  * stdlib.c
  * Created: Mon Jan  8 04:19:39 2001 by tek@wiw.org
- * Revised: Sun Feb 25 02:53:30 2001 by tek@wiw.org
+ * Revised: Thu Apr 19 04:24:22 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -10,7 +10,9 @@
  * Memory module, stdlib wrapper version
  */
 
+#include <dentata/types.h>
 #include <dentata/memory.h>
+
 #include <stdlib.h>
 #include <string.h>
 

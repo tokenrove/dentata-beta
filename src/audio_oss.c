@@ -1,13 +1,15 @@
 /* 
  * audio_oss.c
  * Created: Sat Apr 14 23:22:27 2001 by tek@wiw.org
- * Revised: Mon Apr 16 01:09:23 2001 by tek@wiw.org
+ * Revised: Thu Apr 19 04:25:14 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
  * 
  */
 
+#include <dentata/types.h>
+#include <dentata/sample.h>
 #include <dentata/audio.h>
 #include <dentata/error.h>
 #include <dentata/memory.h>

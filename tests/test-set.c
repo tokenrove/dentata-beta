@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <dentata/types.h>
 #include <dentata/set.h>
 #include <dentata/error.h>
 

@@ -1,17 +1,16 @@
 /* 
  * file.h
  * Created: Mon Feb  5 15:51:30 2001 by tek@wiw.org
- * Revised: Sun Apr 15 17:10:54 2001 by tek@wiw.org
+ * Revised: Thu Apr 19 04:16:43 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
- * 
+ *
+ * Include dentata/types.h before this file.
  */
 
 #ifndef DENTATA_FILE_H
 #define DENTATA_FILE_H
-
-#include <dentata/types.h>
 
 typedef void d_file_t;
 typedef enum { current = 0, beginning = 1, end = 2 } d_fileseekrel_t;

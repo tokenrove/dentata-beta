@@ -8,13 +8,13 @@
  * 
  */
 
+#include <dentata/types.h>
+#include <dentata/image.h>
 #include <dentata/blit.h>
 #include <dentata/raster.h>
 #include <dentata/event.h>
-#include <dentata/image.h>
 #include <dentata/error.h>
 #include <dentata/color.h>
-#include <dentata/primitives.h>
 #include <dentata/memory.h>
 #include <dentata/tga.h>
 #include <dentata/time.h>

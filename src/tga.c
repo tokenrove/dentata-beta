@@ -1,7 +1,7 @@
 /* 
  * tga.c
  * Created: Sun Feb 25 02:56:14 2001 by tek@wiw.org
- * Revised: Sat Apr 14 16:43:08 2001 by tek@wiw.org
+ * Revised: Thu Apr 19 04:36:34 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -9,6 +9,7 @@
  */
 
 #include <dentata/types.h>
+#include <dentata/image.h>
 #include <dentata/tga.h>
 #include <dentata/file.h>
 #include <dentata/error.h>

@@ -8,15 +8,15 @@
  * 
  */
 
+#include <dentata/types.h>
 #include <dentata/error.h>
 #include <dentata/file.h>
 #include <dentata/memory.h>
-#include <dentata/pcx.h>
-#include <dentata/pnm.h>
+#include <dentata/image.h>
+#include <dentata/anim.h>
 #include <dentata/sprite.h>
+#include <dentata/pcx.h>
 #include <dentata/tga.h>
-#include <dentata/types.h>
-
 
 d_sprite_t *d_sprite_new(void);
 d_sprite_t *d_sprite_dup(d_sprite_t *);
@@ -100,8 +100,9 @@ d_sprite_t *d_sprite_loadfromspr(char *filename)
 
             switch(k) {
             case 0:
-                d_anim_addframe(p->anim[i], d_pnm_load(s));
-                break;
+                d_error_push("d_sprite_loadfromspr: pnm is no longer "
+                             "supported.");
+                return NULL;
             case 1:
                 d_anim_addframe(p->anim[i], d_pcx_load(s));
                 break;

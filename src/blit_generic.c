@@ -1,14 +1,13 @@
 /* 
  * blit_generic.c
  * Created: Mon Jan 29 13:42:41 2001 by tek@wiw.org
- * Revised: Fri Apr 13 03:47:47 2001 by tek@wiw.org
+ * Revised: Tue Apr 17 23:34:38 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
  * 
  */
 
-#include <dentata/blit.h>
 #include <dentata/types.h>
 #include <dentata/memory.h>
 
@@ -324,7 +323,6 @@ void _blit240(byte *ddat, byte *dalp, byte *sdat, byte *salp, dword doffs,
               dword sscanoff)
 {
     register dword i;
-    register byte j;
     byte *end;
 
     end = ddat+endoffs*3;
@@ -339,6 +337,201 @@ void _blit240(byte *ddat, byte *dalp, byte *sdat, byte *salp, dword doffs,
         }
         ddat += dscanoff*3;
         sdat += sscanoff*3;
+    } while(ddat < end);
+    return;
+}
+
+void _blit241(byte *ddat, byte *dalp, byte *sdat, byte *salp, dword doffs,
+              dword dscanoff, dword scanlen, dword endoffs, dword soffs,
+              dword sscanoff)
+{
+    register dword i;
+    register byte j;
+    byte *end;
+
+    end = ddat+endoffs*3;
+    ddat += doffs*3;
+    sdat += soffs*3;
+
+    j = soffs%8;
+    salp += soffs/8;
+
+    do {
+        for(i = scanlen; i > 0; i--) {
+            if((*salp)&(1<<j)) {
+                *(ddat++) = *(sdat++);
+                *(ddat++) = *(sdat++);
+                *(ddat++) = *(sdat++);
+            } else {
+                ddat += 3;
+                sdat += 3;
+            }
+            j++;
+            if(j == 8) {
+                j = 0;
+                salp++;
+            }
+        }
+        ddat += dscanoff*3;
+        sdat += sscanoff*3;
+        salp += sscanoff/8;
+        j += sscanoff%8;
+        if(j > 7) {
+            salp++;
+            j %= 8;
+        }
+    } while(ddat < end);
+    return;
+}
+
+void _blit242(byte *ddat, byte *dalp, byte *sdat, byte *salp, dword doffs,
+              dword dscanoff, dword scanlen, dword endoffs, dword soffs,
+              dword sscanoff)
+{
+    register dword i;
+    register byte j;
+    register word k;
+    byte *end;
+    byte masktable[4] = { 3, 15, 63, 255 };
+
+    end = ddat+endoffs*3;
+    ddat += doffs*3;
+    sdat += soffs*3;
+
+    j = soffs%4;
+    salp += soffs/4;
+
+    do {
+        for(i = scanlen; i > 0; i--) {
+            switch(((*salp)&masktable[j])>>(2*j)) {
+            case 0:
+                ddat += 3;
+                sdat += 3;
+                break;
+
+            case 1:
+                k = *(sdat++)/3;
+                k += *ddat*2/3;
+                *(ddat++) = k;
+                k = *(sdat++)/3;
+                k += *ddat*2/3;
+                *(ddat++) = k;
+                k = *(sdat++)/3;
+                k += *ddat*2/3;
+                *(ddat++) = k;
+                break;
+
+            case 2:
+                k = *(sdat++)*2/3;
+                k += *ddat/3;
+                *(ddat++) = k;
+                k = *(sdat++)*2/3;
+                k += *ddat/3;
+                *(ddat++) = k;
+                k = *(sdat++)*2/3;
+                k += *ddat/3;
+                *(ddat++) = k;
+                break;
+
+            case 3:
+                *(ddat++) = *(sdat++);
+                *(ddat++) = *(sdat++);
+                *(ddat++) = *(sdat++);
+                break;
+            }
+            j++;
+            if(j == 4) {
+                j = 0;
+                salp++;
+            }
+        }
+        ddat += dscanoff*3;
+        sdat += sscanoff*3;
+        salp += sscanoff/4;
+        j += sscanoff%4;
+        if(j > 3) {
+            salp++;
+            j %= 4;
+        }
+    } while(ddat < end);
+    return;
+}
+
+void _blit244(byte *ddat, byte *dalp, byte *sdat, byte *salp, dword doffs,
+              dword dscanoff, dword scanlen, dword endoffs, dword soffs,
+              dword sscanoff)
+{
+    register int i;
+    register word j;
+    register byte l, a;
+    byte *end;
+
+    end = ddat+endoffs*3;
+    ddat += doffs*3;
+    sdat += soffs*3;
+    salp += soffs/2;
+    l = soffs%2;
+
+    do {
+        for(i = scanlen; i > 0; i--) {
+            if(l == 0)
+                a = (*salp)&0x0f;
+            else
+                a = (*(salp++))>>4;
+
+            j = *(sdat++)*a/15;
+            j += *ddat*(15-a)/15;
+            *(ddat++) = j;
+            j = *(sdat++)*a/15;
+            j += *ddat*(15-a)/15;
+            *(ddat++) = j;
+            j = *(sdat++)*a/15;
+            j += *ddat*(15-a)/15;
+            *(ddat++) = j;
+
+            l = (l+1)%2;
+        }
+        ddat += dscanoff*3;
+        sdat += sscanoff*3;
+        salp += sscanoff/2;
+        l += sscanoff%2;
+        if(l > 1) {
+            l = 0;
+            salp++;
+        }
+    } while(ddat < end);
+    return;
+}
+
+void _blit248(byte *ddat, byte *dalp, byte *sdat, byte *salp, dword doffs,
+              dword dscanoff, dword scanlen, dword endoffs, dword soffs,
+              dword sscanoff)
+{
+    register int i;
+    register word j;
+    byte *end;
+
+    end = ddat+endoffs*3;
+    ddat += doffs*3;
+    sdat += soffs*3;
+    salp += soffs;
+
+    do {
+        for(i = scanlen; i > 0; i--) {
+            j = *(sdat++)*(*salp)/255;
+            j += *ddat*(255-(*salp))/255;
+            *(ddat++) = j;
+            j = *(sdat++)*(*salp)/255;
+            j += *ddat*(255-(*salp))/255;
+            *(ddat++) = j;
+            j = *(sdat++)*(*salp)/255;
+            j += *ddat*(255-(*salp))/255;
+            *(ddat++) = j;
+            salp++;
+        }
+        ddat += dscanoff*3;
+        sdat += sscanoff*3;
+        salp += sscanoff;
     } while(ddat < end);
     return;
 }

@@ -1,7 +1,7 @@
 # 
 # Makefile
 # Created: Mon Jan  8 07:00:27 2001 by tek@wiw.org
-# Revised: Thu Apr 12 05:57:42 2001 by tek@wiw.org
+# Revised: Thu Apr 19 04:03:20 2001 by tek@wiw.org
 # Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 # This program comes with ABSOLUTELY NO WARRANTY.
 # $Id$
@@ -9,7 +9,6 @@
 #
 
 .EXPORT_ALL_VARIABLES:
-
 TOPDIR=$(CURDIR)
 #
 # Defines:
@@ -19,12 +18,13 @@ TOPDIR=$(CURDIR)
 #  -DUSE_SH_ASM   - use SuperH asm
 #
 #  -DDEBUG        - see error_debug() messages
+#  -DTHIRTYTWOBIT - word size is 32-bits
+#  -DSIXTYFOURBIT - word size is 64-bits
 #
-DEFINES=-DUSE_X86_ASM -DDEBUG
+DEFINES=-DTHIRTYTWOBIT -DDEBUG
 DENT_CPPFLAGS=-I$(TOPDIR)/include -L$(TOPDIR)/lib $(DEFINES)
 DENT_CFLAGS=-Wall -pedantic -g -O6 $(DENT_CPPFLAGS)
 DENT_LDFLAGS=$(LIBS)
-DIRS=lib tests docs demos tools
 
 ### Targets
 # X11
@@ -36,6 +36,8 @@ LIBS=-L/usr/X11R6/lib -lXext -lX11
 # null
 #TARGET=null
 #LIBS=-lefence
+
+DIRS=lib tests docs demos tools
 
 default: all
 

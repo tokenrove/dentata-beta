@@ -1,13 +1,15 @@
 /* 
  * raster.h
  * Created: Sat Jan  8 23:40:41 2000 by tek@wiw.org
- * Revised: Sat Apr  7 22:46:35 2001 by tek@wiw.org
+ * Revised: Thu Apr 19 04:20:00 2001 by tek@wiw.org
  * Copyright 2000 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
  *
  * Dentata generation Beta
  * Raster module
+ *
+ * Include dentata/types.h before this file.
  */
 
 #include <dentata/types.h>

@@ -1,20 +1,19 @@
 /* 
  * audio.h
  * Created: Thu Jan 25 12:09:37 2001 by tek@wiw.org
- * Revised: Sun Apr 15 18:20:00 2001 by tek@wiw.org
+ * Revised: Thu Apr 19 04:13:14 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
  *
  * Dentata gen Beta
  * Base audio module
+ *
+ * Include dentata/types.h and dentata/sample.h before this file.
  */
 
 #ifndef DENTATA_AUDIO_H
 #define DENTATA_AUDIO_H
-
-#include <dentata/types.h>
-#include <dentata/sample.h>
 
 typedef struct d_channelprops_s {
     byte volume;

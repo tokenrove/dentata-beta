@@ -1,7 +1,7 @@
 /* 
  * types.h
  * Created: Sat Jan  8 23:25:47 2000 by tek@wiw.org
- * Revised: Sun Feb 25 05:04:35 2001 by tek@wiw.org
+ * Revised: Thu Apr 19 04:31:17 2001 by tek@wiw.org
  * Copyright 2000 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -14,9 +14,21 @@
 #define DENTATA_TYPES_H
 
 /* Basic types */
+#if defined(THIRTYTWOBIT)
 typedef unsigned char  byte;
 typedef unsigned short word;
 typedef unsigned long  dword;
+typedef signed   short sword;
+typedef signed   long  sdword;
+#elif defined(SIXTYFOURBIT)
+typedef unsigned char  byte;
+typedef unsigned short word;
+typedef unsigned int   dword;
+typedef signed   short sword;
+typedef signed   int   sdword;
+#else
+#error No word size defined!
+#endif
 
 typedef enum { false=0, failure=false,
                true=1,  success=true } bool;
@@ -56,6 +68,16 @@ typedef struct d_audiomode_s {
     byte nchannels;
     d_audioencoding_t encoding;
 } d_audiomode_t;
+
+/* Geometric primitives */
+typedef struct d_point_s {
+    int x, y;
+} d_point_t;
+
+typedef struct d_rect_s {
+    d_point_t offset;
+    word w, h;
+} d_rect_t;
 
 #endif
 

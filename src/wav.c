@@ -8,6 +8,7 @@
  * 
  */
 
+#include <dentata/types.h>
 #include <dentata/sample.h>
 #include <dentata/wav.h>
 #include <dentata/file.h>

@@ -8,9 +8,10 @@
  * 
  */
 
+#include <dentata/types.h>
+#include <dentata/sample.h>
 #include <dentata/audio.h>
 #include <dentata/s3m.h>
-#include <dentata/sample.h>
 #include <dentata/file.h>
 #include <dentata/memory.h>
 #include <dentata/error.h>

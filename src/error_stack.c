@@ -10,6 +10,7 @@
  * Error module - system independant error stack
  */
 
+#include <dentata/types.h>
 #include <dentata/error.h>
 
 #define ERRSTACK_DEPTH 25

@@ -1,20 +1,19 @@
 /* 
  * image.h
  * Created: Tue Jan  9 05:11:42 2001 by tek@wiw.org
- * Revised: Fri Apr 13 16:17:04 2001 by tek@wiw.org
+ * Revised: Thu Apr 19 04:32:47 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
  *
  * Dentata generation Beta
  * Image module
+ *
+ * Include dentata/types.h before this file.
  */
 
 #ifndef DENTATA_IMAGE_H
 #define DENTATA_IMAGE_H
-
-#include <dentata/primitives.h>
-#include <dentata/types.h>
 
 typedef struct d_image_s {
     byte *data, *alpha;

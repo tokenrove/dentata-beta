@@ -1,13 +1,15 @@
 /* 
  * rgb.c
  * Created: Wed Jan 31 13:08:59 2001 by tek@wiw.org
- * Revised: Sun Feb 25 05:05:15 2001 by tek@wiw.org
+ * Revised: Thu Apr 19 04:26:00 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
  * 
  */
 
+#include <dentata/types.h>
+#include <dentata/image.h>
 #include <dentata/color.h>
 #include <dentata/error.h>
 

@@ -1,19 +1,19 @@
 /* 
  * anim.h
  * Created: Mon Jan 29 00:22:31 2001 by tek@wiw.org
- * Revised: Mon Jan 29 12:08:24 2001 by tek@wiw.org
+ * Revised: Thu Apr 19 04:12:44 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
  *
  * Dentata gen Beta
  * Animation module
+ *
+ * Include dentata/image.h before this file.
  */
 
 #ifndef DENTATA_ANIM_H
 #define DENTATA_ANIM_H
-
-#include <dentata/image.h>
 
 typedef struct d_anim_s {
     word nframes, curframe;
