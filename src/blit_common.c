@@ -1,7 +1,7 @@
 /* 
  * blit_common.c
  * Created: Mon Jan 29 13:42:41 2001 by tek@wiw.org
- * Revised: Fri May  4 11:35:56 2001 by tek@wiw.org
+ * Revised: Sat May  5 16:34:27 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -81,7 +81,7 @@ void d_image_blit(d_image_t *d, d_image_t *s, d_point_t p)
         i = 3;
         break;
     default:
-        d_error_fatal("d_blit: Unsupported bpp.");
+        d_error_fatal("d_image_blit: Unsupported bpp.");
         return;
     }
 
@@ -102,7 +102,7 @@ void d_image_blit(d_image_t *d, d_image_t *s, d_point_t p)
         j = 4;
         break;
     default:
-        d_error_fatal("d_blit: Unsupported bpp.");
+        d_error_fatal("d_image_blit: Unsupported alpha.");
         break;
     }
 

@@ -1,7 +1,7 @@
 # 
 # Makefile
 # Created: Mon Jan  8 07:18:08 2001 by tek@wiw.org
-# Revised: Tue May  1 06:14:16 2001 by tek@wiw.org
+# Revised: Sat May 19 12:37:30 2001 by tek@wiw.org
 # Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 # This program comes with ABSOLUTELY NO WARRANTY.
 # $Id$
@@ -23,14 +23,17 @@ endif
 
 ### system dependant stuff
 SYSTEMMODS=memory_stdlib.o error_stdlib.o file_stdlib.o time_unix.o \
-           audio_oss.o
+           audio_oss.o random_stdlib.o
 
 ### generic stuff
 GENERICMODS=error_stack.o set.o util.o font.o sample.o wav.o s3m.o
 
 ### image related modules
 IMAGEMODS=color_rgb.o image.o sprite.o tga.o pcx.o blit_common.o \
-          collide_common.o blit_generic.o collide_generic.o
+          collide_common.o collide_generic.o alphacomp_generic.o
+
+#BLITMODS=blit_x86.o
+BLITMODS=blit_generic.o
 
 ### event
 ifeq ($(TARGET),svgalib)

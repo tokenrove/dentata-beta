@@ -1,7 +1,7 @@
 /* 
  * image.h
  * Created: Tue Jan  9 05:11:42 2001 by tek@wiw.org
- * Revised: Fri May  4 19:31:20 2001 by tek@wiw.org
+ * Revised: Sat May  5 09:24:28 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -147,6 +147,11 @@ extern bool d_image_collide(d_image_t *, d_image_t *, d_point_t,
 
 extern void d_image_alphacomp(d_image_t *, d_image_t *, d_point_t);
 extern d_image_t *d_image_rotate(d_image_t *, byte);
+extern byte d_image_getpelalpha(d_image_t *, d_point_t);
+extern d_color_t d_image_getpelcolor(d_image_t *, d_point_t);
+extern void d_image_setpelalpha(d_image_t *, d_point_t, byte);
+extern void d_image_setpelcolor(d_image_t *, d_point_t, d_color_t);
+extern void d_image_alphacomp(d_image_t *, d_image_t *, d_point_t);
 
 #endif
 

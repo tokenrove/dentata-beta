@@ -1,7 +1,7 @@
 # 
 # Makefile
 # Created: Mon Jan  8 07:00:27 2001 by tek@wiw.org
-# Revised: Wed May  2 03:07:45 2001 by tek@wiw.org
+# Revised: Sun May  6 06:27:02 2001 by tek@wiw.org
 # Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 # This program comes with ABSOLUTELY NO WARRANTY.
 # $Id$
@@ -21,10 +21,12 @@ TOPDIR=$(CURDIR)
 #  -DTHIRTYTWOBIT - word size is 32-bits
 #  -DSIXTYFOURBIT - word size is 64-bits
 #
-DEFINES=-DTHIRTYTWOBIT -DDEBUG
+DEFINES=-DTHIRTYTWOBIT -DDEBUG -DUSE_X86_ASM
 DENT_CPPFLAGS=-I$(TOPDIR)/include -L$(TOPDIR)/lib $(DEFINES)
 DENT_CFLAGS=-Wall -pedantic -g -O6 $(DENT_CPPFLAGS)
 DENT_LDFLAGS=$(LIBS)
+AS=nasm
+ASFLAGS=-f elf -g
 
 ### Targets
 # X11

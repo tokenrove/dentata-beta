@@ -1,7 +1,7 @@
 /* 
  * s3m.c
  * Created: Sun Apr 15 16:06:01 2001 by tek@wiw.org
- * Revised: Mon Apr 16 01:02:04 2001 by tek@wiw.org
+ * Revised: Sat May 19 13:04:19 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -232,6 +232,8 @@ void d_s3m_delete(d_s3m_t *s3m)
 }
 
 /* playback section */
+/* FIXME -- excessive statics, prefer more threadsafe system of passing
+   playback information with each call */
 static word curorder, currow, counter, speed, tempo, gvolume;
 static d_s3m_t *cursong;
 static void *qh;
@@ -265,7 +267,7 @@ void d_s3m_play(d_s3m_t *s3m)
     tempo = s3m->tempo;
     gvolume = s3m->gvolume;
     counter = speed;
-    qh = d_time_startcount(2*tempo/5);
+    qh = d_time_startcount(2*tempo/5, false);
     return;
 }
 
@@ -313,7 +315,7 @@ void d_s3m_update(void)
             props = d_audio_getchanprops(i);
             if(p->volume[currow][i] != 255) {
                 if(p->volume[currow][i] > 0x40) p->volume[currow][i] = 0x40;
-                props.volume = gvolume*p->volume[currow][i]/64;
+                props.volume = gvolume*p->volume[currow][i]>>6;
             }
             if(p->instrument[currow][i] > 0 && p->instrument[currow][i] != 255)
                 lastinst[i] = &cursong->instruments[p->instrument[currow][i]-1];
@@ -355,7 +357,7 @@ void d_s3m_update(void)
         }
         counter = 0;
     }
-    qh = d_time_startcount(2*tempo/5);
+    qh = d_time_startcount(2*tempo/5, false);
 }
 
 /* EOF s3m.c */

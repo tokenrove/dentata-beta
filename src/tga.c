@@ -1,7 +1,7 @@
 /* 
  * tga.c
  * Created: Sun Feb 25 02:56:14 2001 by tek@wiw.org
- * Revised: Thu Apr 19 04:36:34 2001 by tek@wiw.org
+ * Revised: Sat May  5 10:22:32 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -54,6 +54,7 @@ d_image_t *d_tga_load(char *filename)
 
     default:
         desc.bpp = head.bpp;
+        desc.alpha = 0;
         break;
     }
 

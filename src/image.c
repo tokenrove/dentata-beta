@@ -1,7 +1,7 @@
 /* 
  * image.c
  * Created: Sun Feb 25 01:57:37 2001 by tek@wiw.org
- * Revised: Sat May  5 06:58:14 2001 by tek@wiw.org
+ * Revised: Sat May 19 12:29:07 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -23,6 +23,10 @@ void d_image_wipe(d_image_t *p, d_color_t c, byte alpha);
 void d_image_silhouette(d_image_t *image, d_color_t color, byte alpha);
 bool d_image_extendalpha(d_image_t *p, byte alpha);
 bool d_image_convertdepth(d_image_t *p, byte bpp);
+byte d_image_getpelalpha(d_image_t *p, d_point_t pt);
+d_color_t d_image_getpelcolor(d_image_t *p, d_point_t pt);
+void d_image_setpelalpha(d_image_t *p, d_point_t pt, byte alpha);
+void d_image_setpelcolor(d_image_t *p, d_point_t pt, d_color_t c);
 
 d_image_t *d_image_new(d_rasterdescription_t desc)
 {
@@ -76,158 +80,73 @@ d_image_t *d_image_dup(d_image_t *p)
 
 void d_image_plot(d_image_t *p, d_point_t pt, d_color_t c, byte alpha)
 {
-    byte mask;
-    int i, o;
-
-    if(pt.x < 0 ||
-       pt.y < 0 ||
-       pt.x >= p->desc.w ||
-       pt.y >= p->desc.h)
-        return;
-
-    switch(p->desc.bpp) {
-    case 8:
-        p->data[pt.x+pt.y*p->desc.w] = c;
-        break;
-        
-    /* FIXME: I'm unsure about packing order here and below */
-    case 15: /* fall thru */
-    case 16:
-        p->data[pt.x*2+pt.y*p->desc.w*2+0] = c&0xFF;
-        p->data[pt.x*2+pt.y*p->desc.w*2+1] = c>>8;
-        break;
-
-    case 24:
-        p->data[pt.x*3+pt.y*p->desc.w*3+0] = c&0xFF;
-        p->data[pt.x*3+pt.y*p->desc.w*3+1] = (c>>8)&0xFF;
-        p->data[pt.x*3+pt.y*p->desc.w*3+2] = (c>>16)&0xFF;
-        break;
-
-    case 32:
-        p->data[pt.x*4+pt.y*p->desc.w*4+0] = c&0xFF;
-        p->data[pt.x*4+pt.y*p->desc.w*4+1] = (c>>8)&0xFF;
-        p->data[pt.x*4+pt.y*p->desc.w*4+2] = (c>>16)&0xFF;
-        break;
-
-    default:
-        d_error_push("d_image_plot: unsupport bpp (report this as a bug).");
-        return;
-    }
-
-    switch(p->desc.alpha) {
-    case 0:
-        break;
-
-    case 1:
-    case 2:
-    case 4:
-    case 8:
-        mask = (1<<p->desc.alpha)-1;
-        alpha >>= (8-p->desc.alpha);
-        o = pt.x+pt.y*p->desc.w;
-        i = 8/p->desc.alpha;
-        p->alpha[o/i] &= ~(mask<<(p->desc.alpha*(o%i)));
-        p->alpha[o/i] |= (alpha&mask)<<(p->desc.alpha*(o%i));
-        break;
-
-    default:
-        d_error_push("d_image_plot: unsupport alpha (report this as a bug).");
-        return;
-    }
-
+    d_image_setpelcolor(p, pt, c);
+    d_image_setpelalpha(p, pt, alpha);
     return;
 }
 
 void d_image_wipe(d_image_t *p, d_color_t c, byte alpha)
 {
     int i;
+    d_point_t pt;
     byte mask, o;
 
     switch(p->desc.bpp) {
-    case 8:
-        d_memory_set(p->data, c, p->desc.h*p->desc.w);
-        break;
-        
-    /* FIXME: I'm unsure about packing order here and below */
-    case 15: /* fall thru */
     case 16:
-        for(i = p->desc.w*p->desc.h*2; i > 0;) {
-            p->data[--i] = c>>8;
-            p->data[--i] = c;
+        for(i = 0; i < 2*p->desc.w*p->desc.h; i+=2) {
+            p->data[i] = c;
+            p->data[i+1] = c>>8;
         }
         break;
-
-    case 24:
-        for(i = p->desc.w*p->desc.h*3; i > 0;) {
-            p->data[--i] = c>>16;
-            p->data[--i] = c>>8;
-            p->data[--i] = c;
-        }
-        break;
-
-    case 32:
-        for(i = p->desc.w*p->desc.h*4; i > 0;) {
-            p->data[--i] = c>>16;
-            p->data[--i] = c>>8;
-            p->data[--i] = c;
-            i--;
-        }
-        break;
-
 
     default:
-        d_error_push("d_image_wipe: unsupported bpp (report this as a bug).");
-        return;
+        for(pt.y = 0; pt.y < p->desc.h; pt.y++)
+            for(pt.x = 0; pt.x < p->desc.w; pt.x++)
+                d_image_setpelcolor(p, pt, c);
+        break;
     }
 
     switch(p->desc.alpha) {
     case 0:
         break;
-
+ 
     case 1:
     case 2:
     case 4:
         mask = (1<<p->desc.alpha)-1;
         alpha >>= (8-p->desc.alpha);
+        alpha &= mask;
         o = 8/p->desc.alpha;
-
-        for(i = 0; i < p->desc.h*p->desc.w; i++) {
-            p->alpha[i/o] &= ~(mask<<(p->desc.alpha*(i%o)));
-            p->alpha[i/o] |= (alpha&mask)<<(p->desc.alpha*(i%o));
+        mask = 0;
+        for(i = 0; i < o; i++) {
+            mask |= alpha<<(p->desc.alpha*(i%o));
         }
+        d_memory_set(p->alpha, mask, (p->desc.w*p->desc.h+o-1)/o);
         break;
 
     case 8:
-        d_memory_set(p->alpha, alpha,
-                     (p->desc.h*p->desc.w+(8/p->desc.alpha-1))/
-                     (8/p->desc.alpha));
+        d_memory_set(p->alpha, alpha, p->desc.w*p->desc.h);
         break;
 
     default:
-        d_error_push("d_image_wipe: unsupported alpha (report this as a bug).");
-        return;
+        for(pt.y = 0; pt.y < p->desc.h; pt.y++)
+            for(pt.x = 0; pt.x < p->desc.w; pt.x++)
+                d_image_setpelalpha(p, pt, alpha);
+        break;
     }
-
     return;
 }
 
 void d_image_silhouette(d_image_t *p, d_color_t color, byte alpha)
 {
-    int i, o;
-    byte mask;
     d_point_t pt;
 
     if(p->desc.alpha > 0) {
-        mask = (1<<p->desc.alpha)-1;
-        o = 8/p->desc.alpha;
-
-        for(i = 0; i < p->desc.w*p->desc.h; i++) {
-            if(p->alpha[i/o]&(mask<<(p->desc.alpha*(i%o)))) {
-                pt.x = i%p->desc.w;
-                pt.y = i/p->desc.w;
-                d_image_plot(p, pt, color, alpha);
+        for(pt.y = 0; pt.y < p->desc.h; pt.y++)
+            for(pt.x = 0; pt.x < p->desc.h; pt.x++) {
+                if(d_image_getpelalpha(p, pt))
+                    d_image_plot(p, pt, color, alpha);
             }
-        }
     } else {
         d_image_wipe(p, color, alpha);
     }
@@ -392,36 +311,70 @@ bool d_image_convertdepth(d_image_t *p, byte bpp)
     return success;
 }
 
-#define min(a, b) (((a) > (b))?(b):(a))
-
-void d_image_alphacomp(d_image_t *d, d_image_t *s, d_point_t p)
+void d_image_setpelcolor(d_image_t *p, d_point_t pt, d_color_t c)
 {
-    dword dstoffset, dstscanoff, scanlen, endoffset, srcoffset, srcscanoff;
-    int i, j, a, b, o;
-    byte a_s, a_d, mask;
+    if(pt.x < 0 ||
+       pt.y < 0 ||
+       pt.x >= p->desc.w ||
+       pt.y >= p->desc.h)
+        return;
 
-    if(d->desc.alpha != s->desc.alpha)
-        d_error_fatal("d_image_alphacomp: Sorry, I can't do that.\n");
+    switch(p->desc.bpp) {
+    case 8:
+        p->data[pt.x+pt.y*p->desc.w] = c;
+        break;
+        
+    /* FIXME: I'm unsure about packing order here and below */
+    case 15: /* fall thru */
+    case 16:
+        p->data[(pt.x+pt.y*p->desc.w)*2+0] = c&0xFF;
+        p->data[(pt.x+pt.y*p->desc.w)*2+1] = c>>8;
+        break;
 
-    __d_image_clip(d, s, p, &dstoffset, &dstscanoff, &scanlen, &endoffset,
-                   &srcoffset, &srcscanoff);
-    if(dstoffset < d->desc.w*d->desc.h && scanlen > 0 &&
-       dstoffset < endoffset) {
-        mask = (1<<d->desc.alpha)-1;
-        o = 8/d->desc.alpha;
+    case 24:
+        p->data[(pt.x+pt.y*p->desc.w)*3+0] = c&0xFF;
+        p->data[(pt.x+pt.y*p->desc.w)*3+1] = (c>>8)&0xFF;
+        p->data[(pt.x+pt.y*p->desc.w)*3+2] = (c>>16)&0xFF;
+        break;
 
-        for(i = 0; dstoffset+i*(scanlen+dstscanoff)+scanlen < endoffset; i++) {
-            for(j = 0; j < scanlen; j++) {
-                a = dstoffset+i*(scanlen+dstscanoff)+j;
-                b = srcoffset+i*(scanlen+srcscanoff)+j;
-                a_s = (d->alpha[a/o]>>(d->desc.alpha*(a%o)))&mask;
-                a_d = (s->alpha[b/o]>>(d->desc.alpha*(b%o)))&mask;
-                d->alpha[a/o] &= ~(mask<<(d->desc.alpha*(a%o)));
-                d->alpha[a/o] |= min(a_s+a_d, mask)<<(d->desc.alpha*(a%o));
-            }
-        }
+    case 32:
+        p->data[(pt.x+pt.y*p->desc.w)*4+0] = c&0xFF;
+        p->data[(pt.x+pt.y*p->desc.w)*4+1] = (c>>8)&0xFF;
+        p->data[(pt.x+pt.y*p->desc.w)*4+2] = (c>>16)&0xFF;
+        break;
+
+    default:
+        d_error_push("d_image_setpelcolor: unsupport bpp (report this as a bug).");
+        return;
     }
+    return;
+}
 
+void d_image_setpelalpha(d_image_t *p, d_point_t pt, byte alpha)
+{
+    byte mask, o;
+    int i;
+
+    switch(p->desc.alpha) {
+    case 0:
+        break;
+
+    case 1:
+    case 2:
+    case 4:
+    case 8:
+        mask = (1<<p->desc.alpha)-1;
+        alpha >>= (8-p->desc.alpha);
+        i = pt.x+pt.y*p->desc.w;
+        o = 8/p->desc.alpha;
+        p->alpha[i/o] &= ~(mask<<(p->desc.alpha*(i%o)));
+        p->alpha[i/o] |= (alpha&mask)<<(p->desc.alpha*(i%o));
+        break;
+
+    default:
+        d_error_push("d_image_setpelalpha: unsupported alpha (report this as a bug).");
+        return;
+    }
     return;
 }
 
@@ -544,6 +497,7 @@ d_image_t *d_image_rotate(d_image_t *p, byte theta)
         for(pt.x = 0; pt.x < desc.w; pt.x++) {
             pt2.x = (pt.x-dw)*c_theta+(pt.y-dh)*s_theta+p->desc.w/2;
             pt2.y = (pt.x-dw)*(-s_theta)+(pt.y-dh)*c_theta+p->desc.h/2;
+            /* FIXME hack */
             if(s_theta == -1) pt2.x--;
             if(s_theta == 1) pt2.y--;
             d_image_plot(q, pt, d_image_getpelcolor(p, pt2),

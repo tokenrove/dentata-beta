@@ -1,7 +1,7 @@
 /* 
  * time_unix.c
  * Created: Wed Apr  4 21:47:19 2001 by tek@wiw.org
- * Revised: Thu Apr 19 04:24:54 2001 by tek@wiw.org
+ * Revised: Sat May  5 16:04:59 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -16,8 +16,8 @@
 #include <unistd.h>
 
 void d_time_wait(dword);
-void *d_time_startcount(int);
-void d_time_endcount(void *th);
+void *d_time_startcount(int, bool);
+int d_time_endcount(void *th);
 extern bool d_time_iscountfinished(void *th);
 
 struct timehandle_s {
@@ -30,7 +30,7 @@ void d_time_wait(dword us)
     return;
 }
 
-void *d_time_startcount(int fps)
+void *d_time_startcount(int fps, bool wantdiff)
 {
     struct timehandle_s *handle;
 
@@ -59,20 +59,20 @@ bool d_time_iscountfinished(void *th)
     return true;
 }
 
-void d_time_endcount(void *th)
+int d_time_endcount(void *th)
 {
     struct timeval curtv;
     struct timehandle_s *handle = (struct timehandle_s *)th;
+    int diff = 0;
 
     gettimeofday(&curtv, NULL);
-    if(curtv.tv_sec < handle->end.tv_sec ||
-       (curtv.tv_sec == handle->end.tv_sec &&
-        curtv.tv_usec < handle->end.tv_usec)) {
-        d_time_wait((handle->end.tv_sec-curtv.tv_sec)*1e6+
-                    (handle->end.tv_usec-curtv.tv_usec));
+    diff = (handle->end.tv_sec-curtv.tv_sec)*1e6+
+           (handle->end.tv_usec-curtv.tv_usec);
+    if(diff > 0) {
+        d_time_wait(diff);
     }
     d_memory_delete(handle);
-    return;
+    return diff;
 }
 
 /* EOF time_unix.c */

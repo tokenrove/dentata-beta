@@ -1,7 +1,7 @@
 /* 
  * audio_oss.c
  * Created: Sat Apr 14 23:22:27 2001 by tek@wiw.org
- * Revised: Thu Apr 19 04:25:14 2001 by tek@wiw.org
+ * Revised: Sat May 19 13:07:19 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -190,6 +190,11 @@ void d_audio_update(void)
         case 16:
             dspbuf[j++] = (mix)&0xFF;
             dspbuf[j++] = ((mix)>>8)&0xFF;
+            break;
+
+        default:
+            d_error_fatal("d_audio_update: bug: unsupported destination audio"
+                          " resolution.\n");
             break;
         }
     }

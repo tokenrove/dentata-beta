@@ -1,7 +1,7 @@
 /* 
  * font.c
  * Created: Fri Apr 13 20:38:07 2001 by tek@wiw.org
- * Revised: Sat Apr 14 16:09:52 2001 by tek@wiw.org
+ * Revised: Sat May  5 12:37:55 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -95,15 +95,13 @@ void d_font_printf(d_image_t *image, d_font_t *fnt, d_point_t pt, byte *fmt,
     byte *p;
     int i, len;
 
-    args = fmt+sizeof(byte *);
-//        len = crash_getlen(fmt, args);
-    for(len = 0; fmt[len]; len++);
+    args = &fmt+1;
+    len = d_util_printflen(fmt, args);
     p = d_memory_new(len+1);
-    for(i = 0; i < len; i++)
-        p[i] = fmt[i];
+    d_util_sprintf(p, fmt, args);
 
     for(i = 0; i < len; i++) {
-        d_image_blit(image, fnt->chars[(unsigned)p[i]], pt);
+        d_image_blit(image, fnt->chars[(unsigned)p[i]-fnt->start], pt);
         pt.x += fnt->desc.w+1;
     }
     d_memory_delete(p);
@@ -112,7 +110,37 @@ void d_font_printf(d_image_t *image, d_font_t *fnt, d_point_t pt, byte *fmt,
 
 word d_font_gettextwidth(d_font_t *fnt, byte *fmt, ...)
 {
-    return 0;
+    void *args;
+
+    args = fmt+sizeof(byte *);
+    return d_util_printflen(fmt, args)*(fnt->desc.w+1);
+}
+
+void d_font_convertdepth(d_font_t *fnt, byte bpp)
+{
+    int i;
+
+    for(i = fnt->start; i < fnt->start+fnt->nchars; i++)
+        d_image_convertdepth(fnt->chars[i], bpp);
+    return;
+}
+
+void d_font_extendalpha(d_font_t *fnt, byte alpha)
+{
+    int i;
+
+    for(i = fnt->start; i < fnt->start+fnt->nchars; i++)
+        d_image_extendalpha(fnt->chars[i], alpha);
+    return;
+}
+
+void d_font_silhouette(d_font_t *fnt, d_color_t c, byte alpha)
+{
+    int i;
+
+    for(i = fnt->start; i < fnt->start+fnt->nchars; i++)
+        d_image_silhouette(fnt->chars[i], c, alpha);
+    return;
 }
 
 void d_font_delete(d_font_t *fnt)

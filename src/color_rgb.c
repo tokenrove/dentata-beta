@@ -1,7 +1,7 @@
 /* 
  * rgb.c
  * Created: Wed Jan 31 13:08:59 2001 by tek@wiw.org
- * Revised: Thu Apr 19 04:26:00 2001 by tek@wiw.org
+ * Revised: Sat May  5 15:31:18 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -103,9 +103,9 @@ d_color_t d_color_pack(byte bpp, byte r, byte g, byte b)
 
     case 16: /* BBBBBGGG GGGRRRRR */
         c = 0;
-        c |= r&((1<<6)-1);
+        c |= b&((1<<6)-1);
         c |= (g&((1<<7)-1))<<5;
-        c |= (b&((1<<6)-1))<<11;
+        c |= (r&((1<<6)-1))<<11;
         break;
 
     case 24: /* B G R */

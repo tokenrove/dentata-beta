@@ -1,7 +1,7 @@
 /* 
  * blit_generic.c
  * Created: Mon Jan 29 13:42:41 2001 by tek@wiw.org
- * Revised: Fri May  4 12:37:21 2001 by tek@wiw.org
+ * Revised: Sun May  6 02:34:25 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -38,7 +38,7 @@ void _blit80(byte *ddat, byte *dalp, byte *sdat, byte *salp, dword doffs,
     } while(ddat < end);
     return;
 }
-   
+
 void _blit81(byte *ddat, byte *dalp, byte *sdat, byte *salp, dword doffs,
              dword dscanoff, dword scanlen, dword endoffs, dword soffs,
              dword sscanoff)
@@ -100,19 +100,20 @@ void _blit160(byte *ddat, byte *dalp, byte *sdat, byte *salp, dword doffs,
               dword dscanoff, dword scanlen, dword endoffs, dword soffs,
               dword sscanoff)
 {
-    register int i;
+/*    register dword a, b, c; */
     byte *end;
 
-    end = ddat+endoffs*2;
+    end = ddat+(endoffs*2);
     ddat += doffs*2;
     sdat += soffs*2;
+/*    c = scanlen*2;
+    a = (scanlen+doffs)*2;
+    b = (scanlen+soffs)*2; */
+
     do {
-        for(i = scanlen; i > 0; i--) {
-            *(ddat++) = *(sdat++);
-            *(ddat++) = *(sdat++);
-        }
-        ddat += dscanoff*2;
-        sdat += sscanoff*2;
+        d_memory_copy(ddat, sdat, scanlen*2);
+        ddat += (scanlen+dscanoff)*2;
+        sdat += (scanlen+sscanoff)*2;
     } while(ddat < end);
     return;
 }
@@ -194,7 +195,7 @@ void _blit162(byte *ddat, byte *dalp, byte *sdat, byte *salp, dword doffs,
                 *(ddat++) = k|((l&7)<<5);
                 k = (*(sdat++))>>3;
                 k = k/3;
-                k += (((*ddat)>>3)*170)*2/3;
+                k += ((*ddat)>>3)*2/3;
                 *(ddat++) = (k<<3)|(l>>3);
                 break;
 
@@ -208,7 +209,7 @@ void _blit162(byte *ddat, byte *dalp, byte *sdat, byte *salp, dword doffs,
                 *(ddat++) = k|((l&7)<<5);
                 k = (*(sdat++))>>3;
                 k = (k*2)/3;
-                k += (((*ddat)>>3)*170)/3;
+                k += ((*ddat)>>3)/3;
                 *(ddat++) = (k<<3)|(l>>3);
                 break;
 
@@ -257,16 +258,15 @@ void _blit164(byte *ddat, byte *dalp, byte *sdat, byte *salp, dword doffs,
             else
                 a = (*(salp++))>>4;
 
-            j = (*sdat)&31;
-            j = j*a/15;
-            j += ((*ddat)&31)*(15-a)/15;
+            j = (((*sdat)&31)*a)/15;
+            j += (((*ddat)&31)*(15-a))/15;
             k = (*(sdat++))>>5; k |= ((*sdat)&7)<<3;
-            k = k*a/15;
-            k += (((*ddat)>>5)|(((*(ddat+1))&7)<<3))*(15-a)/15;
+            k = (k*a)/15;
+            k += ((((*ddat)>>5)|(((*(ddat+1))&7)<<3))*(15-a))/15;
             *(ddat++) = j|((k&7)<<5);
             j = (*(sdat++))>>3;
-            j = j*a/15;
-            j += ((*ddat)>>3)*(15-a)/15;
+            j = (j*a)/15;
+            j += (((*ddat)>>3)*(15-a))/15;
             *(ddat++) = (j<<3)|(k>>3);
 
             l = (l+1)%2;
@@ -299,16 +299,17 @@ void _blit168(byte *ddat, byte *dalp, byte *sdat, byte *salp, dword doffs,
     do {
         for(i = scanlen; i > 0; i--) {
             a = *salp;
+            a++;
             j = (*sdat)&31;
-            j = (j*(a+1))>>8;
-            j += (((*ddat)&31)*(255-a+1))>>8;
+            j = (j*a)>>8;
+            j += (((*ddat)&31)*(257-a))>>8;
             k = (*(sdat++))>>5; k |= ((*sdat)&7)<<3;
-            k = (k*(a+1))>>8;
-            k += ((((*ddat)>>5)|(((*(ddat+1))&7)<<3))*(255-a+1))>>8;
+            k = (k*a)>>8;
+            k += ((((*ddat)>>5)|(((*(ddat+1))&7)<<3))*(257-a))>>8;
             *(ddat++) = j|((k&7)<<5);
             j = (*(sdat++))>>3;
-            j = (j*(a+1))>>8;
-            j += (((*ddat)>>3)*(255-a+1))>>8;
+            j = (j*a)>>8;
+            j += (((*ddat)>>3)*(257-a))>>8;
             *(ddat++) = (j<<3)|(k>>3);
             salp++;
         }
