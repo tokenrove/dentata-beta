@@ -21,7 +21,6 @@ typedef struct d_sprite_s {
     bool animated;
     d_point_t pos;
     d_rect_t clip;
-    d_clipstrategy_t clipstrategy;
 } d_sprite_t;
 
 extern d_sprite_t *d_sprite_new(void);

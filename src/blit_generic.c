@@ -1,7 +1,7 @@
 /* 
  * blit_generic.c
  * Created: Mon Jan 29 13:42:41 2001 by tek@wiw.org
- * Revised: Tue Apr 17 23:34:38 2001 by tek@wiw.org
+ * Revised: Fri May  4 12:37:21 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -10,6 +10,9 @@
 
 #include <dentata/types.h>
 #include <dentata/memory.h>
+
+#define max(a, b) (((a) > (b))?(a):(b))
+#define min(a, b) (((a) > (b))?(b):(a))
 
 /*
  * 8 bpp
@@ -284,8 +287,8 @@ void _blit168(byte *ddat, byte *dalp, byte *sdat, byte *salp, dword doffs,
               dword dscanoff, dword scanlen, dword endoffs, dword soffs,
               dword sscanoff)
 {
-    register int i;
-    register word j, k;
+    register dword i;
+    register word j, k, a;
     byte *end;
 
     end = ddat+endoffs*2;
@@ -295,22 +298,25 @@ void _blit168(byte *ddat, byte *dalp, byte *sdat, byte *salp, dword doffs,
 
     do {
         for(i = scanlen; i > 0; i--) {
+            a = *salp;
             j = (*sdat)&31;
-            j = j*(*salp)/255;
-            j += ((*ddat)&31)*(255-(*salp))/255;
+            j = (j*(a+1))>>8;
+            j += (((*ddat)&31)*(255-a+1))>>8;
             k = (*(sdat++))>>5; k |= ((*sdat)&7)<<3;
-            k = k*(*salp)/255;
-            k += (((*ddat)>>5)|(((*(ddat+1))&7)<<3))*(255-(*salp))/255;
+            k = (k*(a+1))>>8;
+            k += ((((*ddat)>>5)|(((*(ddat+1))&7)<<3))*(255-a+1))>>8;
             *(ddat++) = j|((k&7)<<5);
             j = (*(sdat++))>>3;
-            j = j*(*salp)/255;
-            j += ((*ddat)>>3)*(255-(*(salp++)))/255;
+            j = (j*(a+1))>>8;
+            j += (((*ddat)>>3)*(255-a+1))>>8;
             *(ddat++) = (j<<3)|(k>>3);
+            salp++;
         }
         ddat += dscanoff*2;
         sdat += sscanoff*2;
         salp += sscanoff;
     } while(ddat < end);
+
     return;
 }
 

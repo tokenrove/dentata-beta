@@ -14,7 +14,6 @@
 #include <dentata/file.h>
 #include <dentata/memory.h>
 #include <dentata/error.h>
-#include <dentata/blit.h>
 
 d_font_t *d_font_load(char *);
 void d_font_printf(d_image_t *, d_font_t *, d_point_t, byte *, ...);
@@ -104,7 +103,7 @@ void d_font_printf(d_image_t *image, d_font_t *fnt, d_point_t pt, byte *fmt,
         p[i] = fmt[i];
 
     for(i = 0; i < len; i++) {
-        d_blit(image, fnt->chars[(unsigned)p[i]], pt);
+        d_image_blit(image, fnt->chars[(unsigned)p[i]], pt);
         pt.x += fnt->desc.w+1;
     }
     d_memory_delete(p);

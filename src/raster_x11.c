@@ -1,7 +1,7 @@
 /* 
  * x11.c
  * Created: Mon Jan  8 05:12:00 2001 by tek@wiw.org
- * Revised: Thu Apr 19 07:52:56 2001 by tek@wiw.org
+ * Revised: Thu May  3 04:02:10 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -45,7 +45,7 @@ static d_rasterdescription_t availmodes[NAVAILMODES] = {
 static d_rasterdescription_t curmode;
 static XImage *xim;
 static GC graphcont;
-Display *_d_x11_display;
+Display *_d_x11_display = NULL;
 Window _d_x11_window;
 static XShmSegmentInfo shminfo;
 static int depth;
@@ -73,6 +73,7 @@ bool d_raster_new(void)
     graphcont = DefaultGCOfScreen(screen);
     depth = DefaultDepthOfScreen(screen);
     useshm = (XShmQueryExtension(_d_x11_display) == True)?true:false;
+    useshm = false; /* FIXME */
 
     return success;
 }
@@ -101,6 +102,7 @@ void d_raster_delete(void)
 {
     d_raster_closewindow();
     XCloseDisplay(_d_x11_display);
+    _d_x11_display = NULL;
     return;
 }
 

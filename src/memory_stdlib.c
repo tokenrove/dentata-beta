@@ -1,7 +1,7 @@
 /* 
  * stdlib.c
  * Created: Mon Jan  8 04:19:39 2001 by tek@wiw.org
- * Revised: Thu Apr 19 04:24:22 2001 by tek@wiw.org
+ * Revised: Fri May  4 18:40:57 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -48,7 +48,7 @@ void d_memory_copy(void *d, void *s, dword len)
 
 void d_memory_move(void *d, void *s, dword len)
 {
-    memcpy(d, s, len);
+    memmove(d, s, len);
 }
 
 void d_memory_set(void *d, byte v, dword len)

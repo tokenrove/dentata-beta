@@ -1,14 +1,22 @@
 /* 
  * event.h
  * Created: Wed Jan 24 11:40:52 2001 by tek@wiw.org
- * Revised: Thu Apr 19 04:16:30 2001 by tek@wiw.org
+ * Revised: Sat Apr 28 05:18:14 2001 by tek@wiw.org
  * Copyright 2001 Rhombus Software/Julian E. C. Squires (tek@wiw.org)
  * $Id$
  *
  * Dentata gen Beta
  * Event module
  *
- * Include dentata/types.h before this file.
+ * One must include dentata/types.h before this file.
+ *
+ * Note that some implementations require that the raster module
+ * be initialized before they may be initialized. Implementations which
+ * function in windowing systems generally require that the raster
+ * module has already been started, and a window opened. To err on
+ * the side of safety, this should be obeyed. Additionally, the event
+ * module should be closed and reinitialized every time the raster
+ * mode is changed.
  */
 
 #ifndef DENTATA_EVENT_H
@@ -25,7 +33,9 @@
  *          input devices the current event driver supports and has
  *          initialized.
  *
- * Pushes an error if a supported input device fails to initialize.
+ * Pushes an error if a supported input device fails to initialize, or
+ * if this implementation requires the raster module and it has not been
+ * initialized.
  */
 extern byte d_event_new(byte);
 

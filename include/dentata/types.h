@@ -57,8 +57,6 @@ typedef struct d_palette_s {
     byte clut[D_NCLUTITEMS*D_BYTESPERCOLOR];
 } d_palette_t;
 
-typedef enum { none = 0, pixel = 1, rectangle = 2 } d_clipstrategy_t;
-
 /* Shared audio types */
 typedef enum {PCM=0} d_audioencoding_t;
 

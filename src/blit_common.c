@@ -1,7 +1,7 @@
 /* 
  * blit_common.c
  * Created: Mon Jan 29 13:42:41 2001 by tek@wiw.org
- * Revised: Tue Apr 17 22:27:05 2001 by tek@wiw.org
+ * Revised: Fri May  4 11:35:56 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -10,7 +10,6 @@
 
 #include <dentata/types.h>
 #include <dentata/image.h>
-#include <dentata/blit.h>
 #include <dentata/error.h>
 
 typedef void(*blitfunction_t)(byte *, byte *, byte *, byte *, dword, dword,
@@ -41,18 +40,21 @@ extern void _blit244(byte *, byte *, byte *, byte *, dword, dword, dword,
 extern void _blit248(byte *, byte *, byte *, byte *, dword, dword, dword,
                      dword, dword, dword);
 
-static blitfunction_t blits[4][5] = {
+#define NBPPS   4
+#define NALPHAS 5
+
+static blitfunction_t blits[NBPPS][NALPHAS] = {
     /* 8 bpp */ { _blit80, _blit81, _blit80, _blit80, _blit80 },
     /* 15 bpp */ { 0, 0, 0, 0, 0 },
     /* 16 bpp */ { _blit160, _blit161, _blit162, _blit164, _blit168 },
     /* 24 bpp */ { _blit240, _blit241, _blit242, _blit244, _blit248 }
 };
 
-void d_blit(d_image_t *, d_image_t *, d_point_t);
-static void clip(d_image_t *, d_image_t *, d_point_t, dword *, dword *,
-                 dword *, dword *, dword *, dword *);
+void d_image_blit(d_image_t *, d_image_t *, d_point_t);
+void __d_image_clip(d_image_t *, d_image_t *, d_point_t, dword *, dword *,
+                    dword *, dword *, dword *, dword *);
 
-void d_blit(d_image_t *d, d_image_t *s, d_point_t p)
+void d_image_blit(d_image_t *d, d_image_t *s, d_point_t p)
 {
     dword dstoffset, dstscanoff, scanlen, endoffset, srcoffset, srcscanoff;
     int i, j;
@@ -64,8 +66,8 @@ void d_blit(d_image_t *d, d_image_t *s, d_point_t p)
         sdirty = true;
     }
 
-    clip(d, s, p, &dstoffset, &dstscanoff, &scanlen, &endoffset,
-         &srcoffset, &srcscanoff);
+    __d_image_clip(d, s, p, &dstoffset, &dstscanoff, &scanlen, &endoffset,
+                   &srcoffset, &srcscanoff);
     switch(d->desc.bpp) {
     case 8:
         i = 0;
@@ -100,9 +102,10 @@ void d_blit(d_image_t *d, d_image_t *s, d_point_t p)
         j = 4;
         break;
     default:
-        j = 0;
+        d_error_fatal("d_blit: Unsupported bpp.");
         break;
     }
+
     if(dstoffset < d->desc.w*d->desc.h && scanlen > 0 &&
        dstoffset < endoffset)
         (*blits[i][j])(d->data, d->alpha, s->data, s->alpha, dstoffset,
@@ -117,9 +120,9 @@ void d_blit(d_image_t *d, d_image_t *s, d_point_t p)
 #define max(a, b) (((a) > (b))?(a):(b))
 #define min(a, b) (((a) > (b))?(b):(a))
 
-static void clip(d_image_t *d, d_image_t *s, d_point_t p, dword *dstoffset,
-                 dword *dstscanoff, dword *scanlen, dword *endoffset,
-                 dword *srcoffset, dword *srcscanoff)
+void __d_image_clip(d_image_t *d, d_image_t *s, d_point_t p, dword *dstoffset,
+                    dword *dstscanoff, dword *scanlen, dword *endoffset,
+                    dword *srcoffset, dword *srcscanoff)
 {
     int maxx, maxy, i;
 

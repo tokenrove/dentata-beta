@@ -1,7 +1,7 @@
 /* 
  * image.h
  * Created: Tue Jan  9 05:11:42 2001 by tek@wiw.org
- * Revised: Thu Apr 19 04:32:47 2001 by tek@wiw.org
+ * Revised: Fri May  4 19:31:20 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -21,7 +21,7 @@ typedef struct d_image_s {
     d_palette_t palette;
 } d_image_t;
 
-#include <dentata/color.h>
+typedef enum { bounding = 0, pixel = 1, alphathresh = 2 } d_collidemode_t;
 
 /**
  * d_image_new(d_rasterdescription_t desc)
@@ -116,6 +116,37 @@ extern bool d_image_extendalpha(d_image_t *, byte);
  *          invalid, success otherwise.
  */
 extern bool d_image_convertdepth(d_image_t *, byte);
+
+/**
+ * d_image_blit(d_image_t *dst, d_image_t *src, d_point_t pt)
+ * Blits src onto dst.
+ *
+ * Takes: dst - the destination image.
+ *        src - the source image.
+ *        pt - the offset of src from dst.
+ */
+extern void d_image_blit(d_image_t *, d_image_t *, d_point_t);
+
+/**
+ * d_image_collide(d_image_t *a, d_image_t *b, d_point_t pt,
+ *                 d_collidemode_t cmode)
+ * Checks if a and b collide, based on the collide mode. The only
+ * supported collidemodes at the moment are `pixel', which reports a
+ * collision if a pixel of both a and b is opaque, and `alphathresh',
+ * which reports a collision if the sum of the alpha of a pixel from a
+ * and the corresponding pixel from b is greater than or equal to 255.
+ *
+ * Takes: a, b - the images to check for collision.
+ *        pt - the offset of b from a.
+ *        cmode - the collide mode, one of `pixel', or `alphathresh'.
+ *
+ * Returns: true on collision, false otherwise.
+ */
+extern bool d_image_collide(d_image_t *, d_image_t *, d_point_t,
+                            d_collidemode_t);
+
+extern void d_image_alphacomp(d_image_t *, d_image_t *, d_point_t);
+extern d_image_t *d_image_rotate(d_image_t *, byte);
 
 #endif
 

@@ -1,7 +1,7 @@
 # 
 # Makefile
 # Created: Mon Jan  8 07:00:27 2001 by tek@wiw.org
-# Revised: Thu Apr 19 04:03:20 2001 by tek@wiw.org
+# Revised: Wed May  2 03:07:45 2001 by tek@wiw.org
 # Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 # This program comes with ABSOLUTELY NO WARRANTY.
 # $Id$
@@ -37,7 +37,7 @@ LIBS=-L/usr/X11R6/lib -lXext -lX11
 #TARGET=null
 #LIBS=-lefence
 
-DIRS=lib tests docs demos tools
+DIRS=lib tests docs tools
 
 default: all
 
@@ -63,7 +63,6 @@ $(DIRS):
 	$(MAKE) -C $@
 
 tests: lib
-demos: lib
 
 clean:
 	for i in $(DIRS); do make -C $$i clean; done

@@ -1,7 +1,7 @@
 /* 
  * event_x11.c
  * Created: Sun Feb 25 01:04:11 2001 by tek@wiw.org
- * Revised: Thu Apr 19 04:23:59 2001 by tek@wiw.org
+ * Revised: Thu May  3 03:59:37 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -57,7 +57,7 @@ byte d_event_new(byte mask)
 
     evmask = 0;
 
-    if(mask&D_EVENT_KEYBOARD) {
+    if(_d_x11_display != NULL && mask&D_EVENT_KEYBOARD) {
         XSelectInput(_d_x11_display, _d_x11_window,
                      KeyPressMask|KeyReleaseMask);
         XAutoRepeatOff(_d_x11_display);
@@ -77,10 +77,13 @@ void d_event_delete(void)
 {
     int i;
 
+    if(evmask&D_EVENT_KEYBOARD)
+        XAutoRepeatOn(_d_x11_display);
     d_set_delete(events);
     for(i = 0; i < D_EVENT_MAXEVENTS; i++)
         if(evmap[i] != NULL) d_set_delete(evmap[i]);
     d_memory_delete(evmap);
+    evmask = 0;
     return;
 }
 

@@ -11,7 +11,6 @@
 #include <dentata/types.h>
 #include <dentata/raster.h>
 #include <dentata/image.h>
-#include <dentata/blit.h>
 #include <dentata/tga.h>
 #include <dentata/error.h>
 #include <dentata/event.h>
@@ -52,7 +51,7 @@ int main(int argc, char **argv)
     d_event_map(EV_QUIT, D_KBD_ESCAPE);
     d_event_map(EV_QUIT, D_KBD_Q);
 
-    d_blit(raster, tga, pt);
+    d_image_blit(raster, tga, pt);
     d_raster_update();
 
     while(!d_event_ispressed(EV_QUIT)) {

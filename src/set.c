@@ -20,7 +20,8 @@
 #define MULTIPLIER 31
 #define DEFTABLESIZE 256
 
-#include "magic.h"
+#include <dentata/image.h>
+#include "internal.h"
 
 /* internal set structures */
 typedef struct element_s {

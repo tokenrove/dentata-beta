@@ -41,7 +41,7 @@ d_sprite_t *d_sprite_new(void)
     p->clip.offset = p->pos;
     p->clip.w = 0;
     p->clip.h = 0;
-    p->clipstrategy = none;
+/*    p->clipstrategy = none; */
     return p;
 }
 
@@ -59,7 +59,7 @@ d_sprite_t *d_sprite_dup(d_sprite_t *p)
         q->anim[i] = d_anim_dup(p->anim[i]);
     q->pos = p->pos;
     q->clip = p->clip;
-    q->clipstrategy = p->clipstrategy;
+/*    q->clipstrategy = p->clipstrategy; */
     return q;
 }
 
@@ -84,7 +84,7 @@ d_sprite_t *d_sprite_loadfromspr(char *filename)
     file = d_file_open(filename);
     p->pos.x = d_file_getword(file);
     p->pos.y = d_file_getword(file);
-    p->clipstrategy = d_file_getbyte(file);
+/*    p->clipstrategy = */ d_file_getbyte(file);
     p->clip.offset.x = d_file_getword(file);
     p->clip.offset.y = d_file_getword(file);
     p->clip.w = d_file_getword(file);

@@ -10,7 +10,6 @@
 
 #include <dentata/types.h>
 #include <dentata/image.h>
-#include <dentata/blit.h>
 
 #define DEFW 65
 #define DEFH 129
@@ -44,10 +43,10 @@ int main(void)
             d_image_wipe(a, 0, 0);
             b = d_image_dup(a); 
             d_image_plot(a, pt, 0, 255);
-            d_blit(a, b, pt);
+            d_image_blit(a, b, pt);
             d_image_delete(b);
             b = d_image_new(descb);
-            d_blit(a, b, pt);
+            d_image_blit(a, b, pt);
             d_image_delete(a);
             d_image_delete(b);
         }
