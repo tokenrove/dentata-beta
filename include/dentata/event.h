@@ -1,12 +1,11 @@
-/* 
+/**
  * event.h
  * Created: Wed Jan 24 11:40:52 2001 by tek@wiw.org
- * Revised: Sat Apr 28 05:18:14 2001 by tek@wiw.org
+ * Revised: Sat Jun 23 03:27:06 2001 by tek@wiw.org
  * Copyright 2001 Rhombus Software/Julian E. C. Squires (tek@wiw.org)
  * $Id$
  *
- * Dentata gen Beta
- * Event module
+ * Module: event
  *
  * One must include dentata/types.h before this file.
  *

@@ -1,12 +1,12 @@
-/* 
+/**
  * set.h
  * Created: Sat Feb 24 20:01:57 2001 by tek@wiw.org
- * Revised: Thu Apr 19 04:20:46 2001 by tek@wiw.org
+ * Revised: Sat Jun 23 03:28:34 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
  *
- * Set data structure
+ * Module: set
  *
  * Include dentata/types.h before this file.
  */

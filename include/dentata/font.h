@@ -1,13 +1,12 @@
-/* 
+/**
  * font.h
  * Created: Thu Jan 25 10:37:21 2001 by tek@wiw.org
- * Revised: Sun Jun 17 23:24:21 2001 by tek@wiw.org
+ * Revised: Sat Jun 23 03:27:24 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
  *
- * Dentata gen Beta
- * Font module
+ * Module: font
  *
  * Include dentata/types.h, dentata/color.h, and dentata/image.h
  * before this file.

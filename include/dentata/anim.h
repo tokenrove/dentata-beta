@@ -1,13 +1,12 @@
-/* 
+/**
  * anim.h
  * Created: Mon Jan 29 00:22:31 2001 by tek@wiw.org
- * Revised: Thu Apr 19 04:12:44 2001 by tek@wiw.org
+ * Revised: Sat Jun 23 03:24:00 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
  *
- * Dentata gen Beta
- * Animation module
+ * Module: anim
  *
  * Include dentata/image.h before this file.
  */

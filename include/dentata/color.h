@@ -1,13 +1,12 @@
-/* 
+/**
  * color.h
  * Created: Wed Jan 24 11:19:41 2001 by tek@wiw.org
- * Revised: Thu Apr 19 04:15:59 2001 by tek@wiw.org
+ * Revised: Sat Jun 23 03:26:57 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
  *
- * Dentata gen Beta
- * Colorspace module
+ * Module: color
  *
  * Include dentata/types.h and dentata/image.h before this file.
  */

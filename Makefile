@@ -1,7 +1,7 @@
 # 
 # Makefile
 # Created: Mon Jan  8 07:00:27 2001 by tek@wiw.org
-# Revised: Fri Jun 22 21:15:08 2001 by tek@wiw.org
+# Revised: Sat Jun 23 02:24:11 2001 by tek@wiw.org
 # Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 # This program comes with ABSOLUTELY NO WARRANTY.
 # $Id$
@@ -37,7 +37,7 @@ TARGETGFX=x11
 
 ###
 # TARGETOS -- operating system
-#   unix    -- UNIX (Linux, OpenBSD, DOS w/DJGPP, et cetera)
+#   unix    -- UNIX/POSIX (Linux, OpenBSD, DOS w/DJGPP, et cetera)
 #   null    -- empty stubs
 TARGETOS=unix
 
@@ -73,7 +73,7 @@ VPATH=./src ./include ./tools ./tests
         libclean libdistclean toolsclean toolsdistclean testsclean \
         testsdistclean docsclean docsdistclean
 
-include Makefile.lib Makefile.tools Makefile.tests Makefile.docs
+include Makefile.lib Makefile.tls Makefile.tst Makefile.doc
 
 default: all
 

@@ -1,10 +1,12 @@
-/* 
+/**
  * file.h
  * Created: Mon Feb  5 15:51:30 2001 by tek@wiw.org
- * Revised: Thu Apr 19 04:16:43 2001 by tek@wiw.org
+ * Revised: Sat Jun 23 03:50:30 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
+ *
+ * Module: file
  *
  * Include dentata/types.h before this file.
  */
@@ -96,6 +98,7 @@ extern void      d_file_seek(d_file_t *, int, d_fileseekrel_t);
  * Tells the current position in a file.
  *
  * Takes: fp - the file handle.
+ *
  * Returns: the position relative to the start of the file.
  */
 extern dword     d_file_tell(d_file_t *);

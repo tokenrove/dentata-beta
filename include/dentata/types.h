@@ -1,7 +1,7 @@
-/* 
+/*
  * types.h
  * Created: Sat Jan  8 23:25:47 2000 by tek@wiw.org
- * Revised: Thu Apr 19 04:31:17 2001 by tek@wiw.org
+ * Revised: Sat Jun 23 03:29:13 2001 by tek@wiw.org
  * Copyright 2000 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$

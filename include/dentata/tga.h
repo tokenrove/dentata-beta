@@ -1,12 +1,12 @@
-/* 
+/**
  * tga.h
  * Created: Mon Jan 29 11:47:53 2001 by tek@wiw.org
- * Revised: Thu Apr 19 04:21:55 2001 by tek@wiw.org
+ * Revised: Sat Jun 23 03:28:51 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
  *
- * Targa format support.
+ * Module: tga
  *
  * Include dentata/image.h before this file.
  */

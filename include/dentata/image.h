@@ -1,13 +1,12 @@
-/* 
+/**
  * image.h
  * Created: Tue Jan  9 05:11:42 2001 by tek@wiw.org
- * Revised: Fri Jun 22 20:31:13 2001 by tek@wiw.org
+ * Revised: Sat Jun 23 03:27:30 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
  *
- * Dentata generation Beta
- * Image module
+ * Module: image
  *
  * Include dentata/types.h before this file.
  */

@@ -1,13 +1,12 @@
-/* 
+/**
  * memory.h
  * Created: Sat Jan  8 23:49:44 2000 by tek@wiw.org
- * Revised: Thu Apr 19 04:18:46 2001 by tek@wiw.org
+ * Revised: Sat Jun 23 03:27:36 2001 by tek@wiw.org
  * Copyright 2000 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
  *
- * Dentata generation Beta
- * Memory management module
+ * Module: memory
  *
  * Include dentata/types.h before this file.
  */

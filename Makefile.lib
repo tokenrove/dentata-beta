@@ -10,47 +10,47 @@
 
 ### raster and event
 ifeq ($(TARGETGFX),x11)
-RASTERMODS=raster_x11.o
-EVENTMODS=event_x11.o
+RASTERMODS=rastrx11.o
+EVENTMODS=eventx11.o
 endif
 ifeq ($(TARGETGFX),svgalib)
-RASTERMODS=raster_svgalib.o
-EVENTMODS=event_svgalib.o
+RASTERMODS=rastrvgl.o
+EVENTMODS=eventvgl.o
 endif
 
 # default
 ifndef RASTERMODS
-RASTERMODS=raster_null.o
-EVENTMODS=event_null.o
+RASTERMODS=rastrnul.o
+EVENTMODS=eventnul.o
 endif
 
 ### system dependant stuff
 ifeq ($(TARGETOS),unix)
-SYSTEMMODS=memory_stdlib.o error_stdlib.o file_stdlib.o time_unix.o \
-           random_stdlib.o
+SYSTEMMODS=memstd.o errorstd.o filestd.o timeunx.o \
+           randstd.o
 endif
 
 # default
 ifndef SYSTEMMODS
-SYSTEMMODS=memory_null.o error_null.o file_null.o time_null.o \
-           random_null.o
+SYSTEMMODS=memnul.o errornul.o filenul.o timenul.o \
+           randnul.o
 endif
 
 ### generic stuff
-GENERICMODS=error_stack.o set.o util.o font.o sample.o wav.o s3m.o
+GENERICMODS=errorsk.o set.o util.o fontgen.o samplgen.o wav.o s3mgen.o
 
 ### image related modules
-IMAGEMODS=color_rgb.o image.o sprite.o tga.o pcx.o blit_common.o \
-          collide_common.o
+IMAGEMODS=colorgen.o imagegen.o spritgen.o tga.o pcx.o blitcom.o \
+          collicom.o
 
 ifeq ($(TARGETARCH),x86)
-IMAGEMODS := $(IMAGEMODS) blit_x86.o collide_generic.o \
-             alphacomp_generic.o
+IMAGEMODS := $(IMAGEMODS) blitx86.o colligen.o \
+             acompgen.o
 endif
 
 ifeq ($(TARGETARCH),generic)
-IMAGEMODS := $(IMAGEMODS) blit_generic.o collide_generic.o \
-             alphacomp_generic.o
+IMAGEMODS := $(IMAGEMODS) blitgen.o colligen.o \
+             acompgen.o
 endif
 
 ### libdentata

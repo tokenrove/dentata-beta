@@ -1,13 +1,12 @@
-/* 
+/**
  * s3m.h
  * Created: Sun Jan 28 14:37:46 2001 by tek@wiw.org
- * Revised: Thu Apr 19 04:20:19 2001 by tek@wiw.org
+ * Revised: Sat Jun 23 03:28:05 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
  *
- * Dentata gen Beta
- * S3M module
+ * Module: s3m
  *
  * Include dentata/types.h and dentata/sample.h before this file.
  */

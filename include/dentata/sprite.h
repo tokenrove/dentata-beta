@@ -1,13 +1,12 @@
-/* 
+/**
  * sprite.h
  * Created: Thu Jan 25 11:03:32 2001 by tek@wiw.org
- * Revised: Thu Apr 19 04:32:58 2001 by tek@wiw.org
+ * Revised: Sat Jun 23 03:28:45 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
  *
- * Dentata gen Beta
- * Sprite module
+ * Module: sprite
  *
  * Include dentata/anim.h and dentata/types.h before this file.
  */
