@@ -1,7 +1,7 @@
 /* 
  * event_svgalib.c
  * Created: Thu Feb  1 21:20:12 2001 by tek@wiw.org
- * Revised: Sun Feb 25 01:19:09 2001 by tek@wiw.org
+ * Revised: Sun Feb 25 01:22:29 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -21,7 +21,7 @@ bool d_event_map(byte, byte);
 void d_event_unmap(byte);
 bool d_event_ispressed(byte);
 
-static d_event_update(void);
+static void d_event_update(void);
 
 #define SIZEHINT 8
 
