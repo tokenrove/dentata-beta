@@ -47,7 +47,7 @@ bool d_image_collide(d_image_t *a, d_image_t *b, d_point_t p,
                      d_collidemode_t cmode)
 {
     dword aoffset, ascanoff, scanlen, endoffset, boffset, bscanoff;
-    int i, j;
+    int j;
     bool adirty = false, ret;
 
     __d_image_clip(a, b, p, &aoffset, &ascanoff, &scanlen, &endoffset,

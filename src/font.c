@@ -1,7 +1,7 @@
 /* 
  * font.c
  * Created: Fri Apr 13 20:38:07 2001 by tek@wiw.org
- * Revised: Sat May  5 12:37:55 2001 by tek@wiw.org
+ * Revised: Sun Jun 17 20:57:11 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -14,11 +14,16 @@
 #include <dentata/file.h>
 #include <dentata/memory.h>
 #include <dentata/error.h>
+#include <dentata/random.h>
+#include <dentata/util.h>
 
 d_font_t *d_font_load(char *);
 void d_font_printf(d_image_t *, d_font_t *, d_point_t, byte *, ...);
 word d_font_gettextwidth(d_font_t *, byte *, ...);
 void d_font_delete(d_font_t *);
+void d_font_convertdepth(d_font_t *fnt, byte bpp);
+void d_font_extendalpha(d_font_t *fnt, byte alpha);
+void d_font_silhouette(d_font_t *fnt, d_color_t c, byte alpha);
 
 static bool loadv0font(d_file_t *fp, d_font_t *fnt);
 

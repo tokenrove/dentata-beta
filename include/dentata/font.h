@@ -1,7 +1,7 @@
 /* 
  * font.h
  * Created: Thu Jan 25 10:37:21 2001 by tek@wiw.org
- * Revised: Thu Apr 19 04:32:24 2001 by tek@wiw.org
+ * Revised: Sun Jun 17 20:57:33 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -29,6 +29,9 @@ extern d_font_t *d_font_load(char *);
 extern void d_font_printf(d_image_t *, d_font_t *, d_point_t, byte *, ...);
 extern word d_font_gettextwidth(d_font_t *, byte *, ...);
 extern void d_font_delete(d_font_t *);
+extern void d_font_convertdepth(d_font_t *, byte);
+extern void d_font_extendalpha(d_font_t *, byte);
+extern void d_font_silhouette(d_font_t *, d_color_t, byte);
 
 #endif
 
