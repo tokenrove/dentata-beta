@@ -10,18 +10,22 @@
 
 docs: manual.pdf
 
-manual.pdf: docs/main.tex docs/funcref.tex
+docs/main.tex: docs/funcref.tex docs/intro.tex docs/graphics.tex \
+               docs/input.tex docs/sound.tex docs/evrythng.tex \
+               docs/devintro.tex docs/gfxintrn.tex
+
+manual.pdf: docs/main.tex
 	pdflatex docs/main.tex
 	pdflatex docs/main.tex
 	mv main.pdf manual.pdf
 
-docs/funcref.tex: include/dentata/*.h
+docs/funcref.tex: include/dentata/*.h tools/genfref.pl
 	perl ./tools/genfref.pl ./include/dentata > docs/funcref.tex
 
 docsclean:
-	rm -f *.toc *.log *.aux main.pdf
+	$(RM) *.toc *.log *.aux main.pdf
 
 docsdistclean: docsclean
-	rm -f manual.pdf docs/funcref.tex
+	$(RM) manual.pdf docs/funcref.tex
 
 # EOF Makefile.doc

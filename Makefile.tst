@@ -27,9 +27,9 @@ $(TESTTOOLS): %: %.o libdentata.a
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS) -ldentata
 
 testsclean:
-	rm -f ./tests/*~ ./tests/*.o
+	$(RM) ./tests/*~ ./tests/*.o
 
 testsdistclean: testsclean
-	rm -f $(GENERATEDTESTS) $(TESTTOOLS)
+	$(RM) $(GENERATEDTESTS) $(TESTTOOLS)
 
 # EOF Makefile.tst

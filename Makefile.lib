@@ -59,14 +59,14 @@ endif
 MODULES=$(RASTERMODS) $(EVENTMODS) $(SYSTEMMODS) $(GENERICMODS) $(IMAGEMODS)
 
 libdentata.a: $(MODULES)
-	rm -f $@
+	$(RM) $@
 	$(AR) rc $@ $(MODULES)
 	ranlib $@
 
 libclean:
-	rm -f *.o
+	$(RM) *.o
 
 libdistclean: libclean
-	rm -f libdentata.a
+	$(RM) libdentata.a
 
 # EOF Makefile.lib

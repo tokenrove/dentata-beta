@@ -19,9 +19,9 @@ $(TOOLS): %: %.o
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS) -ldentata
 
 toolsclean:
-	rm -f *~ ./tools/*.o
+	$(RM) *~ ./tools/*.o
 
 toolsdistclean: toolsclean
-	rm -f $(TOOLS)
+	$(RM) $(TOOLS)
 
 # EOF Makefile.tls

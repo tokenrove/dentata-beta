@@ -2,11 +2,11 @@
 % intro.tex
 % 
 % Created: Fri Jun 22 17:12:01 2001 by tek@wiw.org
-% Revised: Sun Jun 24 04:14:12 2001 by tek@wiw.org
+% Revised: Sun Jun 24 19:36:33 2001 by tek@wiw.org
 % Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 % 
 \def\FileCreated{Fri Jun 22 17:12:01 2001}
-\def\FileRevised{Sun Jun 24 04:14:12 2001}
+\def\FileRevised{Sun Jun 24 19:36:33 2001}
 
 Dentata is a library of modules for game developers. Its principle
 aim is to provide a comprehensive set of services to allow game
@@ -49,7 +49,7 @@ internal state, and which returns a {\tt bool} to indicate whether it
 was successful.
 
 Generally, all the routines are in the form of {\tt d\_}{\it
-module}{\tt \_}{\it function}.
+module}{\tt \_}{\it function}().
 
 \subsection{Getting a Display}
 
@@ -250,7 +250,7 @@ a dummy image, as demonstrated in the following piece of code.
 Now one can use dentata's image module to operate on the raster
 double buffer. Only one thing remains -- how do we swap the double
 buffer onto the display? The following snippet illustrates the use
-of {\tt d\_raster\_update}(), which is the function to update the
+of {\tt d\_raster\_update}(), which is the function to synchronize the
 screen with the contents of the double buffer.
 
 \begin{verbatim}
@@ -303,8 +303,48 @@ code, under {\tt autofps}.}
 
 \subsection{Initialization}
 
+The initialization portion will typically do at least the
+following tasks:
+
+\begin{enumerate}
+\item Initialize the raster device.
+\item Set an acceptable graphics mode.
+\item Initialize the event module.
+\item Set mappings for basic controls.
+\item Initialize the audio device.
+\item Load graphics, audio, and game data.
+\item Manipulate the data to match the current system.
+\end{enumerate}
+
 \subsection{Game Loop}
+
+The game loop is the heart of the game. Aside from initialization
+details which might occur in the previous section, the game loop
+loops forever around the following items:
+
+\begin{enumerate}
+\item Begin frame timing.
+\item Update event module.
+\item Handle events.
+\item Update game (physics, points, et cetera).
+\item Draw graphics to raster double buffer.
+\item Update raster display.
+\item Update music.
+\item Update audio.
+\item End frame timing, adjusting frames per second if necessary.
+\end{enumerate}
+
 \subsection{Shutdown}
+
+Finally, once the game ends, the following order of events should roughly
+be followed:
+
+\begin{enumerate}
+\item Deallocate graphics, audio, and game data.
+\item Shutdown the audio device.
+\item Shutdown the event module.
+\item Shutdown the raster device.
+\end{enumerate}
 
 \section{Notes on Portability}
 

@@ -1,7 +1,7 @@
 # 
 # Makefile
 # Created: Mon Jan  8 07:00:27 2001 by tek@wiw.org
-# Revised: Sun Jun 24 01:47:49 2001 by tek@wiw.org
+# Revised: Sat Jun 23 02:24:11 2001 by tek@wiw.org
 # Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 # This program comes with ABSOLUTELY NO WARRANTY.
 # $Id$
@@ -16,6 +16,7 @@ INSTALLHEADERS=$(PREFIX)/include
 ###
 # Defines:
 #  -DDEBUG        - see error_debug() messages
+#  -DSIXTEENBIT   - word size is 16-bits (ARM in Thumb mode)
 #  -DTHIRTYTWOBIT - word size is 32-bits
 #  -DSIXTYFOURBIT - word size is 64-bits
 #
@@ -23,45 +24,60 @@ DEFINES=-DTHIRTYTWOBIT -DDEBUG
 CPPFLAGS=-I$(CURDIR)/include -L$(CURDIR) $(DEFINES)
 CFLAGS=-Wall -pedantic -g -O6 $(CPPFLAGS)
 LDFLAGS=$(LIBS)
-# Comment this out if you aren't using the x86 specific code. (see
-# TARGETARCH below)
-AS=nasm
-ASFLAGS=-f elf
 
+###
+# Base targets
+#   dos
+#   unix-svgalib
+#   unix-x11
+TARGET=unix-x11
+
+# Some of the things that can be tweaked below are:
 ###
 # TARGETGFX -- graphics system
 #   x11     -- X11
 #   svgalib -- SVGAlib
+#   dos     -- VGA/SVGA under MSDOS
 #   null    -- empty stubs
-TARGETGFX=x11
-
 ###
 # TARGETOS -- operating system
 #   unix    -- UNIX/POSIX (Linux, OpenBSD, DOS w/DJGPP, et cetera)
 #   null    -- empty stubs
-TARGETOS=unix
-
 ###
 # TARGETARCH -- architecture
 #   generic -- don't use architecture specific code
 #   x86     -- use IA32 specific code
-TARGETARCH=x86
 
-###
-# LIBS
-#   X11 should use:
-#LIBS=-L/usr/X11R6/lib -lXext -lX11
-#   SVGAlib should use:
-#LIBS=lvga
+ifeq ($(TARGET),dos)
+AS=nasm
+ASFLAGS=-f coff
+TARGETGFX=dos
+TARGETARCH=generic
+TARGETOS=unix
+endif
+
+ifeq ($(TARGET),unix-svgalib)
+AS=nasm
+# Change this as appropriate for the OS
+ASFLAGS=-f elf
+TARGETGFX=svgalib
+# Use x86 if you like.
+TARGETARCH=generic
+TARGETOS=unix
+LIBS=-lvga
+endif
+
+ifeq ($(TARGET),unix-x11)
+AS=nasm
+# Change this as appropriate for the OS
+ASFLAGS=-f elf
+TARGETGFX=x11
+# Use x86 if you like.
+TARGETARCH=generic
+TARGETOS=unix
 LIBS=-L/usr/X11R6/lib -lXext -lX11
-
-###
-# CPPFLAGS
-#   X11 should use:
-#CPPFLAGS:=$(CPPFLAGS) -I/usr/X11R6/include
-# SVGAlib and null shouldn't need other flags.
 CPPFLAGS:=$(CPPFLAGS) -I/usr/X11R6/include
-
+endif
 
 ### End of user configurable section ###
 
@@ -94,7 +110,7 @@ TAGS:
 	etags ./src/*.c ./include/dentata/*.h
 
 clean: libclean toolsclean testsclean docsclean
-	rm -f src/*~ docs/*~ tests/*~ tools/*~ include/dentata/*~
+	$(RM) src/*~ docs/*~ tests/*~ tools/*~ include/dentata/*~
 
 distclean: libdistclean toolsdistclean testsdistclean docsdistclean clean
 
