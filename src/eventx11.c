@@ -35,14 +35,14 @@ static byte evmask;
 
 static int transtable[D_KBD_LAST+1] = {
     0, XK_Escape, XK_1, XK_2, XK_3, XK_4, XK_5, XK_6, XK_7, XK_8, /* 9 */
-    XK_9, XK_0, XK_minus, XK_equal, XK_BackSpace, XK_Tab, XK_Q, XK_W, /* 17 */
-    XK_E, XK_R, XK_T, XK_Y, XK_U, XK_I, XK_O, XK_P, XK_bracketleft,
+    XK_9, XK_0, XK_minus, XK_equal, XK_BackSpace, XK_Tab, XK_q, XK_w, /* 17 */
+    XK_e, XK_r, XK_t, XK_y, XK_u, XK_i, XK_o, XK_p, XK_bracketleft,
     XK_bracketright, XK_Return, XK_Control_L, /* 29 */
-    XK_A, XK_S, XK_D, XK_F, XK_G, XK_H, XK_J, XK_K, XK_L,
+    XK_a, XK_s, XK_d, XK_f, XK_g, XK_h, XK_j, XK_k, XK_l,
     XK_semicolon, /* 39 */
-    XK_apostrophe, XK_grave, XK_Shift_L, XK_backslash, XK_Z, XK_X, XK_C,
-    XK_V, XK_B, XK_N, /* 49 */
-    XK_M, XK_comma, XK_period, XK_slash, XK_Shift_R, XK_asterisk, XK_Alt_L,
+    XK_apostrophe, XK_grave, XK_Shift_L, XK_backslash, XK_z, XK_x, XK_c,
+    XK_v, XK_b, XK_n, /* 49 */
+    XK_m, XK_comma, XK_period, XK_slash, XK_Shift_R, XK_asterisk, XK_Alt_L,
     XK_space, 0, 0, /* 59 */
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* 69 */
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* 79 */
@@ -124,7 +124,7 @@ bool d_event_ispressed(byte handle)
     if(handle >= D_EVENT_MAXEVENTS) return false;
     if(evmap[handle] == NULL) return false;
 
-    d_reset_iterator(&it);
+    d_iterator_reset(&it);
     while(event = d_set_nextkey(&it, evmap[handle]),
           event != D_SET_INVALIDKEY) {
         if(d_set_fetch(events, event, NULL)) {
