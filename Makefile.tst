@@ -9,7 +9,7 @@
 #
 
 TESTTOOLS=./tests/test-set
-GENERATEDTESTS=./tests/test-image
+GENERATEDTESTS=./tests/test-img
 TESTS=./tests/test-set.sh
 PROFILES=
 

@@ -8,7 +8,7 @@
 # 
 #
 
-TOOLS=lstmodes fontconv viewtga
+TOOLS=lstmodes fontcnvt viewtga
 TOOLS:=$(patsubst %,./tools/%,$(TOOLS))
 
 tools: $(TOOLS)
