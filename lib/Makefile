@@ -1,7 +1,7 @@
 # 
 # Makefile
 # Created: Mon Jan  8 07:18:08 2001 by tek@wiw.org
-# Revised: Sat Feb 24 19:33:33 2001 by tek@wiw.org
+# Revised: Sat Feb 24 19:59:02 2001 by tek@wiw.org
 # Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 # This program comes with ABSOLUTELY NO WARRANTY.
 # $Id$
@@ -9,8 +9,17 @@
 #
 
 ### raster
-RASTERMODS=raster_x11.o
-#RASTERMODS=raster_svgalib.o
+ifeq ($(TARGET),x11)
+	RASTERMODS=raster_x11.o
+endif
+ifeq ($(TARGET),svgalib)
+	RASTERMODS=raster_svgalib.o
+endif
+
+# default
+ifndef RASTERMODS
+	RASTERMODS=raster_null.o
+endif
 
 ### memory
 MEMORYMODS=memory_stdlib.o

@@ -1,7 +1,7 @@
 # 
 # Makefile
 # Created: Mon Jan  8 07:00:27 2001 by tek@wiw.org
-# Revised: Sat Feb 24 19:12:19 2001 by tek@wiw.org
+# Revised: Sat Feb 24 19:58:12 2001 by tek@wiw.org
 # Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 # This program comes with ABSOLUTELY NO WARRANTY.
 # $Id$
@@ -30,6 +30,9 @@ svgalib:
 
 x11:
 	$(MAKE) default TARGET=x11 LIBS='-L/usr/X11R6/lib -lXext -lX11'
+
+null:
+	$(MAKE) default TARGET=null LIBS=
 
 .PHONY: default svgalib x11 all clean realclean test profile $(DIRS)
 
