@@ -1,7 +1,7 @@
 /* 
  * imagegen.c
  * Created: Sun Feb 25 01:57:37 2001 by tek@wiw.org
- * Revised: Wed Jun 27 04:59:06 2001 by tek@wiw.org
+ * Revised: Fri Jun 29 03:55:57 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -46,12 +46,12 @@ d_image_t *d_image_new(d_rasterdescription_t desc)
 
     p->desc = desc;
     p->data = d_memory_new((desc.w*desc.h*desc.bpp+7)/8);
-    if(desc.alpha != 0)
+    if(desc.alpha != 0 && desc.bpp != 8)
         p->alpha = d_memory_new((desc.w*desc.h*desc.alpha+7)/8);
     else
         p->alpha = NULL;
     if(p->data == NULL ||
-       (p->alpha == NULL && desc.alpha > 0))
+       (p->alpha == NULL && desc.alpha > 0 && desc.bpp != 8))
         return NULL;
     p->imageownsdata = true;
 
@@ -74,7 +74,9 @@ d_image_t *d_image_dup(d_image_t *p)
     if(q == NULL) return NULL;
 
     d_memory_copy(q->data, p->data, (q->desc.w*q->desc.h*q->desc.bpp+7)/8);
-    d_memory_copy(q->alpha, p->alpha, (q->desc.w*q->desc.h*q->desc.alpha+7)/8);
+    if(p->alpha)
+        d_memory_copy(q->alpha, p->alpha,
+                      (q->desc.w*q->desc.h*q->desc.alpha+7)/8);
 
     q->imageownsdata = true;
     q->palette = p->palette;
@@ -105,6 +107,10 @@ void d_image_wipe(d_image_t *p, d_color_t c, byte alpha)
     byte mask, o;
 
     switch(p->desc.bpp) {
+    case 8:
+        d_memory_set(p->data, (alpha == 0) ? 0:c, p->desc.w*p->desc.h);
+        return;                 /* alpha is already handled */
+
     case 16:
         for(i = 0; i < 2*p->desc.w*p->desc.h; i+=2) {
             p->data[i] = c;
@@ -175,6 +181,14 @@ bool d_image_convertalpha(d_image_t *p, byte alpha)
     if(alpha > 8) {
         d_error_push("d_image_convertalpha: desired alpha is too high.");
         return failure;
+    }
+
+    if(p->desc.bpp == 8) {
+        if(alpha > 1) {
+            d_error_push("d_image_convertalpha: desired alpha is too high.");
+            return failure;
+        }
+        return success;
     }
 
     if(alpha == 0) { /* destroy alpha */
@@ -390,6 +404,12 @@ void d_image_setpelalpha(d_image_t *p, d_point_t pt, byte alpha)
     byte mask, o;
     int i;
 
+    if(p->desc.bpp == 8 && p->desc.alpha == 1) {
+        if(alpha == 0)
+            d_image_setpelcolor(p, pt, 0);
+        return;
+    }
+    
     switch(p->desc.alpha) {
     case 0:
         break;

@@ -152,15 +152,14 @@ byte *d_raster_getgfxptr(void)
 void d_raster_update(void)
 {
     int i, inc;
-    byte *vbuf_old;
+    register byte *vbuf;
 
     inc = (raster_curmode.w*raster_curmode.bpp+7)/8;
-    vbuf_old = raster_vbuf;
+    vbuf = raster_vbuf;
 
-    for(i = 0; i < raster_curmode.h; i++, raster_vbuf += inc)
-        vga_drawscanline(i, raster_vbuf);
+    for(i = 0; i < raster_curmode.h; i++, vbuf += inc)
+        vga_drawscanline(i, vbuf);
 
-    raster_vbuf = vbuf_old;
     return;
 }
 

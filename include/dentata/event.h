@@ -1,7 +1,7 @@
 /**
  * event.h
  * Created: Wed Jan 24 11:40:52 2001 by tek@wiw.org
- * Revised: Sun Jun 24 10:15:03 2001 by tek@wiw.org
+ * Revised: Mon Jul  9 16:08:44 2001 by tek@wiw.org
  * Copyright 2001 Rhombus Software/Julian E. C. Squires (tek@wiw.org)
  * $Id$
  *
@@ -131,21 +131,45 @@ extern void d_event_update(void);
 #define D_KBD_RBRACK      27
 #define D_KBD_ENTER       28
 #define D_KBD_LEFTCONTROL 29
-/* asdfghjkl;'` leftshift \ */
-
+#define D_KBD_A           30
+#define D_KBD_S           31
+#define D_KBD_D           32
+#define D_KBD_F           33
+#define D_KBD_G           34
+#define D_KBD_H           35
+#define D_KBD_J           36
+#define D_KBD_K           37
+#define D_KBD_L           38
+#define D_KBD_SEMICOLON   39
+#define D_KBD_APOSTROPHE  40
+#define D_KBD_GRAVE       41
+#define D_KBD_LEFTSHIFT   42
+#define D_KBD_BACKSLASH   43
 #define D_KBD_Z           44
 #define D_KBD_X           45
-
-/* cvbnm,./ rightshift keypadasterix */
-
+#define D_KBD_C           46
+#define D_KBD_V           47
+#define D_KBD_B           48
+#define D_KBD_N           49
+#define D_KBD_M           50
+#define D_KBD_COMMA       51
+#define D_KBD_PERIOD      52
+#define D_KBD_SLASH       53
+#define D_KBD_RIGHTSHIFT  54
+#define D_KBD_PADASTERIX  55
 #define D_KBD_LEFTALT     56
 #define D_KBD_SPACE       57
 
 /* capslock f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 numlock scrolllock keypad7
    <lots more keypad junk> */
 
-/* < f11 f12 keypadenter rightcontrol keypaddivide printscr rightalt break */
-
+/* < f11 f12 */
+#define D_KBD_PADENTER    96
+#define D_KBD_RIGHTCONTROL 97
+#define D_KBD_PADDIVIDE   98
+#define D_KBD_PRINTSCR    99
+#define D_KBD_RIGHTALT    100
+#define D_KBD_BREAK       101
 #define D_KBD_HOME        102
 #define D_KBD_CURSORUP    103
 #define D_KBD_PAGEUP      104
