@@ -16,6 +16,7 @@ extern void d_manager_delete(void);
 extern word d_manager_getmaxlayers(void);
 extern word d_manager_getmaxsprites(void);
 extern bool d_manager_addsprite(d_sprite_t *, word *, char);
+extern bool d_manager_removesprite(word);
 extern bool d_manager_addimagelayer(d_image_t *, word *, char);
 extern bool d_manager_addtilemaplayer(d_tilemap_t *, word *, char);
 extern void d_manager_wipelayers(void);

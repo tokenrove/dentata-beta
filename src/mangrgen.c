@@ -24,6 +24,7 @@ void d_manager_delete(void);
 word d_manager_getmaxlayers(void);
 word d_manager_getmaxsprites(void);
 bool d_manager_addsprite(d_sprite_t *, word *, char);
+bool d_manager_removesprite(word);
 bool d_manager_addimagelayer(d_image_t *, word *, char);
 bool d_manager_addtilemaplayer(d_tilemap_t *, word *, char);
 void d_manager_wipelayers(void);
@@ -148,6 +149,11 @@ bool d_manager_addsprite(d_sprite_t *spr, word *handle, char priority)
     if(handle != NULL)
         *handle = key;
     return success;
+}
+
+bool d_manager_removesprite(word key)
+{
+    return d_set_remove(spriteset, key);
 }
 
 

@@ -33,7 +33,7 @@ LDFLAGS=$(LIBS)
 #   linux-svgalib
 #   linux-x11
 #   gba
-TARGET=linux-svgalib
+TARGET=unix-x11
 
 # Some of the things that can be tweaked below are:
 ###
