@@ -1,7 +1,7 @@
 /* 
  * s3mgen.c
  * Created: Sun Apr 15 16:06:01 2001 by tek@wiw.org
- * Revised: Sun Jun 24 04:08:53 2001 by tek@wiw.org
+ * Revised: Thu Jun 28 04:02:35 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -148,6 +148,7 @@ bool readinstrument(d_file_t *fp, d_s3m_instrument_t *inst)
         inst->flags = d_file_getbyte(fp);
         if(inst->flags&1) inst->sample->hasloop = true;
         if(inst->flags&2) {
+            d_error_fatal(__FUNCTION__": stereo sample (%s)\n", inst->name);
             inst->sample->mode.nchannels = 2;
             inst->sample->len *= 2;
         }
@@ -250,10 +251,13 @@ void d_s3m_delete(d_s3m_t *s3m)
 
 typedef struct s3mplayback_s {
     dword magic;
-    word curorder, currow, counter, speed, tempo, gvolume;
+    word curorder, currow, nextorder, nextrow, counter;
+    word speed, tempo, gvolume;
+    byte patterndelay;
+    int finevslide[S3M_NCHANNELS];
     d_s3m_t *cursong;
     void *qh;
-    bool playing;
+    bool playing, dobreak;
     d_s3m_instrument_t *lastinst[S3M_NCHANNELS];
 } s3mplayback_t;
 
@@ -264,6 +268,7 @@ static dword periods[12*2] = {
 };
 
 static void updatechannel(s3mplayback_t *pb, byte chan);
+static void updatechanneltick(s3mplayback_t *pb, byte chan);
 
 d_s3mhandle_t *d_s3m_play(d_s3m_t *s3m)
 {
@@ -273,7 +278,7 @@ d_s3mhandle_t *d_s3m_play(d_s3m_t *s3m)
     bool status;
 
     props.mute = false;
-    props.volume = 192;
+    props.volume = 64;
     props.panning = 0;
 
     status = success;
@@ -294,8 +299,10 @@ d_s3mhandle_t *d_s3m_play(d_s3m_t *s3m)
     d_memory_set(pb, 0, sizeof(s3mplayback_t));
     pb->magic = S3MMAGIC;
 
-    for(i = 0; i < S3M_NCHANNELS; i++)
+    for(i = 0; i < S3M_NCHANNELS; i++) {
         pb->lastinst[i] = NULL;
+        pb->finevslide[i] = 0;
+    }
     pb->curorder = 0;
     pb->currow = 0;
     pb->cursong = s3m;
@@ -304,8 +311,10 @@ d_s3mhandle_t *d_s3m_play(d_s3m_t *s3m)
     pb->tempo = s3m->tempo;
     pb->gvolume = s3m->gvolume;
     pb->counter = pb->speed;
+    pb->patterndelay = 0;
+    pb->dobreak = false;
     pb->qh = d_time_startcount(2*pb->tempo/5, false);
-    
+
     return pb;
 }
 
@@ -338,6 +347,8 @@ void d_s3m_stop(d_s3mhandle_t *p_)
     return;
 }
 
+#define MAXVOLUME 64
+
 void d_s3m_update(d_s3mhandle_t *pb_)
 {
     s3mplayback_t *pb = (s3mplayback_t *)pb_;
@@ -348,11 +359,34 @@ void d_s3m_update(d_s3mhandle_t *pb_)
 
     /* No point going ahead and messing up the playback if it's
      * too early */
-    if(d_time_iscountfinished(pb->qh) != true) return;
+    if(d_time_iscountfinished(pb->qh) != true)
+        return;
     d_time_endcount(pb->qh);
-    
+
     pb->counter++;
     if(pb->counter >= pb->speed) {
+        if(pb->dobreak) {
+            pb->curorder = pb->nextorder;
+            pb->currow = pb->nextrow;
+            pb->dobreak = false;
+        }
+
+        /* FIXME, should sanity check order and row here */
+
+        for(chan = 0; chan < S3M_NCHANNELS; chan++)
+            updatechannel(pb, chan);
+
+        if(pb->patterndelay != 0)
+            pb->patterndelay--;
+
+        if(pb->patterndelay == 0)
+            pb->currow++;
+
+        if(pb->currow >= S3M_NROWS) {
+            pb->currow = 0;
+            pb->curorder++;
+        }
+        pb->counter = 0;
 
         /* If we're at (or past) the end, loop to the beginning of the track */
         if(pb->cursong->orders[pb->curorder] > pb->cursong->npatterns ||
@@ -361,23 +395,14 @@ void d_s3m_update(d_s3mhandle_t *pb_)
             pb->tempo = pb->cursong->tempo;
             pb->speed = pb->cursong->speed;
         }
-
+    } else {
         for(chan = 0; chan < S3M_NCHANNELS; chan++)
-            updatechannel(pb, chan);
-
-        pb->currow++;
-        if(pb->currow >= S3M_NROWS) {
-            pb->currow = 0;
-            pb->curorder++;
-        }
-        pb->counter = 0;
+            updatechanneltick(pb, chan);
     }
 
     pb->qh = d_time_startcount(2*pb->tempo/5, false);
     return;
 }
-
-#define MAXVOLUME 64
 
 void updatechannel(s3mplayback_t *pb, byte chan)
 {
@@ -393,17 +418,24 @@ void updatechannel(s3mplayback_t *pb, byte chan)
         if(p->volume[pb->currow][chan] > MAXVOLUME)
             p->volume[pb->currow][chan] = MAXVOLUME;
         
-        props.volume = pb->gvolume*p->volume[pb->currow][chan]>>6;
+        props.volume = (pb->gvolume*p->volume[pb->currow][chan])>>6;
+    }
+
+    if(pb->finevslide[chan] != 0) {
+        props.volume += pb->finevslide[chan];
+        pb->finevslide[chan] = 0;
     }
     
     inst = p->instrument[pb->currow][chan];
-    if(inst != 255)
+    if(inst != 0)
         pb->lastinst[chan] = &pb->cursong->instruments[inst-1];
 
     if(p->note[pb->currow][chan] != 255 && pb->lastinst[chan] != NULL) {
         if(p->note[pb->currow][chan] == 254) {
             /* note end */
             d_audio_stopsample(chan);
+        } else if(inst == 0) {
+            /* reset volume */
         } else {
             /* This set of code is somewhat explained in the S3M
              * tech doc, if you're curious. The magic numbers might
@@ -421,6 +453,50 @@ void updatechannel(s3mplayback_t *pb, byte chan)
     case 0x01: /* Axx -- set speed */
         if(p->operand[pb->currow][chan] < 0x20) {
             pb->speed = p->operand[pb->currow][chan];
+        } else {
+            d_error_debug(__FUNCTION__": A%2x\n",p->operand[pb->currow][chan]);
+        }
+        break;
+
+    case 0x02: /* Bxx -- jump to order xx */
+        pb->dobreak = true;
+        pb->nextorder = p->operand[pb->currow][chan];
+        pb->nextrow = 0;
+        break;
+
+    case 0x03: /* Cxx -- break pattern to row xx */
+        pb->dobreak = true;
+        pb->nextorder = pb->curorder+1;
+        pb->nextrow = p->operand[pb->currow][chan];
+        break;
+
+    case 0x04: /* Dxx -- volume slides */
+        if((p->operand[pb->currow][chan]>>4) == 0) {
+        } else if((p->operand[pb->currow][chan]&0xf) == 0) {
+        } else if((p->operand[pb->currow][chan]>>4) == 0xf) {
+            pb->finevslide[chan] = -(p->operand[pb->currow][chan]&0xf);
+        } else if((p->operand[pb->currow][chan]&0xf) == 0xf) {
+            pb->finevslide[chan] = (p->operand[pb->currow][chan])>>4;
+        }
+        break;
+
+    case 0x06:
+        d_error_debug(__FUNCTION__": F%2x\n",p->operand[pb->currow][chan]);
+        break;
+
+    case 0x0F: /* Oxy -- set sample offset */
+        d_audio_changesamplepos(chan, p->operand[pb->currow][chan]*256);
+        break;
+
+    case 0x13: /* Sxx (various) */
+        switch(p->operand[pb->currow][chan]>>4) {
+        case 0xE: /* pattern delay */
+            if(pb->patterndelay == 0)
+                pb->patterndelay = p->operand[pb->currow][chan]&0xf;
+            break;
+
+        default:
+            d_error_debug(__FUNCTION__": S%2x\n",p->operand[pb->currow][chan]);
         }
         break;
 
@@ -431,16 +507,51 @@ void updatechannel(s3mplayback_t *pb, byte chan)
     case 0x16: /* Vxx -- set global volume */
         if(p->operand[pb->currow][chan] <= MAXVOLUME)
             pb->gvolume = p->operand[pb->currow][chan];
+        else {
+            d_error_debug(__FUNCTION__": V%2x\n",p->operand[pb->currow][chan]);
+        }
         break;
 
-    case 0x02: /* Bxx -- jump to order xx */
-    case 0x03: /* Cxx -- break pattern to row xx */
-    case 0x0F: /* Oxy -- set sample offset */
+    case 0xFF: /* no effect */
+        break;
+
     default:
-        d_error_debug(__FUNCTION__": hit effect %x\n",
-                      p->command[pb->currow][chan]);
+        d_error_debug(__FUNCTION__": hit effect %x (%x)\n",
+                      p->command[pb->currow][chan], p->operand[pb->currow][chan]);
     }
+
+    if(props.volume > MAXVOLUME)
+        props.volume = MAXVOLUME;
     
+    d_audio_setchanprops(chan, props);
+    return;
+}
+
+
+void updatechanneltick(s3mplayback_t *pb, byte chan)
+{
+    d_s3m_pattern_t *p;
+    d_channelprops_t props;
+
+    props = d_audio_getchanprops(chan);
+    p = &pb->cursong->patterns[pb->cursong->orders[pb->curorder]];
+
+    switch(p->command[pb->currow][chan]) {
+    case 0x04:
+        if((p->operand[pb->currow][chan]>>4) == 0) {
+            props.volume -= p->operand[pb->currow][chan]&0xf;
+        } else if((p->operand[pb->currow][chan]&0xf) == 0) {
+            props.volume += p->operand[pb->currow][chan]>>4;
+        }
+        break;
+
+    case 0x07:
+        break;
+    }
+
+    if(props.volume > MAXVOLUME)
+        props.volume = MAXVOLUME;
+
     d_audio_setchanprops(chan, props);
     return;
 }

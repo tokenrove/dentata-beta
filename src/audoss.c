@@ -1,7 +1,7 @@
 /* 
  * audoss.c
  * Created: Sat Apr 14 23:22:27 2001 by tek@wiw.org
- * Revised: Sat Jun 23 23:14:57 2001 by tek@wiw.org
+ * Revised: Thu Jun 28 03:45:09 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -52,7 +52,7 @@ bool d_audio_new(d_audiomode_t mode)
     int i;
 
     /* FIXME: This might need some tweaking */
-    dspbuflen = (mode.frequency < 22050)?8:(mode.frequency > 32000)?10:9;
+    dspbuflen = (mode.frequency < 22050)?4:(mode.frequency > 32000)?6:5;
     if(mode.nchannels == 2) dspbuflen++;
     if(mode.bitspersample == 16) dspbuflen++;
 
@@ -66,8 +66,7 @@ bool d_audio_new(d_audiomode_t mode)
     i = (MAXFRAGS<<16)|dspbuflen;
     if(ioctl(dspfd, SNDCTL_DSP_SETFRAGMENT, &i) == -1) {
         d_error_push("d_audio_new: Unable to set fragment size.");        
-        close(dspfd);
-        return failure;
+        goto error;
     }
     ioctl(dspfd, SNDCTL_DSP_GETBLKSIZE, &dspbuflen);
 
@@ -137,8 +136,10 @@ void d_audio_delete(void)
 void d_audio_update(void)
 {
     int i, j;
-    long mix, mix2;
+    long mix;
+    short smix;
     d_sample_t *s;
+    char *p;
 
     for(j = 0; j < dspbuflen;) {
         mix = 0;
@@ -147,33 +148,29 @@ void d_audio_update(void)
             if(s == NULL || channels[i].props.mute == true)
                 continue;
             switch(curmode.bitspersample) {
-            case 8:
-                mix2 = s->data[channels[i].pos];
-                mix2 -= 128;
-                mix2 *= channels[i].props.volume;
-                mix2 >>= 1;
-                mix += mix2;
-                if(mix > 32767) mix = 32767;
-                else if(mix < -32768) mix = -32768;
-                channels[i].samplenum+=channels[i].samplestep;
-                while(channels[i].samplenum > channels[i].sampledenom) {
-                    channels[i].pos++;
-                    channels[i].samplenum -= channels[i].sampledenom;
-                }
-                break;
-
             case 16:
-                mix2 = (signed short)(s->data[channels[i].pos]|
-                                      (s->data[channels[i].pos+1]<<8));
-                mix2 *= channels[i].props.volume;
-                mix2 >>= 9;
-                mix += mix2;
-                if(mix > 32767) mix = 32767;
-                else if(mix < -32768) mix = -32768;
-                channels[i].samplenum+=channels[i].samplestep;
-                while(channels[i].samplenum > channels[i].sampledenom) {
-                    channels[i].pos+=2;
-                    channels[i].samplenum -= channels[i].sampledenom;
+                switch(s->mode.bitspersample) {
+                case 16:
+                    smix = s->data[channels[i].pos]|(s->data[channels[i].pos+1]<<8);
+                    smix = (smix*channels[i].props.volume)>>8;
+                    mix += smix;
+                    channels[i].samplenum+=channels[i].samplestep;
+                    while(channels[i].samplenum >= channels[i].sampledenom) {
+                        channels[i].pos+=2;
+                        channels[i].samplenum -= channels[i].sampledenom;
+                    }
+                    break;
+
+                case 8:
+                    smix = s->data[channels[i].pos]-128;
+                    smix *= channels[i].props.volume;
+                    mix += smix;
+                    channels[i].samplenum+=channels[i].samplestep;
+                    while(channels[i].samplenum >= channels[i].sampledenom) {
+                        channels[i].pos++;
+                        channels[i].samplenum -= channels[i].sampledenom;
+                    }
+                    break;
                 }
                 break;
 
@@ -192,20 +189,48 @@ void d_audio_update(void)
             }
         }
 
-        switch(curmode.bitspersample) {
-        case 16:
-            dspbuf[j++] = (mix)&0xFF;
-            dspbuf[j++] = ((mix)>>8)&0xFF;
+        switch(curmode.nchannels) {
+        case 1:
+            switch(curmode.bitspersample) {
+            case 16:
+                dspbuf[j++] = (mix)&0xFF;
+                dspbuf[j++] = ((mix)>>8)&0xFF;
+                break;
+
+            default:
+                d_error_fatal(__FUNCTION__": unsupported destination audio"
+                              " resolution.\n");
+                break;
+            }
             break;
 
-        default:
-            d_error_fatal("d_audio_update: bug: unsupported destination audio"
-                          " resolution.\n");
+        case 2:
+            switch(curmode.bitspersample) {
+            case 16:
+                dspbuf[j++] = (mix)&0xFF;
+                dspbuf[j++] = ((mix)>>8)&0xFF;
+                dspbuf[j++] = (mix)&0xFF;
+                dspbuf[j++] = ((mix)>>8)&0xFF;
+                break;
+
+            default:
+                d_error_fatal(__FUNCTION__": unsupported destination audio"
+                              " resolution.\n");
+                break;
+            }
             break;
         }
     }
 
-    write(dspfd, dspbuf, dspbuflen);
+    p = dspbuf;
+    for(i = dspbuflen; i > 0;) {
+        j = write(dspfd, p, i);
+        if(j > 0) {
+            i -= j;
+            p += j;
+        } else
+            break;
+    }
     d_memory_set(dspbuf, 0, dspbuflen);
     return;
 }
@@ -221,7 +246,6 @@ void d_audio_playsample(byte chan, d_sample_t *p, dword frequency)
     channels[chan].sample = p;
     channels[chan].samplenum = 0;
     channels[chan].sampledenom = curmode.frequency;
-    /* FIXME this should take into account p->mode.frequency */
     channels[chan].samplestep = frequency;
     return;
 }
@@ -276,6 +300,12 @@ d_channelprops_t d_audio_getchanprops(byte chan)
     }
 
     return channels[chan].props;
+}
+
+void d_audio_changesamplepos(byte chan, dword pos)
+{
+    channels[chan].pos = pos;
+    return;
 }
 
 /* EOF audoss.c */

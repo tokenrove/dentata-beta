@@ -1,7 +1,7 @@
 /**
  * audio.h
  * Created: Thu Jan 25 12:09:37 2001 by tek@wiw.org
- * Revised: Sun Jun 24 10:13:30 2001 by tek@wiw.org
+ * Revised: Thu Jun 28 03:44:44 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -124,6 +124,8 @@ extern void d_audio_setchanprops(byte, d_channelprops_t);
  * Returns: the current channel properties.
  */
 extern d_channelprops_t d_audio_getchanprops(byte);
+
+extern void d_audio_changesamplepos(byte, dword);
 
 #endif
 

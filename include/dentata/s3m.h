@@ -102,7 +102,7 @@ extern d_s3mhandle_t *d_s3m_play(d_s3m_t *);
  * Takes: sh - the handle which refers to this s3m. No longer valid
  *             after this function has been called.
  */
-extern void d_d3m_stop(d_s3mhandle_t *);
+extern void d_s3m_stop(d_s3mhandle_t *);
 
 /**
  * d_s3m_update(d_s3mhandle_t *sh)

@@ -8,6 +8,7 @@
  * 
  */
 
+#include <dentata/types.h>
 #include <dentata/image.h>
 #include <dentata/error.h>
 #include <dentata/random.h>
@@ -17,13 +18,13 @@
 #define TESTBPP       24
 #define NRANDTESTITER 100
 
-bool test_imagenew(d_randomhandle_t *);
+bool test_imagenew(d_random_t *);
 bool haserrors(void);
 
 int main(void)
 {
     bool status;
-    d_randomhandle_t *rh;
+    d_random_t *rh;
 
     /* set 1: d_image_new tests */
     status = test_imagenew(rh);
@@ -32,11 +33,10 @@ int main(void)
     return 0;
 }
 
-bool test_imagenew(d_randomhandle_t *rh)
+bool test_imagenew(d_random_t *rh)
 {
     d_rasterdescription_t desc;
     d_image_t *p;
-    char *s;
     int i;
 
     /* test 1: create a valid image with each alpha */
@@ -116,12 +116,15 @@ bool test_imagenew(d_randomhandle_t *rh)
 
 bool haserrors(void)
 {
+    char *s;
+
     s = d_error_pop();
     if(s != NULL) {
         d_error_push(s);
         d_error_dump();
-        return failure;
+        return true;
     }
+    return false;
 }
     
 /* EOF imagetst.c */

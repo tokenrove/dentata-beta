@@ -1,7 +1,7 @@
 /* 
  * colorgen.c
  * Created: Wed Jan 31 13:08:59 2001 by tek@wiw.org
- * Revised: Sun Jun 24 00:51:29 2001 by tek@wiw.org
+ * Revised: Wed Jun 27 05:01:36 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -70,16 +70,16 @@ void d_color_unpack(byte bpp, d_color_t c, byte *r, byte *g, byte *b)
     switch(bpp) {
         /* MBBBBBGG GGGRRRRR */
     case 15:
-        *r = c&31;
-        *g = (c>>5)&31;
-        *b = (c>>10)&31;
+        *r = (c&31)<<3;
+        *g = ((c>>5)&31)<<3;
+        *b = ((c>>10)&31)<<3;
         break;
 
         /* BBBBBGGG GGGRRRRR */
     case 16:
-        *r = c&31;
-        *g = (c>>5)&63;
-        *b = (c>>11)&31;
+        *r = (c&31)<<3;
+        *g = ((c>>5)&63)<<2;
+        *b = ((c>>11)&31)<<3;
         break;
 
         /* BBBBBBBB GGGGGGGG RRRRRRRR */
@@ -104,9 +104,9 @@ d_color_t d_color_pack(byte bpp, byte r, byte g, byte b)
     switch(bpp) {
     case 15: /* MBBBBBGG GGGRRRRR */
         c = 0;
-        c |= r&31;
-        c |= (g&31)<<5;
-        c |= (b&31)<<10;
+        c |= r>>3;
+        c |= (g>>3)<<5;
+        c |= (b>>3)<<10;
         break;
 
     case 16: /* BBBBBGGG GGGRRRRR */

@@ -1,7 +1,7 @@
 /* 
  * imagegen.c
  * Created: Sun Feb 25 01:57:37 2001 by tek@wiw.org
- * Revised: Sun Jun 24 00:59:52 2001 by tek@wiw.org
+ * Revised: Wed Jun 27 04:59:06 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -166,7 +166,7 @@ void d_image_silhouette(d_image_t *p, d_color_t color, byte alpha)
     return;
 }
 
-/* FIXME this routine is underdocumented given its complexity */
+/* FIXME this routine is underdocumented and oversized given its complexity */
 bool d_image_convertalpha(d_image_t *p, byte alpha)
 {
     int i;
@@ -219,7 +219,7 @@ bool d_image_convertalpha(d_image_t *p, byte alpha)
     return success;
 }
 
-/* FIXME this routine is underdocumented given its complexity */
+/* FIXME this routine is underdocumented and oversized given its complexity */
 bool d_image_convertdepth(d_image_t *p, byte bpp)
 {
     byte *newdat, g;
@@ -231,6 +231,21 @@ bool d_image_convertdepth(d_image_t *p, byte bpp)
     switch(p->desc.bpp) {
     case 1:
         switch(bpp) {
+        case 8:
+            newdat = d_memory_new(p->desc.w*p->desc.h);
+            if(newdat == NULL) return failure;
+            for(i = 0; i < p->desc.w*p->desc.h; i++) {
+                if(p->data[i/8]&(1<<(i%8))) {
+                    newdat[i] = 1;
+                } else {
+                    newdat[i] = 0x00;
+                }
+            }
+            d_memory_delete(p->data);
+            p->data = newdat;
+            p->desc.bpp = bpp;
+            break;
+
         case 16:
             newdat = d_memory_new(p->desc.w*p->desc.h*2);
             if(newdat == NULL) return failure;
@@ -266,6 +281,10 @@ bool d_image_convertdepth(d_image_t *p, byte bpp)
             p->data = newdat;
             p->desc.bpp = bpp;
             break;
+
+        default:
+            d_error_push("d_image_convertdepth: Unsupported depth.");
+            return failure;
         }
         break;
 
@@ -299,6 +318,10 @@ bool d_image_convertdepth(d_image_t *p, byte bpp)
             p->desc.bpp = bpp;
             p->desc.paletted = false;
             break;
+
+        default:
+            d_error_push("d_image_convertdepth: Unsupported depth.");
+            return failure;
         }
         break;
 
@@ -316,6 +339,10 @@ bool d_image_convertdepth(d_image_t *p, byte bpp)
             p->data = newdat;
             p->desc.bpp = bpp;
             break;
+
+        default:
+            d_error_push("d_image_convertdepth: Unsupported depth.");
+            return failure;
         }
         break;
 
@@ -339,23 +366,16 @@ void d_image_setpelcolor(d_image_t *p, d_point_t pt, d_color_t c)
         p->data[pt.x+pt.y*p->desc.w] = c;
         break;
         
-    /* FIXME: I'm unsure about packing order here and below */
     case 15: /* fall thru */
     case 16:
-        p->data[(pt.x+pt.y*p->desc.w)*2+0] = c&0xFF;
+        p->data[(pt.x+pt.y*p->desc.w)*2+0] = c;
         p->data[(pt.x+pt.y*p->desc.w)*2+1] = c>>8;
         break;
 
     case 24:
-        p->data[(pt.x+pt.y*p->desc.w)*3+0] = c&0xFF;
-        p->data[(pt.x+pt.y*p->desc.w)*3+1] = (c>>8)&0xFF;
-        p->data[(pt.x+pt.y*p->desc.w)*3+2] = (c>>16)&0xFF;
-        break;
-
-    case 32:
-        p->data[(pt.x+pt.y*p->desc.w)*4+0] = c&0xFF;
-        p->data[(pt.x+pt.y*p->desc.w)*4+1] = (c>>8)&0xFF;
-        p->data[(pt.x+pt.y*p->desc.w)*4+2] = (c>>16)&0xFF;
+        p->data[(pt.x+pt.y*p->desc.w)*3+0] = c;
+        p->data[(pt.x+pt.y*p->desc.w)*3+1] = c>>8;
+        p->data[(pt.x+pt.y*p->desc.w)*3+2] = c>>16;
         break;
 
     default:
@@ -407,7 +427,7 @@ d_color_t d_image_getpelcolor(d_image_t *p, d_point_t pt)
     case 8:
         c = p->data[i];
         break;
-        
+
     case 15: /* fall thru */
     case 16:
         i *= 2;
@@ -418,15 +438,8 @@ d_color_t d_image_getpelcolor(d_image_t *p, d_point_t pt)
     case 24:
         i *= 3;
         c = p->data[i++];
-        c |= p->data[i++]<<8;
-        c |= p->data[i]<<16;
-        break;
-
-    case 32:
-        i *= 4;
-        c = p->data[i++];
-        c |= p->data[i++]<<8;
-        c |= p->data[i]<<16;
+        c = (c<<8) | p->data[i++];
+        c = (c<<8) | p->data[i];
         break;
 
     default:

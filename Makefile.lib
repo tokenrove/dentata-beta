@@ -12,14 +12,17 @@
 ifeq ($(TARGETGFX),x11)
 RASTERMODS=rastrx11.o
 EVENTMODS=eventx11.o
+AUDIOMODS=audoss.o
 endif
 ifeq ($(TARGETGFX),svgalib)
 RASTERMODS=rastrvgl.o
 EVENTMODS=eventvgl.o
+AUDIOMODS=audoss.o
 endif
 ifeq ($(TARGETGFX),dos)
 RASTERMODS=rastrdos.o
 EVENTMODS=eventdos.o kbddos.o
+AUDIOMODS=auddos.o
 endif
 
 # default
@@ -59,7 +62,8 @@ endif
 
 ### libdentata
 
-MODULES=$(RASTERMODS) $(EVENTMODS) $(SYSTEMMODS) $(GENERICMODS) $(IMAGEMODS)
+MODULES=$(RASTERMODS) $(EVENTMODS) $(SYSTEMMODS) $(GENERICMODS) $(IMAGEMODS) \
+        $(AUDIOMODS)
 
 libdentata.a: $(MODULES)
 	$(RM) $@

@@ -74,7 +74,6 @@ bool d_raster_new(void)
     graphcont = DefaultGCOfScreen(screen);
     depth = DefaultDepthOfScreen(screen);
     useshm = (XShmQueryExtension(_d_x11_display) == True)?true:false;
-    useshm = false; /* FIXME */
 
     return success;
 }
