@@ -44,7 +44,17 @@ extern d_point_t d_point_origin(void);
 extern d_point_t d_point_random(d_random_t *, d_rect_t);
 
 /**
- * d_util_printflen(byte *fmt, void *argptr)
+ * d_iterator_reset(d_iterator_t *it)
+ * Resets the iteration counter. Note that this should be called before
+ * any calls to d_set_nextkey() if the set has been changed in any way
+ * since the last time it was called.
+ *
+ * Takes: it - pointer to the iterator.
+ */
+extern void d_iterator_reset(d_iterator_t *);
+
+/**
+ * d_util_printflen(byte *fmt, void **argptr)
  * Determines how many bytes will be required to hold a formatted string.
  *
  * Takes: fmt - the format string, as printf(3).
@@ -53,10 +63,10 @@ extern d_point_t d_point_random(d_random_t *, d_rect_t);
  *
  * Returns: the length of the formatted string.
  */
-extern int d_util_printflen(byte *, void *);
+extern int d_util_printflen(byte *, void **);
 
 /***
- * d_util_sprintf(byte *dst, byte *fmt, void *argptr)
+ * d_util_sprintf(byte *dst, byte *fmt, void **argptr)
  * Formats a string, similar to sprintf(3).
  *
  * Takes: dst - the destination string.
@@ -64,7 +74,7 @@ extern int d_util_printflen(byte *, void *);
  *        argptr - the address of the first argument after the format
  *                 string.
  */
-extern void d_util_sprintf(byte *, byte *, void *);
+extern void d_util_sprintf(byte *, byte *, void **);
 
 #endif
 

@@ -129,11 +129,11 @@ bool loadv0font(d_file_t *fp, d_font_t *fnt)
 void d_font_printf(d_image_t *image, d_font_t *fnt, d_point_t pt, byte *fmt,
                    ...)
 {
-    void *args;
+    void **args;
     byte *p;
     int i, len;
 
-    args = &fmt+1;
+    args = (void **)&fmt; args++;
     len = d_util_printflen(fmt, args);
     p = d_memory_new(len+1);
     d_util_sprintf(p, fmt, args);
@@ -148,9 +148,9 @@ void d_font_printf(d_image_t *image, d_font_t *fnt, d_point_t pt, byte *fmt,
 
 word d_font_gettextwidth(d_font_t *fnt, byte *fmt, ...)
 {
-    void *args;
+    void **args;
 
-    args = &fmt+1;
+    args = (void **)&fmt; args++;
     return d_util_printflen(fmt, args)*(fnt->desc.w);
 }
 

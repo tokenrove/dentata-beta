@@ -37,6 +37,11 @@ typedef enum { false=0, failure=false,
 #define NULL ((void *)0)
 #endif
 
+typedef struct d_iterator_s {
+    dword signature, pos;
+    void *aux;
+} d_iterator_t;
+
 /* Shared graphics types */
 typedef enum {RGB=0, grayscale} d_colorspace_t;
 

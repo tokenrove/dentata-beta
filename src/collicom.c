@@ -62,6 +62,8 @@ bool d_image_collide(d_image_t *a, d_image_t *b, d_point_t p,
                                 endoffset, boffset, bscanoff);
         else
             ret = false;
+
+        return ret;
     }
     
     switch(b->desc.alpha) {

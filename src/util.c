@@ -14,6 +14,14 @@
 #include <dentata/random.h>
 #include <dentata/util.h>
 
+d_point_t d_point_center(d_rect_t r);
+d_point_t d_point_origin(void);
+d_point_t d_point_random(d_random_t *rand, d_rect_t rect);
+void d_iterator_reset(d_iterator_t *it);
+int d_util_printflen(byte *fmt, void **args);
+void d_util_sprintf(byte *s, byte *fmt, void **args);
+
+
 d_point_t d_point_center(d_rect_t r)
 {
     d_point_t pt;
@@ -23,12 +31,14 @@ d_point_t d_point_center(d_rect_t r)
     return pt;
 }
 
+
 d_point_t d_point_origin(void)
 {
     d_point_t pt = { 0, 0 };
 
     return pt;
 }
+
 
 d_point_t d_point_random(d_random_t *rand, d_rect_t rect)
 {
@@ -40,11 +50,20 @@ d_point_t d_point_random(d_random_t *rand, d_rect_t rect)
     return pt;
 }
 
-int d_util_printflen(byte *fmt, void *args)
+
+void d_iterator_reset(d_iterator_t *it)
+{
+    it->signature = 0;
+    it->pos = 0;
+    it->aux = NULL;
+    return;
+}
+
+
+int d_util_printflen(byte *fmt, void **args)
 {
     int i, j, integer;
-    char *string, **cpp;
-    int *ip;
+    char *string;
 
     for(i = 0, j = 0; fmt[i]; i++) {
         if(fmt[i] == '%') {
@@ -52,42 +71,33 @@ int d_util_printflen(byte *fmt, void *args)
             switch(fmt[i]) {
             case 'd':
             case 'i':
-                ip = (int *)args;
-                integer = *ip;
-                ip++;
-                args = (void *)ip;
+                integer = *(int *)args;
                 do j++; while(integer/=10);
+                args++;
                 break;
 
             case 'o':
-                ip = (int *)args;
-                integer = *ip;
-                ip++;
-                args = (void *)ip;
+                integer = *(int *)args;
                 do j++; while(integer/=8);
+                args++;
                 break;
 
             case 'X':
             case 'x':
-                ip = (int *)args;
-                integer = *ip;
-                ip++;
-                args = (void *)ip;
+                integer = *(int *)args;
                 do j++; while(integer/=16);
+                args++;
                 break;
 
             case 's':
-                cpp = (char **)args;
-                string = *cpp;
-                cpp++;
-                args = (void *)cpp;
+                string = *(char **)args;
                 while(*(string++)) j++;
+                args++;
                 break;
 
             case 'c':
                 string = (char *)args;
-                string++;
-                args = string;
+                args++;
                 j++;
                 break;
 
@@ -102,10 +112,11 @@ int d_util_printflen(byte *fmt, void *args)
     return j;
 }
 
-void d_util_sprintf(byte *s, byte *fmt, void *args)
+
+void d_util_sprintf(byte *s, byte *fmt, void **args)
 {
-    int i, k, integer, width, *ip;
-    char *string, **cpp;
+    int i, k, integer, width;
+    char *string;
 
     for(i = 0; fmt[i]; i++) {
         if(fmt[i] == '%') {
@@ -113,10 +124,7 @@ void d_util_sprintf(byte *s, byte *fmt, void *args)
             switch(fmt[i]) {
             case 'd':
             case 'i':
-                ip = (int *)args;
-                k = integer = *ip;
-                ip++;
-                args = (void *)ip;
+                k = integer = *(int *)args;
                 width = 1;
                 while(k/=10) width++;
                 s+=width-1;
@@ -125,13 +133,11 @@ void d_util_sprintf(byte *s, byte *fmt, void *args)
                     integer /= 10;
                 } while(integer);
                 s+=width+1;
+                args++;
                 break;
 
             case 'o':
-                ip = (int *)args;
-                k = integer = *ip;
-                ip++;
-                args = (void *)ip;
+                k = integer = *(int *)args;
                 width = 1;
                 do width++; while(k/=8);
                 s+=width-1;
@@ -140,14 +146,12 @@ void d_util_sprintf(byte *s, byte *fmt, void *args)
                     integer /= 8;
                 } while(integer);
                 s+=width+1;
+                args++;
                 break;
 
             case 'X':
             case 'x':
-                ip = (int *)args;
-                k = integer = *ip;
-                ip++;
-                args = (void *)ip;
+                k = integer = *(int *)args;
                 width = 1;
                 while(k/=16) width++;
                 s+=width-1;
@@ -159,21 +163,18 @@ void d_util_sprintf(byte *s, byte *fmt, void *args)
                     integer /= 16;
                 } while(integer);
                 s+=width+1;
+                args++;
                 break;
 
             case 's':
-                cpp = (char **)args;
-                string = *cpp;
-                cpp++;
-                args = (void *)cpp;
+                string = *(char **)args;
                 while(*string) *(s++) = *(string++);
+                args++;
                 break;
 
             case 'c':
-                string = (char *)args;
-                *(s++) = *string;
-                string++;
-                args = (void *)string;
+                *(s++) = *(char *)args;
+                args++;
                 break;
 
             default:

@@ -16,6 +16,8 @@
 #include <dentata/memory.h>
 #include <dentata/error.h>
 #include <dentata/set.h>
+#include <dentata/random.h>
+#include <dentata/util.h>
 
 bool d_manager_new(void);
 void d_manager_delete(void);
@@ -38,6 +40,8 @@ static void drawlayers(d_image_t *dst);
 static void drawsprites(d_image_t *dst);
 static void drawtilemap(d_image_t *dst, d_tilemap_t *tm, d_point_t pt);
 static void drawimagelayer(d_image_t *dst, d_image_t *im, d_point_t pt, char depth);
+
+#define KEYMAX 32767
 
 typedef struct layer_s {
     enum { image = 0, tilemap = 1 } type;
@@ -79,17 +83,18 @@ void d_manager_delete(void)
 {
     dword key;
     void *p;
+    d_iterator_t it;
 
-    d_set_resetiteration(layerset);
-    while(key = d_set_nextkey(layerset), key != D_SET_INVALIDKEY) {
+    d_iterator_reset(&it);
+    while(key = d_set_nextkey(&it, layerset), key != D_SET_INVALIDKEY) {
         d_set_fetch(layerset, key, &p);
         d_memory_delete(p);
     }
     d_set_delete(layerset);
     layerset = NULL;
 
-    d_set_resetiteration(spriteset);
-    while(key = d_set_nextkey(spriteset), key != D_SET_INVALIDKEY) {
+    d_iterator_reset(&it);
+    while(key = d_set_nextkey(&it, spriteset), key != D_SET_INVALIDKEY) {
         d_set_fetch(spriteset, key, &p);
         d_memory_delete(p);
     }
@@ -101,13 +106,13 @@ void d_manager_delete(void)
 
 word d_manager_getmaxlayers(void)
 {
-    return 1<<15;
+    return KEYMAX;
 }
 
 
 word d_manager_getmaxsprites(void)
 {
-    return 1<<15;
+    return KEYMAX;
 }
 
 
@@ -118,7 +123,7 @@ bool d_manager_addsprite(d_sprite_t *spr, word *handle, char priority)
     bool status;
 
     key = d_set_getunusedkey(spriteset);
-    if(key > 1<<15) {
+    if(key > KEYMAX) {
         d_error_push(__FUNCTION__": invalid key.");
         return failure;
     }
@@ -153,7 +158,7 @@ bool d_manager_addimagelayer(d_image_t *im, word *handle, char priority)
     bool status;
 
     key = d_set_getunusedkey(layerset);
-    if(key > 1<<15)
+    if(key > KEYMAX)
         return failure;
 
     p = d_memory_new(sizeof(layer_t));
@@ -181,7 +186,7 @@ bool d_manager_addtilemaplayer(d_tilemap_t *tm, word *handle, char priority)
     bool status;
 
     key = d_set_getunusedkey(layerset);
-    if(key > 1<<15)
+    if(key > KEYMAX)
         return failure;
 
     p = d_memory_new(sizeof(layer_t));
@@ -206,12 +211,14 @@ void d_manager_wipelayers(void)
 {
     dword key;
     layer_t *p;
+    d_iterator_t it;
 
-    d_set_resetiteration(layerset);
-    while(key = d_set_nextkey(layerset), key != D_SET_INVALIDKEY) {
+    d_iterator_reset(&it);
+    while(key = d_set_nextkey(&it, layerset), key != D_SET_INVALIDKEY) {
         d_set_fetch(layerset, key, (void **)&p);
         d_memory_delete(p);
         d_set_remove(layerset, key);
+        d_iterator_reset(&it);
     }
     return;
 }
@@ -221,12 +228,14 @@ void d_manager_wipesprites(void)
 {
     dword key;
     sprite_t *p;
+    d_iterator_t it;
 
-    d_set_resetiteration(spriteset);
-    while(key = d_set_nextkey(spriteset), key != D_SET_INVALIDKEY) {
+    d_iterator_reset(&it);
+    while(key = d_set_nextkey(&it, spriteset), key != D_SET_INVALIDKEY) {
         d_set_fetch(spriteset, key, (void **)&p);
         d_memory_delete(p);
         d_set_remove(spriteset, key);
+        d_iterator_reset(&it);
     }
     return;
 }
@@ -244,10 +253,11 @@ void drawlayers(d_image_t *dst)
 {
     dword key;
     layer_t *p;
+    d_iterator_t it;
 
-    d_set_resetiteration(layerset);
-    while(key = d_set_nextkey(layerset), key != D_SET_INVALIDKEY) {
-        if(key > 1<<15) {
+    d_iterator_reset(&it);
+    while(key = d_set_nextkey(&it, layerset), key != D_SET_INVALIDKEY) {
+        if(key > KEYMAX) {
             d_error_debug("odd key %d\n", key);
             continue;
         }
@@ -332,10 +342,11 @@ void drawsprites(d_image_t *dst)
     sprite_t *p;
     d_image_t *q;
     d_point_t pt;
+    d_iterator_t it;
 
-    d_set_resetiteration(spriteset);
-    while(key = d_set_nextkey(spriteset), key != D_SET_INVALIDKEY) {
-        if(key > 1<<15) {
+    d_iterator_reset(&it);
+    while(key = d_set_nextkey(&it, spriteset), key != D_SET_INVALIDKEY) {
+        if(key > KEYMAX) {
             d_error_debug("odd key %d\n", key);
             continue;
         }
@@ -402,16 +413,18 @@ d_rect_t d_manager_getvirtualrect(void)
     d_rect_t r;
     dword key;
     layer_t *p;
+    d_iterator_t it;
 
-    r.w = r.h = 1<<15;
-    d_set_resetiteration(layerset);
-    while(key = d_set_nextkey(layerset), key != D_SET_INVALIDKEY) {
-        if(key > 1<<15) {
+    r.w = r.h = KEYMAX;
+    d_iterator_reset(&it);
+    while(key = d_set_nextkey(&it, layerset), key != D_SET_INVALIDKEY) {
+        if(key > KEYMAX) {
             d_error_debug("odd key %d\n", key);
             continue;
         }
         d_set_fetch(layerset, key, (void **)&p);
         if(p->type == image) {
+            /* this is commented out so that images loop forever */
 /*            if(p->data.image->desc.w < r.w)
                 r.w = p->data.image->desc.w;
             else if(p->data.image->desc.h < r.h)

@@ -116,31 +116,16 @@ extern dword d_set_getunusedkey(d_set_t *p);
 extern int d_set_nelements(d_set_t *);
 
 /**
- * d_set_resetiteration(d_set_t *p)
- * Resets the internal iteration counter. Note that this should be called
- * before any calls to d_set_isiterationcomplete() or d_set_nextkey() if
- * the set has been changed in any way since the last time it was called.
- *
- * Takes: p - pointer to the set.
- *
- * Pushes an error if p is not valid.
- */
-extern void d_set_resetiteration(d_set_t *);
-
-/**
- * d_set_nextkey(d_set_t *p)
+ * d_set_nextkey(d_iterator_t *it, d_set_t *p)
  * Gets the key for the next element in the iteration.
  *
- * Takes: p - pointer to the set.
+ * Takes: it - iterator to use.
+ *        p - pointer to the set.
  *
  * Returns: the key for the next element in the iteration, or D_SET_INVALIDKEY
- *          if the iteration has reached completition or the iteration was not
- *          reset with d_set_resetiteration() after changes had been made to
- *          the set.
- *
- * Pushes an error if p is not valid or if iteration is not valid in p.
+ *          if the iteration has reached completition.
  */
-extern dword d_set_nextkey(d_set_t *);
+extern dword d_set_nextkey(d_iterator_t *it, d_set_t *);
 
 #endif
 

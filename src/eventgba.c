@@ -12,6 +12,8 @@
 #include <dentata/event.h>
 #include <dentata/set.h>
 #include <dentata/memory.h>
+#include <dentata/random.h>
+#include <dentata/util.h>
 
 byte d_event_new(byte mask);
 void d_event_delete(void);
@@ -70,10 +72,12 @@ bool d_event_ispressed(byte handle)
 {
     dword event;
     word key;
+    d_iterator_t it;
 
-    d_set_resetiteration(evmap[handle]);
+    d_iterator_reset(&it);
     key = *(word *)0x4000098; /* KEY register */
-    while(event = d_set_nextkey(evmap[handle]), event != D_SET_INVALIDKEY) {
+    while(event = d_set_nextkey(&it, evmap[handle]),
+          event != D_SET_INVALIDKEY) {
         switch(event) {
         case D_CNTRLR_TRIGGERR:
             if(key&512) return true;

@@ -13,6 +13,8 @@
 #include <dentata/event.h>
 #include <dentata/set.h>
 #include <dentata/memory.h>
+#include <dentata/random.h>
+#include <dentata/util.h>
 
 #include <vga.h>
 #include <vgakeyboard.h>
@@ -29,6 +31,7 @@ void d_event_update(void);
 
 static d_set_t **evmap;
 static byte evmask;
+
 
 byte d_event_new(byte mask)
 {
@@ -53,6 +56,7 @@ byte d_event_new(byte mask)
     return evmask;
 }
 
+
 void d_event_delete(void)
 {
     int i;
@@ -69,11 +73,13 @@ void d_event_delete(void)
     return;
 }
 
+
 bool d_event_map(byte handle, byte event)
 {
     if(evmap[handle] == NULL) evmap[handle] = d_set_new(SIZEHINT);
     return d_set_add(evmap[handle], event, NULL);
 }
+
 
 void d_event_unmap(byte handle)
 {
@@ -84,15 +90,18 @@ void d_event_unmap(byte handle)
     return;
 }
 
+
 bool d_event_ispressed(byte handle)
 {
     dword event;
+    d_iterator_t it;
 
     if(handle >= D_EVENT_MAXEVENTS) return false;
     if(evmap[handle] == NULL) return false;
 
-    d_set_resetiteration(evmap[handle]);
-    while(event = d_set_nextkey(evmap[handle]), event != D_SET_INVALIDKEY) {
+    d_iterator_reset(&it);
+    while(event = d_set_nextkey(&it, evmap[handle]),
+          event != D_SET_INVALIDKEY) {
         if(event >= D_KBD_FIRST &&
            event <= D_KBD_LAST) {
             if(keyboard_keypressed(event)) {
@@ -114,6 +123,7 @@ bool d_event_ispressed(byte handle)
     }
     return false;
 }
+
 
 void d_event_update(void)
 {

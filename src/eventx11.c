@@ -13,6 +13,8 @@
 #include <dentata/event.h>
 #include <dentata/set.h>
 #include <dentata/memory.h>
+#include <dentata/random.h>
+#include <dentata/util.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -117,12 +119,14 @@ void d_event_unmap(byte handle)
 bool d_event_ispressed(byte handle)
 {
     dword event;
+    d_iterator_t it;
 
     if(handle >= D_EVENT_MAXEVENTS) return false;
     if(evmap[handle] == NULL) return false;
 
-    d_set_resetiteration(evmap[handle]);
-    while(event = d_set_nextkey(evmap[handle]), event != D_SET_INVALIDKEY) {
+    d_reset_iterator(&it);
+    while(event = d_set_nextkey(&it, evmap[handle]),
+          event != D_SET_INVALIDKEY) {
         if(d_set_fetch(events, event, NULL)) {
             return true;
         }
