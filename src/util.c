@@ -89,7 +89,7 @@ int d_util_printflen(byte *fmt, void *args)
 
 void d_util_sprintf(byte *s, byte *fmt, void *args)
 {
-    int i, j, k, integer, width;
+    int i, k, integer, width;
     char *string;
 
     for(i = 0; fmt[i]; i++) {

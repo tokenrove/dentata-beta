@@ -11,6 +11,8 @@
 #include <dentata/types.h>
 #include <dentata/image.h>
 
+#include "internal.h"
+
 void d_image_alphacomp(d_image_t *d, d_image_t *s, d_point_t p);
 
 static void __d_image_alphacomp_fast(byte *, byte *, byte, dword, dword,
@@ -52,7 +54,7 @@ void __d_image_alphacomp_slow(byte *d, byte *s, byte d_alpha, byte s_alpha,
                               dword srcoffset, dword srcscanoff)
 {
     byte d_mask, s_mask, m, o, a_s, *end;
-    dword a, b, i, j;
+    dword a, b, j;
 
     d_mask = (1<<d_alpha)-1;
     s_mask = (1<<s_alpha)-1;

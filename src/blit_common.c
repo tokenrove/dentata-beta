@@ -103,7 +103,7 @@ void d_image_blit(d_image_t *d, d_image_t *s, d_point_t p)
         break;
     default:
         d_error_fatal("d_image_blit: Unsupported alpha.");
-        break;
+        return;
     }
 
     if(dstoffset < d->desc.w*d->desc.h && scanlen > 0 &&

@@ -14,6 +14,7 @@
 #include <dentata/file.h>
 #include <dentata/error.h>
 #include <dentata/memory.h>
+#include <dentata/color.h>
 
 struct tgaheader_s {
     byte type, commentlen, encoding, cmaptype;

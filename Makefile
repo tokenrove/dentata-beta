@@ -8,6 +8,11 @@
 # 
 #
 
+
+PREFIX=/usr/local
+INSTALLLIB=$(PREFIX)/lib
+INSTALLHEADERS=$(PREFIX)/include
+
 ###
 # Defines:
 #  -DDEBUG        - see error_debug() messages
@@ -64,7 +69,7 @@ SHELL=/bin/sh
 .SUFFIXES=.c .o
 
 VPATH=./src ./include ./tools ./tests
-.PHONY: default all clean distclean check profile tools docs \
+.PHONY: default all install clean distclean check profile tools docs \
         libclean libdistclean toolsclean toolsdistclean testsclean \
         testsdistclean docsclean docsdistclean
 
@@ -72,7 +77,18 @@ include Makefile.lib Makefile.tools Makefile.tests Makefile.docs
 
 default: all
 
-all: libdentata.a tools docs check
+all: libdentata.a tools docs check install
+
+install: libdentata.a installlib installheaders
+
+installlib: libdentata.a
+	install libdentata.a $(INSTALLLIB)
+
+installheaders: $(INSTALLHEADERS)/dentata
+	install ./include/dentata/*.h $(INSTALLHEADERS)/dentata
+
+$(INSTALLHEADERS)/dentata:
+	mkdir $(INSTALLHEADERS)/dentata
 
 TAGS:
 	etags ./src/*.c ./include/dentata/*.h
