@@ -1,7 +1,7 @@
 /* 
  * event.h
  * Created: Wed Jan 24 11:40:52 2001 by tek@wiw.org
- * Revised: Fri Feb  2 01:31:45 2001 by tek@wiw.org
+ * Revised: Sun Feb 25 01:03:52 2001 by tek@wiw.org
  * Copyright 2001 Rhombus Software/Julian E. C. Squires (tek@wiw.org)
  * $Id$
  *
@@ -14,10 +14,59 @@
 
 #include <dentata/types.h>
 
+/**
+ * d_event_new(byte mask)
+ * Initialize the event module.
+ *
+ * Takes: mask - specifies which devices to initialize. The mask parameter
+ *               is a bitwise or of the D_EVENT_<device> constants.
+ *
+ * Returns: a byte in the same form as the mask parameter, specifying which
+ *          input devices the current event driver supports and has
+ *          initialized.
+ *
+ * Pushes an error if a supported input device fails to initialize.
+ */
 extern byte d_event_new(byte);
+
+/**
+ * d_event_delete()
+ * Shuts down the event module.
+ */
 extern void d_event_delete(void);
+
+/**
+ * d_event_map(byte handle, byte event)
+ * Associates an input event with an arbitrary handle. Note that
+ * d_event_map() can be called multiple times with the same handle
+ * to associate multiple events with a single handle.
+ *
+ * Takes: handle - an arbitrary handle chosen by the programmer.
+ *        event - the event to associate with handle. This should be
+ *                one of the values defined in dentata/event.h.
+ *
+ * Returns: success if the mapping succeeded, failure if the event
+ *          is already associated with this mapping or if some other
+ *          error occurred.
+ */
 extern bool d_event_map(byte, byte);
+
+/**
+ * d_event_unmap(byte handle)
+ * Removes _all_ events associated with the supplied handle.
+ *
+ * Takes: handle - the handle from which to remove event mappings.
+ */
 extern void d_event_unmap(byte);
+
+/**
+ * d_event_ispressed(byte handle)
+ * Checks if any of the events associated with handle have occured.
+ *
+ * Takes: handle - the handle to check.
+ *
+ * Returns: true if any of the events have occured, false otherwise.
+ */
 extern bool d_event_ispressed(byte);
 
 #define D_EVENT_KEYBOARD   0x01

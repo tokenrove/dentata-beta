@@ -1,7 +1,7 @@
 # 
 # Makefile
 # Created: Mon Jan  8 07:18:08 2001 by tek@wiw.org
-# Revised: Sat Feb 24 23:23:12 2001 by tek@wiw.org
+# Revised: Sun Feb 25 01:12:49 2001 by tek@wiw.org
 # Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 # This program comes with ABSOLUTELY NO WARRANTY.
 # $Id$
@@ -36,12 +36,22 @@ SPRITEMODS=sprite.o
 ### data structure modules
 DATASTRUCTMODS=set.o #seq.o
 
+### event
+ifeq ($(TARGET),svgalib)
+	EVENTMODS=event_svgalib.o
+endif
+
+#default
+ifndef EVENTMODS
+	EVENTMODS=event_null.o
+endif
+
 ### libdentata
 
 VPATH=$(TOPDIR)/src
 CFLAGS=$(DENT_CFLAGS)
 MODULES=$(RASTERMODS) $(MEMORYMODS) $(ERRORMODS) $(COLORMODS) $(SPRITEMODS) \
-        $(DATASTRUCTMODS)
+        $(DATASTRUCTMODS) $(EVENTMODS)
 
 libdentata.a: $(MODULES)
 	ar rcs libdentata.a $(MODULES)
