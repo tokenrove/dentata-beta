@@ -1,7 +1,7 @@
 /* 
  * fontgen.c
  * Created: Fri Apr 13 20:38:07 2001 by tek@wiw.org
- * Revised: Sun Jul 15 10:02:19 2001 by tek@wiw.org
+ * Revised: Wed Jul 25 19:37:30 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -150,7 +150,7 @@ word d_font_gettextwidth(d_font_t *fnt, byte *fmt, ...)
 {
     void *args;
 
-    args = fmt+sizeof(byte *);
+    args = &fmt+1;
     return d_util_printflen(fmt, args)*(fnt->desc.w);
 }
 

@@ -1,7 +1,7 @@
 /* 
  * mangrgen.c
  * Created: Sun Jul 15 01:15:36 2001 by tek@wiw.org
- * Revised: Mon Jul 16 04:19:39 2001 by tek@wiw.org
+ * Revised: Fri Jul 27 04:07:04 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -24,6 +24,8 @@ word d_manager_getmaxsprites(void);
 bool d_manager_addsprite(d_sprite_t *, word *, char);
 bool d_manager_addimagelayer(d_image_t *, word *, char);
 bool d_manager_addtilemaplayer(d_tilemap_t *, word *, char);
+void d_manager_wipelayers(void);
+void d_manager_wipesprites(void);
 void d_manager_draw(d_image_t *);
 void d_manager_pansprite(word, int, int);
 void d_manager_jumpsprite(word handle, word x, word y);
@@ -60,6 +62,7 @@ static bool parallax;
 static char midground;
 static d_point_t camera;
 
+
 bool d_manager_new(void)
 {
     layerset = d_set_new(255);
@@ -70,6 +73,7 @@ bool d_manager_new(void)
     camera.y = 0;
     return success;
 }
+
 
 void d_manager_delete(void)
 {
@@ -94,15 +98,18 @@ void d_manager_delete(void)
     return;
 }
 
+
 word d_manager_getmaxlayers(void)
 {
     return 1<<15;
 }
 
+
 word d_manager_getmaxsprites(void)
 {
     return 1<<15;
 }
+
 
 bool d_manager_addsprite(d_sprite_t *spr, word *handle, char priority)
 {
@@ -111,24 +118,33 @@ bool d_manager_addsprite(d_sprite_t *spr, word *handle, char priority)
     bool status;
 
     key = d_set_getunusedkey(spriteset);
-    if(key > 1<<15)
+    if(key > 1<<15) {
+        d_error_push(__FUNCTION__": invalid key.");
         return failure;
+    }
 
     p = d_memory_new(sizeof(sprite_t));
-    if(p == NULL)
+    if(p == NULL) {
+        d_error_push(__FUNCTION__": failed to allocate internal sprite "
+                     "structure.");
         return failure;
+    }
+
     p->priority = priority;
     p->data = spr;
     p->offs.x = p->offs.y = 0;
 
     status = d_set_add(spriteset, key, p);
-    if(status == failure)
+    if(status == failure) {
+        d_error_push(__FUNCTION__": failed to add sprite to internal set.");
         return failure;
-    
+    }
+
     if(handle != NULL)
         *handle = key;
     return success;
 }
+
 
 bool d_manager_addimagelayer(d_image_t *im, word *handle, char priority)
 {
@@ -157,6 +173,7 @@ bool d_manager_addimagelayer(d_image_t *im, word *handle, char priority)
     return success;
 }
 
+
 bool d_manager_addtilemaplayer(d_tilemap_t *tm, word *handle, char priority)
 {
     dword key;
@@ -184,6 +201,37 @@ bool d_manager_addtilemaplayer(d_tilemap_t *tm, word *handle, char priority)
     return success;
 }
 
+
+void d_manager_wipelayers(void)
+{
+    dword key;
+    layer_t *p;
+
+    d_set_resetiteration(layerset);
+    while(key = d_set_nextkey(layerset), key != D_SET_INVALIDKEY) {
+        d_set_fetch(layerset, key, (void **)&p);
+        d_memory_delete(p);
+        d_set_remove(layerset, key);
+    }
+    return;
+}
+
+
+void d_manager_wipesprites(void)
+{
+    dword key;
+    sprite_t *p;
+
+    d_set_resetiteration(spriteset);
+    while(key = d_set_nextkey(spriteset), key != D_SET_INVALIDKEY) {
+        d_set_fetch(spriteset, key, (void **)&p);
+        d_memory_delete(p);
+        d_set_remove(spriteset, key);
+    }
+    return;
+}
+
+
 void d_manager_draw(d_image_t *dst)
 {
     drawlayers(dst);
@@ -191,11 +239,11 @@ void d_manager_draw(d_image_t *dst)
     return;
 }
 
+
 void drawlayers(d_image_t *dst)
 {
     dword key;
     layer_t *p;
-    char depth;
 
     d_set_resetiteration(layerset);
     while(key = d_set_nextkey(layerset), key != D_SET_INVALIDKEY) {
@@ -203,7 +251,7 @@ void drawlayers(d_image_t *dst)
             d_error_debug("odd key %d\n", key);
             continue;
         }
-        d_set_fetch(layerset, key, &p);
+        d_set_fetch(layerset, key, (void **)&p);
         if(p->type == image) {
             drawimagelayer(dst, p->data.image, p->offs, p->priority*2);
         } else
@@ -212,6 +260,7 @@ void drawlayers(d_image_t *dst)
     return;
 }
 
+
 int roundiv(int a, int m)
 {
     if(a < 0) a -= m-1;
@@ -219,12 +268,14 @@ int roundiv(int a, int m)
     return a;
 }
 
+
 int xmod(int a, int m)
 {
     a %= m;
     if(a < 0) a += m;
     return a;
 }
+
 
 void drawtilemap(d_image_t *dst, d_tilemap_t *tm, d_point_t pt)
 {
@@ -245,6 +296,7 @@ void drawtilemap(d_image_t *dst, d_tilemap_t *tm, d_point_t pt)
     }
             
 }
+
 
 void drawimagelayer(d_image_t *dst, d_image_t *im, d_point_t pt, char depth)
 {
@@ -273,6 +325,7 @@ void drawimagelayer(d_image_t *dst, d_image_t *im, d_point_t pt, char depth)
     return;
 }
 
+
 void drawsprites(d_image_t *dst)
 {
     dword key;
@@ -286,7 +339,7 @@ void drawsprites(d_image_t *dst)
             d_error_debug("odd key %d\n", key);
             continue;
         }
-        d_set_fetch(spriteset, key, &p);
+        d_set_fetch(spriteset, key, (void **)&p);
         q = d_sprite_getcurframe(p->data);
         pt = p->offs;
         pt.x -= camera.x;
@@ -297,25 +350,28 @@ void drawsprites(d_image_t *dst)
     return;
 }
 
+
 void d_manager_pansprite(word handle, int x, int y)
 {
     sprite_t *p;
 
-    d_set_fetch(spriteset, handle, &p);
+    d_set_fetch(spriteset, handle, (void **)&p);
     p->offs.x += x;
     p->offs.y += y;
     return;
 }
 
+
 void d_manager_jumpsprite(word handle, word x, word y)
 {
     sprite_t *p;
 
-    d_set_fetch(spriteset, handle, &p);
+    d_set_fetch(spriteset, handle, (void **)&p);
     p->offs.x = x;
     p->offs.y = y;
     return;
 }
+
 
 void d_manager_setscrollparameters(bool parallax_, char midground_)
 {
@@ -324,6 +380,7 @@ void d_manager_setscrollparameters(bool parallax_, char midground_)
     return;
 }
 
+
 void d_manager_pan(int x, int y)
 {
     camera.x += x;
@@ -331,12 +388,14 @@ void d_manager_pan(int x, int y)
     return;
 }
 
+
 void d_manager_jump(int x, int y)
 {
     camera.x = x;
     camera.y = y;
     return;
 }
+
 
 d_rect_t d_manager_getvirtualrect(void)
 {
@@ -351,7 +410,7 @@ d_rect_t d_manager_getvirtualrect(void)
             d_error_debug("odd key %d\n", key);
             continue;
         }
-        d_set_fetch(layerset, key, &p);
+        d_set_fetch(layerset, key, (void **)&p);
         if(p->type == image) {
 /*            if(p->data.image->desc.w < r.w)
                 r.w = p->data.image->desc.w;

@@ -1,7 +1,7 @@
 /* 
  * imagegen.c
  * Created: Sun Feb 25 01:57:37 2001 by tek@wiw.org
- * Revised: Fri Jun 29 03:55:57 2001 by tek@wiw.org
+ * Revised: Thu Jul 26 10:55:07 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -74,7 +74,7 @@ d_image_t *d_image_dup(d_image_t *p)
     if(q == NULL) return NULL;
 
     d_memory_copy(q->data, p->data, (q->desc.w*q->desc.h*q->desc.bpp+7)/8);
-    if(p->alpha)
+    if(p->desc.alpha > 0 && p->desc.bpp != 8)
         d_memory_copy(q->alpha, p->alpha,
                       (q->desc.w*q->desc.h*q->desc.alpha+7)/8);
 
@@ -188,6 +188,7 @@ bool d_image_convertalpha(d_image_t *p, byte alpha)
             d_error_push("d_image_convertalpha: desired alpha is too high.");
             return failure;
         }
+        p->desc.alpha = alpha;
         return success;
     }
 
@@ -258,6 +259,10 @@ bool d_image_convertdepth(d_image_t *p, byte bpp)
             d_memory_delete(p->data);
             p->data = newdat;
             p->desc.bpp = bpp;
+            if(p->alpha) {
+                d_memory_delete(p->alpha);
+                p->alpha = NULL;
+            }
             break;
 
         case 16:
@@ -479,6 +484,14 @@ byte d_image_getpelalpha(d_image_t *p, d_point_t pt)
     if(o < 0 || o >= p->desc.w*p->desc.h)
         return 0;
 
+    if(p->desc.bpp == 8) {
+        if(p->desc.alpha == 0) return 255;
+        else {
+            if(p->data[o] == 0) return 0;
+            else return 255;
+        }
+    }
+    
     switch(p->desc.alpha) {
     case 0:
         return 255;

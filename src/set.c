@@ -1,7 +1,7 @@
 /* 
  * set.c
  * Created: Sat Feb 24 21:37:59 2001 by tek@wiw.org
- * Revised: Wed Jul 18 16:47:30 2001 by tek@wiw.org
+ * Revised: Fri Jul 27 03:54:39 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -189,7 +189,7 @@ dword d_set_getunusedkey(d_set_t *p_)
     }
 
     for(i = 0; i < p->tablesize; i++)
-        if(p->elements[i] == NULL)
+        if(chainfind(p->elements[hash(p, i)], i) == failure)
             return i;
 
     /* There are no valid keys remaining without collisions.
