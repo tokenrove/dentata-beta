@@ -1,7 +1,7 @@
 # 
 # Makefile
 # Created: Mon Jan  8 07:00:27 2001 by tek@wiw.org
-# Revised: Wed Jun 27 11:23:59 2001 by tek@wiw.org
+# Revised: Fri Jul 13 03:07:38 2001 by tek@wiw.org
 # Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 # This program comes with ABSOLUTELY NO WARRANTY.
 # $Id$
@@ -57,8 +57,17 @@ endif
 ifeq ($(TARGET),unix-svgalib)
 AS=nasm
 # Change this as appropriate for the OS
+ASFLAGS=-f aoutb
+# Use x86 if appropriate.
+TARGETARCH=generic
+TARGETOS=unix
+LIBS=-lvga
+endif
+
+ifeq ($(TARGET),linux-svgalib)
+AS=nasm
 ASFLAGS=-f elf
-# Use x86 if you like.
+# Use x86 if appropriate
 TARGETARCH=generic
 TARGETOS=unix
 LIBS=-lvga
@@ -67,8 +76,18 @@ endif
 ifeq ($(TARGET),unix-x11)
 AS=nasm
 # Change this as appropriate for the OS
+ASFLAGS=-f aoutb
+# Use x86 if appropriate.
+TARGETARCH=generic
+TARGETOS=unix
+LIBS=-L/usr/X11R6/lib -lXext -lX11
+CPPFLAGS:=$(CPPFLAGS) -I/usr/X11R6/include
+endif
+
+ifeq ($(TARGET),linux-x11)
+AS=nasm
 ASFLAGS=-f elf
-# Use x86 if you like.
+# Use x86 if appropriate.
 TARGETARCH=generic
 TARGETOS=unix
 LIBS=-L/usr/X11R6/lib -lXext -lX11

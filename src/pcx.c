@@ -67,6 +67,8 @@ d_image_t *d_pcx_load(char *fname)
 
     if(head.nplanes == 4)
         desc.alpha = 8;
+    else
+        desc.alpha = 1;
 
     p = d_image_new(desc);
     if(p == NULL)

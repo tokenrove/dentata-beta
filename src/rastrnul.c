@@ -1,7 +1,7 @@
 /* 
  * rastrnul.c
  * Created: Sat Feb 24 19:54:17 2001 by tek@wiw.org
- * Revised: Sat Jun 23 04:13:45 2001 by tek@wiw.org
+ * Revised: Fri Jul 13 03:45:10 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -9,6 +9,7 @@
  * Null raster module for testing, platforms without support, et cetera.
  */
 
+#include <dentata/types.h>
 #include <dentata/raster.h>
 
 bool d_raster_new(void)

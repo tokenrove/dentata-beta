@@ -1,7 +1,7 @@
 /* 
  * audoss.c
  * Created: Sat Apr 14 23:22:27 2001 by tek@wiw.org
- * Revised: Thu Jun 28 03:45:09 2001 by tek@wiw.org
+ * Revised: Fri Jul 13 03:37:48 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -28,7 +28,7 @@ void d_audio_stopsample(byte);
 int d_audio_nchannels(void);
 bool d_audio_addchannel(d_channelprops_t);
 void d_audio_setchanprops(byte, d_channelprops_t);
-d_channelprops_t d_audio_getchanprops(byte);
+void d_audio_getchanprops(byte, d_channelprops_t *);
 
 typedef struct dspchannel_s {
     dword pos;
@@ -44,12 +44,18 @@ static word dspbuflen;
 static byte *dspbuf;
 static d_audiomode_t curmode;
 
+static short volumetable[D_MAXVOLUME+1][256];
+
 #define MAXFRAGS 3
 #define DSP_DEVICE "/dev/dsp"
 
 bool d_audio_new(d_audiomode_t mode)
 {
-    int i;
+    int i, j;
+
+    for(i = 0; i < D_MAXVOLUME; i++)
+        for(j = 0; j < 256; j++)
+            volumetable[i][j] = i*(j-128)/64;
 
     /* FIXME: This might need some tweaking */
     dspbuflen = (mode.frequency < 22050)?4:(mode.frequency > 32000)?6:5;
@@ -135,49 +141,29 @@ void d_audio_delete(void)
 
 void d_audio_update(void)
 {
-    int i, j;
-    long mix;
-    short smix;
+    int i, j, a, b, c;
+    short mix;
+    char smix;
     d_sample_t *s;
     char *p;
 
+    c = 2048*16/48;
+    a = (2048-c)/2;
+    b = a+c;
+
     for(j = 0; j < dspbuflen;) {
-        mix = 0;
+        mix = 1024;
         for(i = 0; i < nchannels; i++) {
             s = channels[i].sample;
             if(s == NULL || channels[i].props.mute == true)
                 continue;
-            switch(curmode.bitspersample) {
-            case 16:
-                switch(s->mode.bitspersample) {
-                case 16:
-                    smix = s->data[channels[i].pos]|(s->data[channels[i].pos+1]<<8);
-                    smix = (smix*channels[i].props.volume)>>8;
-                    mix += smix;
-                    channels[i].samplenum+=channels[i].samplestep;
-                    while(channels[i].samplenum >= channels[i].sampledenom) {
-                        channels[i].pos+=2;
-                        channels[i].samplenum -= channels[i].sampledenom;
-                    }
-                    break;
-
-                case 8:
-                    smix = s->data[channels[i].pos]-128;
-                    smix *= channels[i].props.volume;
-                    mix += smix;
-                    channels[i].samplenum+=channels[i].samplestep;
-                    while(channels[i].samplenum >= channels[i].sampledenom) {
-                        channels[i].pos++;
-                        channels[i].samplenum -= channels[i].sampledenom;
-                    }
-                    break;
-                }
-                break;
-
-            default:
-                d_error_push("d_audio_update: bad bitspersample in curmode!");
-                return;
+            mix += volumetable[channels[i].props.volume][s->data[channels[i].pos]];
+            channels[i].samplenum+=channels[i].samplestep;
+            while(channels[i].samplenum >= channels[i].sampledenom) {
+                channels[i].pos++;
+                channels[i].samplenum -= channels[i].sampledenom;
             }
+
             if(channels[i].pos >= s->len ||
                (s->hasloop && channels[i].pos >= s->lend)) {
                 if(s->hasloop) {
@@ -189,40 +175,17 @@ void d_audio_update(void)
             }
         }
 
-        switch(curmode.nchannels) {
-        case 1:
-            switch(curmode.bitspersample) {
-            case 16:
-                dspbuf[j++] = (mix)&0xFF;
-                dspbuf[j++] = ((mix)>>8)&0xFF;
-                break;
-
-            default:
-                d_error_fatal(__FUNCTION__": unsupported destination audio"
-                              " resolution.\n");
-                break;
-            }
-            break;
-
-        case 2:
-            switch(curmode.bitspersample) {
-            case 16:
-                dspbuf[j++] = (mix)&0xFF;
-                dspbuf[j++] = ((mix)>>8)&0xFF;
-                dspbuf[j++] = (mix)&0xFF;
-                dspbuf[j++] = ((mix)>>8)&0xFF;
-                break;
-
-            default:
-                d_error_fatal(__FUNCTION__": unsupported destination audio"
-                              " resolution.\n");
-                break;
-            }
-            break;
+        if(mix < a) mix = 0;
+        else if(mix > b) mix = 255;
+        else {
+            mix -= 1024;
+            mix = (mix-a)*256/(b-a);
         }
+
+        dspbuf[j++] = mix+128;
     }
 
-    p = dspbuf;
+    p = (char *)dspbuf;
     for(i = dspbuflen; i > 0;) {
         j = write(dspfd, p, i);
         if(j > 0) {
@@ -238,7 +201,13 @@ void d_audio_update(void)
 void d_audio_playsample(byte chan, d_sample_t *p, dword frequency)
 {
     if(chan >= nchannels) {
-        d_error_push("d_audio_playsample: bad channel supplied.");
+        d_error_push(__FUNCTION__": bad channel supplied.");
+        return;
+    }
+
+    if(p->mode.bitspersample != 8 || p->mode.nchannels != 1 ||
+       p->mode.encoding != PCM) {
+        d_error_push(__FUNCTION__": unsupported sample parameters.");
         return;
     }
 
@@ -276,6 +245,7 @@ bool d_audio_addchannel(d_channelprops_t props)
         return failure;
     channels = tmp;
     nchannels++;
+    if(props.volume > D_MAXVOLUME) props.volume = D_MAXVOLUME;
     channels[nchannels-1].props = props;
     channels[nchannels-1].pos = 0;
     channels[nchannels-1].sample = NULL;
@@ -285,26 +255,49 @@ bool d_audio_addchannel(d_channelprops_t props)
 void d_audio_setchanprops(byte chan, d_channelprops_t props)
 {
     if(chan >= nchannels) {
-        d_error_push("d_audio_setchanprops: bad channel supplied.");
+        d_error_push(__FUNCTION__": bad channel supplied.");
         return;
     }
 
+    if(props.volume > D_MAXVOLUME) props.volume = D_MAXVOLUME;
     channels[chan].props = props;
     return;
 }
 
-d_channelprops_t d_audio_getchanprops(byte chan)
+void d_audio_getchanprops(byte chan, d_channelprops_t *props)
 {
-    if(chan >= nchannels) {
-        d_error_push("d_audio_getchanprops: bad channel supplied.");
+    if(props == NULL) {
+        d_error_push(__FUNCTION__": slipped a NULL pointer.");
+        return;
     }
 
-    return channels[chan].props;
+    if(chan >= nchannels) {
+        d_error_push(__FUNCTION__": bad channel supplied.");
+        return;
+    }
+
+    *props = channels[chan].props;
 }
 
-void d_audio_changesamplepos(byte chan, dword pos)
+void d_audio_setsamplepos(byte chan, dword pos)
 {
+    if(chan >= nchannels) {
+        d_error_push(__FUNCTION__": bad channel supplied.");
+        return;
+    }
+
     channels[chan].pos = pos;
+    return;
+}
+
+void d_audio_getsamplepos(byte chan, dword *pos)
+{
+    if(chan >= nchannels) {
+        d_error_push(__FUNCTION__": bad channel supplied.");
+        return;
+    }
+
+    *pos = channels[chan].pos;
     return;
 }
 

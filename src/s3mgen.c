@@ -1,7 +1,7 @@
 /* 
  * s3mgen.c
  * Created: Sun Apr 15 16:06:01 2001 by tek@wiw.org
- * Revised: Thu Jun 28 04:02:35 2001 by tek@wiw.org
+ * Revised: Fri Jul 13 05:48:45 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -254,7 +254,7 @@ typedef struct s3mplayback_s {
     word curorder, currow, nextorder, nextrow, counter;
     word speed, tempo, gvolume;
     byte patterndelay;
-    int finevslide[S3M_NCHANNELS];
+    int finevslide[S3M_NCHANNELS], finepitch[S3M_NCHANNELS];
     d_s3m_t *cursong;
     void *qh;
     bool playing, dobreak;
@@ -267,8 +267,11 @@ static dword periods[12*2] = {
     1076*16,1016*16,960*16,907*16
 };
 
+#define MAXVOLUME 64
+
 static void updatechannel(s3mplayback_t *pb, byte chan);
 static void updatechanneltick(s3mplayback_t *pb, byte chan);
+static void playatpitch(byte chan, d_s3m_instrument_t *inst, byte note);
 
 d_s3mhandle_t *d_s3m_play(d_s3m_t *s3m)
 {
@@ -347,8 +350,6 @@ void d_s3m_stop(d_s3mhandle_t *p_)
     return;
 }
 
-#define MAXVOLUME 64
-
 void d_s3m_update(d_s3mhandle_t *pb_)
 {
     s3mplayback_t *pb = (s3mplayback_t *)pb_;
@@ -409,9 +410,9 @@ void updatechannel(s3mplayback_t *pb, byte chan)
     d_s3m_pattern_t *p;
     d_channelprops_t props;
     dword freq;
-    byte inst;
+    byte inst, basepitch;
 
-    props = d_audio_getchanprops(chan);
+    d_audio_getchanprops(chan, &props);
     p = &pb->cursong->patterns[pb->cursong->orders[pb->curorder]];
 
     if(p->volume[pb->currow][chan] != 255) {
@@ -425,27 +426,30 @@ void updatechannel(s3mplayback_t *pb, byte chan)
         props.volume += pb->finevslide[chan];
         pb->finevslide[chan] = 0;
     }
-    
+
     inst = p->instrument[pb->currow][chan];
-    if(inst != 0)
+    if(inst != 0 && inst != 255)
         pb->lastinst[chan] = &pb->cursong->instruments[inst-1];
 
+    if(pb->finepitch[chan] != 0) {
+        /* FIXME, this is probably broken. no care was taken determining
+           what is the correct note or instrument here. */
+        playatpitch(chan, pb->lastinst[chan],
+                    p->note[pb->currow][chan]+pb->finepitch[chan]);
+        pb->finepitch[chan] = 0;
+    }
+    
     if(p->note[pb->currow][chan] != 255 && pb->lastinst[chan] != NULL) {
         if(p->note[pb->currow][chan] == 254) {
             /* note end */
             d_audio_stopsample(chan);
         } else if(inst == 0) {
             /* reset volume */
+            props.volume = p->volume[pb->currow][chan];
+            d_error_debug("props.volume = %d\n", p->volume[pb->currow][chan]);
         } else {
-            /* This set of code is somewhat explained in the S3M
-             * tech doc, if you're curious. The magic numbers might
-             * be carcinogenic, though. */
-            freq = 8363L*periods[p->note[pb->currow][chan]&0x0f];
-            freq >>= p->note[pb->currow][chan]>>4;
-            freq /= pb->lastinst[chan]->c2speed;
-            freq = 14317456L/(freq?freq:1);
-
-            d_audio_playsample(chan, pb->lastinst[chan]->sample, freq);
+            d_audio_stopsample(chan);
+            playatpitch(chan, pb->lastinst[chan], p->note[pb->currow][chan]);
         }
     }
     
@@ -480,12 +484,24 @@ void updatechannel(s3mplayback_t *pb, byte chan)
         }
         break;
 
+    case 0x05:
+        if((p->operand[pb->currow][chan]>>4) == 0xf) {
+            pb->finepitch[chan] = -p->operand[pb->currow][chan]&0xf;
+        } else if((p->operand[pb->currow][chan]>>4) == 0xe) {
+            d_error_debug(__FUNCTION__": E%2x\n",p->operand[pb->currow][chan]);
+        }
+        break;
+
     case 0x06:
-        d_error_debug(__FUNCTION__": F%2x\n",p->operand[pb->currow][chan]);
+        if((p->operand[pb->currow][chan]>>4) == 0xf) {
+            pb->finepitch[chan] = p->operand[pb->currow][chan]&0xf;
+        } else if((p->operand[pb->currow][chan]>>4) == 0xe) {
+            d_error_debug(__FUNCTION__": F%2x\n",p->operand[pb->currow][chan]);
+        }
         break;
 
     case 0x0F: /* Oxy -- set sample offset */
-        d_audio_changesamplepos(chan, p->operand[pb->currow][chan]*256);
+        d_audio_setsamplepos(chan, p->operand[pb->currow][chan]*256);
         break;
 
     case 0x13: /* Sxx (various) */
@@ -505,6 +521,7 @@ void updatechannel(s3mplayback_t *pb, byte chan)
         break;
 
     case 0x16: /* Vxx -- set global volume */
+        d_error_debug(__FUNCTION__": V%2x\n",p->operand[pb->currow][chan]);
         if(p->operand[pb->currow][chan] <= MAXVOLUME)
             pb->gvolume = p->operand[pb->currow][chan];
         else {
@@ -533,7 +550,7 @@ void updatechanneltick(s3mplayback_t *pb, byte chan)
     d_s3m_pattern_t *p;
     d_channelprops_t props;
 
-    props = d_audio_getchanprops(chan);
+    d_audio_getchanprops(chan, &props);
     p = &pb->cursong->patterns[pb->cursong->orders[pb->curorder]];
 
     switch(p->command[pb->currow][chan]) {
@@ -542,6 +559,22 @@ void updatechanneltick(s3mplayback_t *pb, byte chan)
             props.volume -= p->operand[pb->currow][chan]&0xf;
         } else if((p->operand[pb->currow][chan]&0xf) == 0) {
             props.volume += p->operand[pb->currow][chan]>>4;
+        }
+        break;
+
+    case 0x05:
+        if((p->operand[pb->currow][chan]>>4) <= 0xd) {
+            playatpitch(chan, pb->lastinst[chan],
+                        p->note[pb->currow][chan]-
+                        p->operand[pb->currow][chan]);
+        }
+        break;
+
+    case 0x06:
+        if((p->operand[pb->currow][chan]>>4) <= 0xd) {
+            playatpitch(chan, pb->lastinst[chan],
+                        p->note[pb->currow][chan]+
+                        p->operand[pb->currow][chan]);
         }
         break;
 
@@ -554,6 +587,24 @@ void updatechanneltick(s3mplayback_t *pb, byte chan)
 
     d_audio_setchanprops(chan, props);
     return;
+}
+
+void playatpitch(byte chan, d_s3m_instrument_t *inst, byte note)
+{
+    dword pos, freq;
+
+    /* This set of code is somewhat explained in the S3M
+     * tech doc, if you're curious. The magic numbers might
+     * be carcinogenic, though. */
+    freq = 8363L*periods[note&0x0f];
+    freq >>= note>>4;
+    freq /= inst->c2speed;
+    freq = 14317456L/(freq?freq:1);
+
+    d_audio_getsamplepos(chan, &pos);
+    d_audio_stopsample(chan);
+    d_audio_playsample(chan, inst->sample, freq);
+    d_audio_setsamplepos(chan, pos);
 }
 
 /* EOF s3mgen.c */

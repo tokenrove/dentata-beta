@@ -1,7 +1,7 @@
 /**
  * audio.h
  * Created: Thu Jan 25 12:09:37 2001 by tek@wiw.org
- * Revised: Thu Jun 28 03:44:44 2001 by tek@wiw.org
+ * Revised: Fri Jul 13 02:51:32 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -19,11 +19,14 @@
 #ifndef DENTATA_AUDIO_H
 #define DENTATA_AUDIO_H
 
+#define D_MAXVOLUME 64
+
 /**
  * d_channelprops_t
  * Audio channel property structure.
  *
- * Members: volume - Loudness of this channel in the mix.
+ * Members: volume - Loudness of this channel in the mix, value from
+ *                   0 to D_MAXVOLUME (inclusive).
  *          panning - In a stereo recording, determines how much of
  *                    the channel is mixed into the right or left
  *                    speaker. Ranges from -127 (far left) to 127 (far right),
@@ -120,12 +123,12 @@ extern void d_audio_setchanprops(byte, d_channelprops_t);
  * Gets the properties of an audio channel.
  *
  * Takes: channel - the channel from which to read.
- *
- * Returns: the current channel properties.
+ *        props - the location in which to store the properties.
  */
-extern d_channelprops_t d_audio_getchanprops(byte);
+extern void d_audio_getchanprops(byte, d_channelprops_t *);
 
-extern void d_audio_changesamplepos(byte, dword);
+extern void d_audio_setsamplepos(byte, dword);
+extern void d_audio_getsamplepos(byte, dword *);
 
 #endif
 

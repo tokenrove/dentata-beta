@@ -1,7 +1,7 @@
 /* 
  * collicom.c
  * Created: Sat Apr 28 16:31:04 2001 by tek@wiw.org
- * Revised: Sat Jun 23 04:14:47 2001 by tek@wiw.org
+ * Revised: Fri Jul 13 05:07:18 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -35,6 +35,8 @@ bool __collide_thresh4(byte *, byte *, dword, dword, dword, dword,
                        dword, dword);
 bool __collide_thresh8(byte *, byte *, dword, dword, dword, dword,
                        dword, dword);
+bool __collide_8a1(byte *, byte *, dword, dword, dword, dword,
+                   dword, dword);
 
 static collidefunction_t collides[NCOLLIDES] = {
   __collide_bounding, __collide_pixel1, __collide_pixel2, __collide_pixel4,
@@ -52,6 +54,16 @@ bool d_image_collide(d_image_t *a, d_image_t *b, d_point_t p,
 
     __d_image_clip(a, b, p, &aoffset, &ascanoff, &scanlen, &endoffset,
                    &boffset, &bscanoff);
+    
+    if(a->desc.bpp == 8 && a->desc.alpha == 1) {
+        if(aoffset < a->desc.w*a->desc.h && scanlen > 0 &&
+           aoffset < endoffset)
+            ret = __collide_8a1(a->data, b->data, aoffset, ascanoff, scanlen,
+                                endoffset, boffset, bscanoff);
+        else
+            ret = false;
+    }
+    
     switch(b->desc.alpha) {
     case 0:
     case 1:
@@ -65,7 +77,7 @@ bool d_image_collide(d_image_t *a, d_image_t *b, d_point_t p,
         j = 4;
         break;
     default:
-        d_error_push("d_image_collide: unsupported alpha.");
+        d_error_push(__FUNCTION__": unsupported alpha.");
         j = 0;
         break;
     }
@@ -80,9 +92,8 @@ bool d_image_collide(d_image_t *a, d_image_t *b, d_point_t p,
         break;
     }
 
-    /* FIXME, should go to whichever is higher */
     if((j%(NCOLLIDES/2)) != 0 && a->desc.alpha != b->desc.alpha) {
-        /* FIXME this error should only occur if debug is switched on */
+        /* FIXME this error should only occur if debug is switched on? */
         d_error_fatal("d_image_collide: Conversion (%d -> %d) occurred.\n",
                       a->desc.alpha, b->desc.alpha);
         a = d_image_dup(a);

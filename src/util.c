@@ -1,7 +1,7 @@
 /* 
  * util.c
  * Created: Thu Apr 19 06:36:50 2001 by tek@wiw.org
- * Revised: Sat May  5 12:31:02 2001 by tek@wiw.org
+ * Revised: Tue Jun 26 00:28:02 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -43,7 +43,8 @@ d_point_t d_point_random(d_random_t *rand, d_rect_t rect)
 int d_util_printflen(byte *fmt, void *args)
 {
     int i, j, integer;
-    char *string;
+    char *string, **cpp;
+    int *ip;
 
     for(i = 0, j = 0; fmt[i]; i++) {
         if(fmt[i] == '%') {
@@ -51,28 +52,42 @@ int d_util_printflen(byte *fmt, void *args)
             switch(fmt[i]) {
             case 'd':
             case 'i':
-                integer = *(((int *)args)++);
+                ip = (int *)args;
+                integer = *ip;
+                ip++;
+                args = (void *)ip;
                 do j++; while(integer/=10);
                 break;
 
             case 'o':
-                integer = *(((int *)args)++);
+                ip = (int *)args;
+                integer = *ip;
+                ip++;
+                args = (void *)ip;
                 do j++; while(integer/=8);
                 break;
 
             case 'X':
             case 'x':
-                integer = *(((int *)args)++);
+                ip = (int *)args;
+                integer = *ip;
+                ip++;
+                args = (void *)ip;
                 do j++; while(integer/=16);
                 break;
 
             case 's':
-                string = *(((char **)args)++);
+                cpp = (char **)args;
+                string = *cpp;
+                cpp++;
+                args = (void *)cpp;
                 while(*(string++)) j++;
                 break;
 
             case 'c':
-                ((char *)args)++;
+                string = (char *)args;
+                string++;
+                args = string;
                 j++;
                 break;
 
@@ -89,8 +104,8 @@ int d_util_printflen(byte *fmt, void *args)
 
 void d_util_sprintf(byte *s, byte *fmt, void *args)
 {
-    int i, k, integer, width;
-    char *string;
+    int i, k, integer, width, *ip;
+    char *string, **cpp;
 
     for(i = 0; fmt[i]; i++) {
         if(fmt[i] == '%') {
@@ -98,7 +113,10 @@ void d_util_sprintf(byte *s, byte *fmt, void *args)
             switch(fmt[i]) {
             case 'd':
             case 'i':
-                k = integer = *(((int *)args)++);
+                ip = (int *)args;
+                k = integer = *ip;
+                ip++;
+                args = (void *)ip;
                 width = 1;
                 while(k/=10) width++;
                 s+=width-1;
@@ -110,7 +128,10 @@ void d_util_sprintf(byte *s, byte *fmt, void *args)
                 break;
 
             case 'o':
-                k = integer = *(((int *)args)++);
+                ip = (int *)args;
+                k = integer = *ip;
+                ip++;
+                args = (void *)ip;
                 width = 1;
                 do width++; while(k/=8);
                 s+=width-1;
@@ -123,7 +144,10 @@ void d_util_sprintf(byte *s, byte *fmt, void *args)
 
             case 'X':
             case 'x':
-                k = integer = *(((int *)args)++);
+                ip = (int *)args;
+                k = integer = *ip;
+                ip++;
+                args = (void *)ip;
                 width = 1;
                 while(k/=16) width++;
                 s+=width-1;
@@ -138,12 +162,18 @@ void d_util_sprintf(byte *s, byte *fmt, void *args)
                 break;
 
             case 's':
-                string = *(((char **)args)++);
+                cpp = (char **)args;
+                string = *cpp;
+                cpp++;
+                args = (void *)cpp;
                 while(*string) *(s++) = *(string++);
                 break;
 
             case 'c':
-                *(s++) = *(((char *)args)++);
+                string = (char *)args;
+                *(s++) = *string;
+                string++;
+                args = (void *)string;
                 break;
 
             default:

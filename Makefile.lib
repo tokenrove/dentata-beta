@@ -1,7 +1,7 @@
 # 
 # Makefile.lib
 # Created: Mon Jan  8 07:18:08 2001 by tek@wiw.org
-# Revised: Mon Jun 25 22:35:04 2001 by tek@wiw.org
+# Revised: Fri Jul 13 03:08:15 2001 by tek@wiw.org
 # Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 # This program comes with ABSOLUTELY NO WARRANTY.
 # $Id$
@@ -9,27 +9,27 @@
 #
 
 ### raster and event
-ifeq ($(TARGETOS),unix-x11)
+ifeq ($(TARGET),unix-x11)
 RASTERMODS=rastrx11.o
 EVENTMODS=eventx11.o
 AUDIOMODS=audnul.o
 endif
-ifeq ($(TARGETOS),linux-x11)
+ifeq ($(TARGET),linux-x11)
 RASTERMODS=rastrx11.o
 EVENTMODS=eventx11.o
 AUDIOMODS=audoss.o
 endif
-ifeq ($(TARGETOS),unix-svgalib)
+ifeq ($(TARGET),unix-svgalib)
 RASTERMODS=rastrvgl.o
 EVENTMODS=eventvgl.o
 AUDIOMODS=audnul.o
 endif
-ifeq ($(TARGETOS),linux-svgalib)
+ifeq ($(TARGET),linux-svgalib)
 RASTERMODS=rastrvgl.o
 EVENTMODS=eventvgl.o
 AUDIOMODS=audoss.o
 endif
-ifeq ($(TARGETGFX),dos)
+ifeq ($(TARGET),dos)
 RASTERMODS=rastrdos.o
 EVENTMODS=eventdos.o kbddos.o
 AUDIOMODS=auddos.o
