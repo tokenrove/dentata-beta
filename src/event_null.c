@@ -1,7 +1,7 @@
 /* 
  * event_null.c
  * Created: Sun Feb 25 01:04:11 2001 by tek@wiw.org
- * Revised: Sun Feb 25 01:13:19 2001 by tek@wiw.org
+ * Revised: Tue Apr  3 16:54:15 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -18,6 +18,7 @@ void d_event_delete(void);
 bool d_event_map(byte handle, byte event);
 void d_event_unmap(byte handle);
 bool d_event_ispressed(byte handle);
+void d_event_update(void);
 
 #define SIZEHINT 8
 
@@ -68,6 +69,11 @@ void d_event_unmap(byte handle)
 bool d_event_ispressed(byte handle)
 {
     return false;
+}
+
+void d_event_update(void)
+{
+    return;
 }
 
 /* EOF event_null.c */

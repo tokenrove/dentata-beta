@@ -1,7 +1,7 @@
 # 
 # Makefile
 # Created: Mon Jan  8 07:18:08 2001 by tek@wiw.org
-# Revised: Sun Feb 25 03:46:27 2001 by tek@wiw.org
+# Revised: Wed Apr 11 07:28:51 2001 by tek@wiw.org
 # Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 # This program comes with ABSOLUTELY NO WARRANTY.
 # $Id$
@@ -22,7 +22,7 @@ ifndef RASTERMODS
 endif
 
 ### system dependant stuff
-SYSTEMMODS=memory_stdlib.o error_stdlib.o file_stdlib.o
+SYSTEMMODS=memory_stdlib.o error_stdlib.o file_stdlib.o time_unix.o
 
 ### generic stuff
 GENERICMODS=error_stack.o set.o
@@ -30,11 +30,16 @@ GENERICMODS=error_stack.o set.o
 ### image related modules
 IMAGEMODS=color_rgb.o image.o sprite.o tga.o
 
+### blit
+BLITMODS=blit_common.o blit_generic.o
+
 ### event
 ifeq ($(TARGET),svgalib)
 	EVENTMODS=event_svgalib.o
 endif
-
+ifeq ($(TARGET),x11)
+	EVENTMODS=event_x11.o
+endif
 #default
 ifndef EVENTMODS
 	EVENTMODS=event_null.o
@@ -44,7 +49,8 @@ endif
 
 VPATH=$(TOPDIR)/src
 CFLAGS=$(DENT_CFLAGS)
-MODULES=$(RASTERMODS) $(EVENTMODS) $(SYSTEMMODS) $(IMAGEMODS) $(GENERICMODS)
+MODULES=$(RASTERMODS) $(EVENTMODS) $(SYSTEMMODS) $(IMAGEMODS) $(GENERICMODS) \
+	$(BLITMODS)
 
 libdentata.a: $(MODULES)
 	ar rcs libdentata.a $(MODULES)

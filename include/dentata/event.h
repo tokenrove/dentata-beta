@@ -1,7 +1,7 @@
 /* 
  * event.h
  * Created: Wed Jan 24 11:40:52 2001 by tek@wiw.org
- * Revised: Sun Feb 25 01:03:52 2001 by tek@wiw.org
+ * Revised: Tue Apr 10 23:44:02 2001 by tek@wiw.org
  * Copyright 2001 Rhombus Software/Julian E. C. Squires (tek@wiw.org)
  * $Id$
  *
@@ -69,6 +69,13 @@ extern void d_event_unmap(byte);
  */
 extern bool d_event_ispressed(byte);
 
+/**
+ * d_event_update()
+ * Updates internal event driver data. Should be called once per
+ * frame.
+ */
+extern void d_event_update(void);
+
 #define D_EVENT_KEYBOARD   0x01
 #define D_EVENT_MOUSE      0x02
 #define D_EVENT_CONTROLLER 0x04
@@ -85,6 +92,7 @@ extern bool d_event_ispressed(byte);
 #define D_EVENT_NONE      0
 /* keyboard scancodes/mappings [these follow the PC scancodes, but still
    apply on systems with different scancodes] */
+#define D_KBD_FIRST       1
 #define D_KBD_ESCAPE      1
 #define D_KBD_1           2
 #define D_KBD_2           3
@@ -139,11 +147,14 @@ extern bool d_event_ispressed(byte);
 #define D_KBD_PAGEDOWN    109
 #define D_KBD_INSERT      110
 #define D_KBD_DELETE      111
+#define D_KBD_LAST        127
 
 /* PC mouse button mappings */
+#define D_MOUSE_FIRST     128
 #define D_MOUSE_LEFT      128
 #define D_MOUSE_RIGHT     129
 #define D_MOUSE_MIDDLE    130
+#define D_MOUSE_LAST      130
 
 /* Controller mappings, based on PSX */
 #define D_CTRLR_LEFT     131

@@ -1,7 +1,7 @@
 /* 
  * set.c
  * Created: Sat Feb 24 21:37:59 2001 by tek@wiw.org
- * Revised: Sat Feb 24 23:35:24 2001 by tek@wiw.org
+ * Revised: Sun Apr  8 00:27:23 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -75,6 +75,7 @@ d_set_t *d_set_new(int sizehint)
     p->elements = d_memory_new(sizeof(element_t *)*p->tablesize);
     if(p->elements == NULL)
         return NULL;
+    d_memory_set(p->elements, 0, sizeof(element_t *)*p->tablesize);
     p->nelements = 0;
     p->iteratorvalid = false;
 
@@ -250,7 +251,7 @@ dword d_set_nextkey(d_set_t *p_)
     for(; p->iteratorpos < p->tablesize; p->iteratorpos++) {
         if(p->elements[p->iteratorpos] == NULL)
             continue;
-        p->iteratorep = p->elements[p->iteratorpos];
+        p->iteratorep = p->elements[p->iteratorpos++];
         return p->iteratorep->key;
     }
 

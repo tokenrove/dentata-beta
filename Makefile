@@ -23,7 +23,21 @@ TOPDIR=$(CURDIR)
 DEFINES=-DUSE_X86_ASM -DDEBUG
 DENT_CPPFLAGS=-I$(TOPDIR)/include -L$(TOPDIR)/lib $(DEFINES)
 DENT_CFLAGS=-Wall -pedantic -g $(DENT_CPPFLAGS)
-DIRS=lib tests docs demos
+DENT_LDFLAGS=$(LIBS)
+DIRS=lib tests docs demos tools
+
+### Targets
+# X11
+TARGET=x11
+LIBS=-L/usr/X11R6/lib -lXext -lX11
+# SVGAlib
+#TARGET=svgalib
+#LIBS=-lvga
+# null
+#TARGET=null
+#LIBS=
+
+default: all
 
 svgalib:
 	$(MAKE) default TARGET=svgalib LIBS='-lvga'
@@ -35,8 +49,6 @@ null:
 	$(MAKE) default TARGET=null LIBS=
 
 .PHONY: default svgalib x11 all clean realclean test profile $(DIRS)
-
-default: all
 
 all: $(DIRS)
 

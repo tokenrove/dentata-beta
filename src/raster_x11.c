@@ -1,7 +1,7 @@
 /* 
  * x11.c
  * Created: Mon Jan  8 05:12:00 2001 by tek@wiw.org
- * Revised: Sun Feb 25 05:07:14 2001 by tek@wiw.org
+ * Revised: Thu Apr 12 01:47:18 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -31,50 +31,56 @@ void d_raster_update(void);
 
 /* static variables */
 static byte *vbuf;
-enum { NAVAILMODES = 6 };
+enum { NAVAILMODES = 4 };
 static d_rasterdescription_t availmodes[NAVAILMODES] = {
-  { 320, 200, 8,  0, true,  RGB },
-  { 320, 200, 16, 0, false, RGB },
-  { 320, 200, 24, 0, false, RGB },
-  { 640, 480, 8,  0, true,  RGB },
-  { 640, 480, 16, 0, false, RGB },
-  { 640, 480, 24, 0, false, RGB }
+  { 320, 200, 0, 0, false, RGB },
+  { 640, 480, 0, 0, false, RGB },
+  { 800, 600, 0, 0, false, RGB },
+  {1024, 768, 0, 0, false, RGB }
 };
-static int curmode;
+static d_rasterdescription_t curmode;
 static XImage *xim;
 static GC graphcont;
-static Display *display;
-static Window window;
+Display *_d_x11_display;
+Window _d_x11_window;
 static XShmSegmentInfo shminfo;
+static int depth;
 
 bool d_raster_new(void)
 {
+    Screen *screen;
+
     vbuf = NULL;
-    window = 0;
-    display = XOpenDisplay(NULL);
-    if(display == NULL) {
+    _d_x11_window = 0;
+    _d_x11_display = XOpenDisplay(NULL);
+    if(_d_x11_display == NULL) {
         d_error_push("d_raster_new: Unable to open X11 display.");
         return failure;
     }
+
+    screen = DefaultScreenOfDisplay(_d_x11_display);
+    if(screen == NULL) {
+        d_error_push("d_raster_new: DefaultScreenOfDisplay was NULL!");
+        return failure;
+    }
+    graphcont = DefaultGCOfScreen(screen);
+    depth = DefaultDepthOfScreen(screen);
 
     return success;
 }
 
 static void d_raster_closewindow(void)
 {
-    if(window) {
-        XShmDetach(display, &shminfo);
+    if(_d_x11_window) {
+        XShmDetach(_d_x11_display, &shminfo);
         if(shminfo.shmaddr)
             shmdt(shminfo.shmaddr);
         if(shminfo.shmid >= 0)
             shmctl(shminfo.shmid, IPC_RMID, 0);
-        if(xim->depth != availmodes[curmode].bpp &&
-           vbuf != NULL)
-            d_memory_delete(vbuf);
         XDestroyImage(xim);
-        XDestroyWindow(display, window);
-        XFlush(display);
-        window = 0;
+        XDestroyWindow(_d_x11_display, _d_x11_window);
+        XFlush(_d_x11_display);
+        _d_x11_window = 0;
     }
     vbuf = NULL;
     return;
@@ -83,21 +89,21 @@ static void d_raster_closewindow(void)
 void d_raster_delete(void)
 {
     d_raster_closewindow();
-    XCloseDisplay(display);
+    XCloseDisplay(_d_x11_display);
     return;
 }
 
 bool d_raster_setmode(d_rasterdescription_t mode)
 {
     Screen *screen;
-    int i, depth;
+    int i;
 
     for(i = 0; i < NAVAILMODES; i++) {
         if(mode.w      == availmodes[i].w &&
            mode.h      == availmodes[i].h &&
-           mode.bpp    == availmodes[i].bpp &&
-           mode.cspace == availmodes[i].cspace) {
-            curmode = i;
+           mode.bpp    == depth &&
+           mode.cspace == RGB) {
+            curmode = mode;
             break;
         }
     }
@@ -108,31 +114,25 @@ bool d_raster_setmode(d_rasterdescription_t mode)
 
     d_raster_closewindow();
 
-    screen = DefaultScreenOfDisplay(display);
+    screen = DefaultScreenOfDisplay(_d_x11_display);
     if(screen == NULL) {
         d_error_push("d_raster_setmode: DefaultScreenOfDisplay was NULL!");
         return failure;
     }
-    graphcont = DefaultGCOfScreen(screen);
-    depth = DefaultDepthOfScreen(screen);
-    if((depth == 8 && mode.bpp > 8) ||
-       depth < 8) {
-        d_error_push("d_raster_setmode: depths are too different to bother "
-                     "with.");
-        return failure;
-    }
 
-    window = XCreateSimpleWindow(display, RootWindowOfScreen(screen), 0, 0,
-                                 mode.w, mode.h, 1, WhitePixelOfScreen(screen),
-                                 BlackPixelOfScreen(screen));
-    if(window == 0) {
+    _d_x11_window = XCreateSimpleWindow(_d_x11_display,
+                                        RootWindowOfScreen(screen),
+                                        0, 0, mode.w, mode.h, 1,
+                                        WhitePixelOfScreen(screen),
+                                        BlackPixelOfScreen(screen));
+    if(_d_x11_window == 0) {
         d_error_push("d_raster_setmode: XCreateSimpleWindow returned 0.");
         return failure;
     }
 
-    XStoreName(display, window, "dentata gen beta");
+    XStoreName(_d_x11_display, _d_x11_window, "dentata gen beta");
 
-    xim = XShmCreateImage(display, DefaultVisualOfScreen(screen), depth,
+    xim = XShmCreateImage(_d_x11_display, DefaultVisualOfScreen(screen), depth,
                           ZPixmap, NULL, &shminfo, mode.w, mode.h);
     if(xim == NULL) {
         d_error_push("d_raster_setmode: XShmCreateImage failed for video "
@@ -156,24 +156,15 @@ bool d_raster_setmode(d_rasterdescription_t mode)
     }
     
     shminfo.readOnly = False;
-    if(XShmAttach(display, &shminfo) == 0) {
+    if(XShmAttach(_d_x11_display, &shminfo) == 0) {
         d_error_push("d_raster_setmode: XShmAttach failed.");
         return failure;
     }
-    XMapRaised(display, window);
-    XClearWindow(display, window);
-    XFlush(display);
+    XMapRaised(_d_x11_display, _d_x11_window);
+    XClearWindow(_d_x11_display, _d_x11_window);
+    XFlush(_d_x11_display);
 
-    if(xim->depth == mode.bpp)
-        vbuf = (byte *)xim->data;
-    else {
-        vbuf = d_memory_new((mode.w*mode.h*mode.bpp+7)/8);
-        if(vbuf == NULL) {
-            d_error_push("d_raster_setmode: allocation of vbuf failed.");
-            return failure;
-        }
-    }
-
+    vbuf = (byte *)xim->data;
     return success;
 }
 
@@ -190,15 +181,19 @@ d_rasterdescription_t *d_raster_getmodes(int *nmodes)
         return NULL;
     }
 
-    for(i = 0; i < NAVAILMODES; i++)
+    for(i = 0; i < NAVAILMODES; i++) {
         modes[i] = availmodes[i];
+        modes[i].bpp = depth;
+        if(depth == 8)
+            modes[i].paletted = true;
+    }
 
     return modes;
 }
 
 d_rasterdescription_t d_raster_getcurrentmode(void)
 {
-    return availmodes[curmode];
+    return curmode;
 }
 
 byte *d_raster_getgfxpointer(void)
@@ -208,15 +203,26 @@ byte *d_raster_getgfxpointer(void)
 
 void d_raster_update(void)
 {
-    if(xim->depth != availmodes[curmode].bpp) {
-        /* do some conversion stuff */
-    }
-
-    XShmPutImage(display, window, graphcont, xim, 0, 0, 0, 0,
-                 availmodes[curmode].w, availmodes[curmode].h, False);
-    XFlush(display);
+    XShmPutImage(_d_x11_display, _d_x11_window, graphcont, xim, 0, 0, 0, 0,
+                 curmode.w, curmode.h, False);
+    XFlush(_d_x11_display);
     return;
 }
 
+void d_raster_setpalette(d_palette_t *p)
+{
+    d_error_fatal("d_raster_setpalette: Palette functions unimplemented!");
+    return;
+}
+
+void d_raster_getpalette(d_palette_t *p)
+{
+    int i, pal[D_NCLUTITEMS*D_BYTESPERCOLOR];
+
+    d_error_push("d_raster_getpalette: unimplemented.");
+    for(i = 0; i < D_NCLUTITEMS; i++)
+        p->clut[i] = pal[i];
+    return;
+}
 
 /* EOF x11.c */

@@ -1,7 +1,7 @@
 /* 
  * raster.h
  * Created: Sat Jan  8 23:40:41 2000 by tek@wiw.org
- * Revised: Sun Feb 25 01:48:25 2001 by tek@wiw.org
+ * Revised: Sat Apr  7 22:46:35 2001 by tek@wiw.org
  * Copyright 2000 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -102,7 +102,7 @@ extern void                   d_raster_setpalette(d_palette_t *);
  * Pushes an error if this is called for a non-paletted mode or if the
  * palette has not previously been initialized.
  */
-extern d_palette_t *          d_raster_getpalette(void);
+extern void                   d_raster_getpalette(d_palette_t *);
 
 #endif
 

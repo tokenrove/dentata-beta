@@ -1,7 +1,7 @@
 /* 
- * generic.c
+ * blit_generic.c
  * Created: Mon Jan 29 13:42:41 2001 by tek@wiw.org
- * Revised: Wed Jan 31 13:03:59 2001 by tek@wiw.org
+ * Revised: Thu Apr 12 01:45:12 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -9,83 +9,174 @@
  */
 
 #include <dentata/blit.h>
+#include <dentata/types.h>
+#include <dentata/memory.h>
 
-typedef void(*)(byte *, byte *, byte *, byte *, dword, dword, dword, dword,
-                dword, dword) blitfunction_t;
+/*
+ * 8 bpp
+ */
 
-extern void _blit80(byte *, byte *, byte *, byte *, dword, dword, dword,
-                    dword, dword, dword);
+void _blit80(byte *ddat, byte *dalp, byte *sdat, byte *salp, dword doffs,
+             dword dscanoff, dword scanlen, dword endoffs, dword soffs,
+             dword sscanoff);
 
-static blitfunction_t[4][5] = {
-    /*  8 bpp */ { _blit80,  _blit81,  _blit82,  _blit84,  _blit88 },
-    /* 15 bpp */ { _blit150, _blit151, _blit152, _blit154, _blit158 },
-    /* 16 bpp */ { _blit160, _blit161, _blit162, _blit164, _blit168 },
-    /* 24 bpp */ { _blit240, _blit241, _blit242, _blit244, _blit248 }
-};
-
-void d_blit(d_image_t *, d_image_t *, d_point_t);
-static void clip(d_image_t *, d_image_t *, d_point_t, dword *, dword *,
-                 dword *, dword *, dword *, dword *);
-
-void d_blit(d_image_t *d, d_image_t *s, d_point_t p, d_blitmode_t mode)
+void _blit80(byte *ddat, byte *dalp, byte *sdat, byte *salp, dword doffs,
+             dword dscanoff, dword scanlen, dword endoffs, dword soffs,
+             dword sscanoff)
 {
-    dword dstoffset, dstscanoff, scanlen, endoffset, srcoffset, srcscanoff;
-    int i, j;
+    byte *end;
 
-    clip(d, s, p, &dstoffset, &dstscanoff, &scanlen, &endoffset,
-         &srcoffset, &srcscanoff);
-    switch(d->bpp) {
-    case 8:
-        i = 0;
-        break;
-    case 15:
-        i = 1;
-    case 16:
-        i = 2;
-        break;
-    case 24:
-        i = 3;
-        break;
-    }
+    end = ddat+endoffs;
+    ddat += doffs;
+    sdat += soffs;
+    do {
+        d_memory_copy(ddat, sdat, scanlen);
+        ddat += scanlen+dscanoff;
+        sdat += scanlen+sscanoff;
+    } while(ddat < end);
+    return;
+}
+   
+/*
+ * 16 bpp
+ */
 
-    switch(d->alpha) {
-    case 0:
-        j = 0;
-        break;
-    case 1:
-        j = 1;
-        break;
-    case 2:
-        j = 2;
-        break;
-    case 4:
-        j = 3;
-        break;
-    case 8:
-        j = 4;
-        break;
-    }
-    (*blits[i][j])(d->data, d->alpha, dstoffset, dstscanoff, scanlen,
-                   endoffset, s->data, s->alpha, srcoffset, srcscanoff);
+void _blit160(byte *ddat, byte *dalp, byte *sdat, byte *salp, dword doffs,
+              dword dscanoff, dword scanlen, dword endoffs, dword soffs,
+              dword sscanoff);
+void _blit161(byte *ddat, byte *dalp, byte *sdat, byte *salp, dword doffs,
+              dword dscanoff, dword scanlen, dword endoffs, dword soffs,
+              dword sscanoff);
+void _blit162(byte *ddat, byte *dalp, byte *sdat, byte *salp, dword doffs,
+              dword dscanoff, dword scanlen, dword endoffs, dword soffs,
+              dword sscanoff);
+void _blit164(byte *ddat, byte *dalp, byte *sdat, byte *salp, dword doffs,
+              dword dscanoff, dword scanlen, dword endoffs, dword soffs,
+              dword sscanoff);
+void _blit168(byte *ddat, byte *dalp, byte *sdat, byte *salp, dword doffs,
+              dword dscanoff, dword scanlen, dword endoffs, dword soffs,
+              dword sscanoff);
+
+void _blit160(byte *ddat, byte *dalp, byte *sdat, byte *salp, dword doffs,
+              dword dscanoff, dword scanlen, dword endoffs, dword soffs,
+              dword sscanoff)
+{
+    register int i;
+    byte *end;
+
+    end = ddat+endoffs*2;
+    ddat += doffs*2;
+    sdat += soffs*2;
+    do {
+        for(i = scanlen; i > 0; i--) {
+            *(ddat++) = *(sdat++);
+            *(ddat++) = *(sdat++);
+        }
+        ddat += dscanoff*2;
+        sdat += sscanoff*2;
+    } while(ddat < end);
     return;
 }
 
-static void clip(d_image_t *d, d_image_t *s, d_point_t p, dword *dstoffset,
-                 dword *dstscanoff, dword *scanlen, dword *endoffset,
-                 dword *srcoffset, dword *srcscanoff)
+void _blit161(byte *ddat, byte *dalp, byte *sdat, byte *salp, dword doffs,
+              dword dscanoff, dword scanlen, dword endoffs, dword soffs,
+              dword sscanoff)
 {
-    int maxx, maxy, i;
+    register dword i;
+    register byte j;
+    byte *end;
 
-    maxy = max(0, -p.y);
-    maxx = max(0, -p.x);
-    *srcoffset = s->desc.w*maxy+maxx;
-    *dstoffset = d->desc.w*(maxy+p.y)+(maxx+p.x);
-    *scanlen = min(s->desc.w-maxx, d->desc.w-(p.x+maxx));
-    *dstscanoff = d->desc.w-(*scanlen+p.x)+maxx+p.x;
-    *srcscanoff = s->desc.w-*scanlen+maxx;
-    i = min(s->desc.h-maxy, s->desc.h-(maxy+p.y));
-    *endoffset = *dstoffset+(*dstscanoff+*scanlen)*i;
+    end = ddat+endoffs*2;
+    ddat += doffs*2;
+    sdat += soffs*2;
+
+    j = soffs%8;
+    salp += soffs/8;
+
+    do {
+        for(i = scanlen; i > 0; i--) {
+            if(*salp&(1<<j)) {
+                *(ddat++) = *(sdat++);
+                *(ddat++) = *(sdat++);
+            } else {
+                ddat += 2;
+                sdat += 2;
+            }
+            j++;
+            if(j == 8) {
+                j = 0;
+                salp++;
+            }
+        }
+        ddat += dscanoff*2;
+        sdat += sscanoff*2;
+        salp += sscanoff/8;
+        j = (j+sscanoff)%8;
+    } while(ddat < end);
     return;
 }
 
-/* EOF generic.c */
+void _blit162(byte *ddat, byte *dalp, byte *sdat, byte *salp, dword doffs,
+              dword dscanoff, dword scanlen, dword endoffs, dword soffs,
+              dword sscanoff)
+{
+    register dword i;
+    register byte j, k, l, m;
+    byte *end;
+    byte masktable[4] = { 3, 15, 63, 255 };
+
+    end = ddat+endoffs*2;
+    ddat += doffs*2;
+    sdat += soffs*2;
+
+    j = soffs%4;
+    salp += soffs/4;
+
+    do {
+        for(i = scanlen; i > 0; i--) {
+            switch((*salp&masktable[j])>>(2*j)) {
+            case 0:
+                ddat += 2;
+                sdat += 2;
+                break;
+
+            case 1:
+                k = *sdat; l = *ddat; m = *sdat; sdat++; ddat++;
+                k = ((k&31)/3+((l&31)*2)/3);
+                l = (((m>>5)|((*sdat)<<3))/3)+
+                    (((l>>5)|((*ddat)<<3))*2)/3;
+                m = ((*sdat)>>3)/3+(((*ddat)>>3)*2)/3;
+                *(ddat-1) = k|((l&7)<<5);
+                *(ddat++) = ((l>>3)&7)|(m<<3);
+                break;
+
+            case 2:
+                k = *sdat; l = *ddat; m = *sdat; sdat++; ddat++;
+                k = (((k&31)*2)/3+(l&31)/3);
+                l = (((m>>5)|((*sdat)<<3))*2)/3+
+                    ((l>>5)|((*ddat)<<3))/3;
+                m = (((*sdat)>>3)*2)/3+((*ddat)>>3)/3;
+                *(ddat-1) = k|((l&7)<<5);
+                *(ddat++) = ((l>>3)&7)|(m<<3);
+                break;
+
+            case 3:
+                *(ddat++) = *(sdat++);
+                *(ddat++) = *(sdat++);
+                break;
+            }
+            j++;
+            if(j == 4) {
+                j = 0;
+                salp++;
+            }
+        }
+        ddat += dscanoff*2;
+        sdat += sscanoff*2;
+        salp += sscanoff/4;
+        j = (j+sscanoff)%4;
+    } while(ddat < end);
+    return;
+}
+
+/* EOF blit_generic.c */

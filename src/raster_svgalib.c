@@ -1,7 +1,7 @@
 /* 
  * svgalib.c
  * Created: Sat Jan  8 23:52:54 2000 by tek@wiw.org
- * Revised: Sat Feb 24 16:51:21 2001 by tek@wiw.org
+ * Revised: Sat Apr  7 22:50:31 2001 by tek@wiw.org
  * Copyright 2000 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -20,7 +20,7 @@
 bool d_raster_new(void);
 void d_raster_delete(void);
 
-bool d_raster_setmode(rastermode_t);
+bool d_raster_setmode(d_rasterdescription_t);
 d_rasterdescription_t *d_raster_getmodes(int *);
 d_rasterdescription_t d_raster_getcurrentmode(void);
 
@@ -161,6 +161,26 @@ void d_raster_update(void)
         vga_drawscanline(i, raster_vbuf);
 
     raster_vbuf = vbuf_old;
+    return;
+}
+
+void d_raster_setpalette(d_palette_t *p)
+{
+    int i, pal[D_NCLUTITEMS*D_BYTESPERCOLOR];
+
+    for(i = 0; i < D_NCLUTITEMS; i++)
+        pal[i] = p->clut[i];
+    vga_setpalvec(0, D_NCLUTITEMS, pal);
+    return;
+}
+
+void d_raster_getpalette(d_palette_t *p)
+{
+    int i, pal[D_NCLUTITEMS*D_BYTESPERCOLOR];
+
+    vga_getpalvec(0, D_NCLUTITEMS, pal);
+    for(i = 0; i < D_NCLUTITEMS; i++)
+        p->clut[i] = pal[i];
     return;
 }
 

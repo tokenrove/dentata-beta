@@ -1,7 +1,7 @@
 /* 
  * image.c
  * Created: Sun Feb 25 01:57:37 2001 by tek@wiw.org
- * Revised: Sun Feb 25 02:54:45 2001 by tek@wiw.org
+ * Revised: Thu Apr 12 01:42:08 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -19,6 +19,7 @@ void       d_image_delete(d_image_t *p);
 d_image_t *d_image_dup(d_image_t *p);
 void       d_image_plot(d_image_t *p, d_point_t pt, d_color_t c);
 void       d_image_wipe(d_image_t *p, d_color_t c);
+bool       d_image_extendalpha(d_image_t *p, byte alpha);
 
 d_image_t *d_image_new(d_rasterdescription_t desc)
 {
@@ -36,7 +37,10 @@ d_image_t *d_image_new(d_rasterdescription_t desc)
 
     p->desc = desc;
     p->data = d_memory_new((desc.w*desc.h*desc.bpp+7)/8);
-    p->alpha = d_memory_new((desc.w*desc.h*desc.alpha+7)/8);
+    if(desc.alpha != 0)
+        p->alpha = d_memory_new((desc.w*desc.h*desc.alpha+7)/8);
+    else
+        p->alpha = NULL;
     if(p->data == NULL ||
        (p->alpha == NULL && desc.alpha > 0))
         return NULL;
@@ -100,6 +104,7 @@ void d_image_plot(d_image_t *p, d_point_t pt, d_color_t c)
         break;
 
     default:
+        d_error_fatal("foo: %d\n", p->desc.bpp);
         d_error_push("d_image_plot: unsupport bpp (report this as a bug).");
         return;
     }
@@ -109,11 +114,11 @@ void d_image_plot(d_image_t *p, d_point_t pt, d_color_t c)
         break;
 
     case 1:
-        p->alpha[pt.x/8+pt.y*p->desc.w/8] |= 1<<(pt.x%8);
-        break;
-
+    case 2:
+    case 4:
     case 8:
-        p->alpha[pt.x+pt.y*p->desc.w] = 0xFF;
+        p->alpha[pt.x/(8/p->desc.alpha)+pt.y*p->desc.w/(8/p->desc.alpha)]
+            |= ((1<<p->desc.alpha)-1)<<(pt.x%(8/p->desc.alpha));
         break;
 
     default:
@@ -170,11 +175,12 @@ void d_image_wipe(d_image_t *p, d_color_t c)
         break;
 
     case 1:
-        d_memory_set(p->alpha, 0xFF, (p->desc.h*p->desc.w+7)/8);
-        break;
-
+    case 2:
+    case 4:
     case 8:
-        d_memory_set(p->alpha, 0xFF, p->desc.h*p->desc.w);
+        d_memory_set(p->alpha, 0xFF,
+                     (p->desc.h*p->desc.w+(8/p->desc.alpha-1))/
+                     (8/p->desc.alpha));
         break;
 
     default:
@@ -185,5 +191,52 @@ void d_image_wipe(d_image_t *p, d_color_t c)
     return;
 }
 
+bool d_image_extendalpha(d_image_t *p, byte alpha)
+{
+    int i;
+    byte *newalpha, t;
+
+    if(alpha > 8) {
+        d_error_push("d_image_extendalpha: desired alpha is too high.");
+        return failure;
+    }
+
+    if(alpha == 0) { /* destroy alpha */
+        if(p->alpha) d_memory_delete(p->alpha);
+        p->desc.alpha = alpha;
+
+    } else if(p->desc.alpha == 0) { /* create new opaque alpha */
+        p->alpha = d_memory_new((p->desc.h*p->desc.w+(8/alpha-1))/(8/alpha));
+        if(p->alpha == NULL)
+            return failure;
+        d_memory_set(p->alpha, 0xFF,
+                     (p->desc.h*p->desc.w+(8/alpha-1))/(8/alpha));
+
+    } else { /* transform alpha */
+        newalpha = d_memory_new((p->desc.h*p->desc.w+(8/alpha-1))/(8/alpha));
+        if(newalpha == NULL)
+            return failure;
+        d_memory_set(newalpha, 0,
+                     (p->desc.h*p->desc.w+(8/alpha-1))/(8/alpha));
+
+        for(i = 0; i < p->desc.w*p->desc.h; i++) {
+            /* FIXME this approximation could be better */
+            t = p->alpha[i/(8/p->desc.alpha)]&
+                (((1<<p->desc.alpha)-1)<<(i%(8/p->desc.alpha)));
+
+            if(alpha > p->desc.alpha) {
+                newalpha[i/(8/alpha)] |= t<<(alpha-p->desc.alpha);
+            } else {
+                newalpha[i/(8/alpha)] |= t>>(p->desc.alpha-alpha);
+            }
+
+            d_memory_delete(p->alpha);
+            p->alpha = newalpha;
+            p->desc.alpha = alpha;
+        }
+    }
+
+    return success;
+}
 
 /* EOF image.c */
