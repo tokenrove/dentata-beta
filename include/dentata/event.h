@@ -159,11 +159,20 @@ extern void d_event_update(void);
 #define D_KBD_PADASTERIX  55
 #define D_KBD_LEFTALT     56
 #define D_KBD_SPACE       57
+#define D_KBD_CAPSLOCK    58
+#define D_KBD_F1          59
+#define D_KBD_F2          60
+#define D_KBD_F3          61
+#define D_KBD_F4          62
+#define D_KBD_F5          63
+#define D_KBD_F6          64
+#define D_KBD_F7          65
+#define D_KBD_F8          66
+#define D_KBD_F9          67
+#define D_KBD_F10         68
 
-/* capslock f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 numlock scrolllock keypad7
-   <lots more keypad junk> */
+/* numlock scrolllock keypad7 <lots more keypad junk> */
 
-/* < f11 f12 */
 #define D_KBD_PADENTER    96
 #define D_KBD_RIGHTCONTROL 97
 #define D_KBD_PADDIVIDE   98

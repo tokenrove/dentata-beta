@@ -20,6 +20,7 @@ bool d_tilemap_addtileimage(d_tilemap_t *, byte, d_image_t *);
 byte d_tilemap_gettile(d_tilemap_t *, d_point_t);
 void d_tilemap_settile(d_tilemap_t *, d_point_t, byte);
 
+
 d_tilemap_t *d_tilemap_new(d_rasterdescription_t desc, word w, word h)
 {
     d_tilemap_t *p;
@@ -41,6 +42,7 @@ d_tilemap_t *d_tilemap_new(d_rasterdescription_t desc, word w, word h)
     return p;
 }
 
+
 void d_tilemap_delete(d_tilemap_t *p)
 {
     int i;
@@ -58,22 +60,26 @@ void d_tilemap_delete(d_tilemap_t *p)
     return;
 }
 
+
 bool d_tilemap_addtileimage(d_tilemap_t *p, byte tile, d_image_t *image)
 {
+    int i;
+
     if(image != NULL)
         if(image->desc.w != p->tiledesc.w ||
            image->desc.h != p->tiledesc.h)
             return failure;
 
     if(tile >= p->ntiles) {
+        p->tiles = d_memory_resize(p->tiles, (tile+1)*sizeof(d_image_t *));
+	for(i = p->ntiles; i < tile; i++)
+	    p->tiles[i] = NULL;
         p->ntiles = tile+1;
-        /* FIXME needs to zero out the unused pointers otherwise delete
-         * will fuck up... */
-        p->tiles = d_memory_resize(p->tiles, p->ntiles*sizeof(d_image_t *));
     }
     p->tiles[tile] = image;
     return success;
 }
+
 
 byte d_tilemap_gettile(d_tilemap_t *p, d_point_t pt)
 {
@@ -82,6 +88,7 @@ byte d_tilemap_gettile(d_tilemap_t *p, d_point_t pt)
 
     return p->map[pt.x%p->w+(pt.y%p->h)*p->w];
 }
+
 
 void d_tilemap_settile(d_tilemap_t *p, d_point_t pt, byte tile)
 {
