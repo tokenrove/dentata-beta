@@ -1,7 +1,7 @@
 # 
 # Makefile
 # Created: Mon Jan  8 07:18:08 2001 by tek@wiw.org
-# Revised: Sun Feb 25 01:12:49 2001 by tek@wiw.org
+# Revised: Sun Feb 25 03:46:27 2001 by tek@wiw.org
 # Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 # This program comes with ABSOLUTELY NO WARRANTY.
 # $Id$
@@ -21,20 +21,14 @@ ifndef RASTERMODS
 	RASTERMODS=raster_null.o
 endif
 
-### memory
-MEMORYMODS=memory_stdlib.o
+### system dependant stuff
+SYSTEMMODS=memory_stdlib.o error_stdlib.o file_stdlib.o
 
-### error
-ERRORMODS=error_stack.o error_stdlib.o
+### generic stuff
+GENERICMODS=error_stack.o set.o
 
-### color
-COLORMODS=color_rgb.o
-
-### sprite
-SPRITEMODS=sprite.o
-
-### data structure modules
-DATASTRUCTMODS=set.o #seq.o
+### image related modules
+IMAGEMODS=color_rgb.o image.o sprite.o tga.o
 
 ### event
 ifeq ($(TARGET),svgalib)
@@ -50,8 +44,7 @@ endif
 
 VPATH=$(TOPDIR)/src
 CFLAGS=$(DENT_CFLAGS)
-MODULES=$(RASTERMODS) $(MEMORYMODS) $(ERRORMODS) $(COLORMODS) $(SPRITEMODS) \
-        $(DATASTRUCTMODS) $(EVENTMODS)
+MODULES=$(RASTERMODS) $(EVENTMODS) $(SYSTEMMODS) $(IMAGEMODS) $(GENERICMODS)
 
 libdentata.a: $(MODULES)
 	ar rcs libdentata.a $(MODULES)

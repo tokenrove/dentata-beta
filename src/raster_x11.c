@@ -1,7 +1,7 @@
 /* 
  * x11.c
  * Created: Mon Jan  8 05:12:00 2001 by tek@wiw.org
- * Revised: Tue Feb  6 21:51:08 2001 by tek@wiw.org
+ * Revised: Sun Feb 25 05:07:14 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -165,7 +165,7 @@ bool d_raster_setmode(d_rasterdescription_t mode)
     XFlush(display);
 
     if(xim->depth == mode.bpp)
-        vbuf = xim->data;
+        vbuf = (byte *)xim->data;
     else {
         vbuf = d_memory_new((mode.w*mode.h*mode.bpp+7)/8);
         if(vbuf == NULL) {

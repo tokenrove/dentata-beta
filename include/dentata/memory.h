@@ -1,7 +1,7 @@
 /* 
  * memory.h
  * Created: Sat Jan  8 23:49:44 2000 by tek@wiw.org
- * Revised: Wed Jan 24 11:09:58 2001 by tek@wiw.org
+ * Revised: Sun Feb 25 02:44:31 2001 by tek@wiw.org
  * Copyright 2000 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -21,6 +21,7 @@ extern void *d_memory_resize(void *, dword);
 
 extern void  d_memory_copy(void *, void *, dword);
 extern void  d_memory_move(void *, void *, dword);
+extern void  d_memory_set(void *, byte, dword);
 
 #endif
 

@@ -1,7 +1,7 @@
 /* 
  * rgb.c
  * Created: Wed Jan 31 13:08:59 2001 by tek@wiw.org
- * Revised: Wed Jan 31 15:12:20 2001 by tek@wiw.org
+ * Revised: Sun Feb 25 05:05:15 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -13,6 +13,9 @@
 
 d_color_t d_color_fromrgb(d_image_t *, byte, byte, byte);
 d_color_t d_color_frompackedrgb(d_image_t *, dword);
+void d_color_torgb(d_image_t *, d_color_t, byte *, byte *, byte *);
+void d_color_unpack(byte bpp, d_color_t c, byte *r, byte *g, byte *b);
+d_color_t d_color_pack(byte bpp, byte r, byte g, byte b);
 
 static void getclosestinpalette(d_image_t *, byte *, byte *, byte *,
                                 d_color_t *);
@@ -34,24 +37,17 @@ d_color_t d_color_fromrgb(d_image_t *p, byte r, byte g, byte b)
        the RGB, or should we be returning the color index like we do
        for 8bpp? */
     switch(p->desc.bpp) {
-    case 16: /* BBBBBGGG GGGRRRRR */
-        c = 0;
-        c |= r&((1<<6)-1);
-        c |= (g&((1<<7)-1))<<5;
-        c |= (b&((1<<6)-1))<<11;
+    case 15:
+    case 16:
+    case 24:
+        c = d_color_pack(p->desc.bpp, r, g, b);
         break;
-    case 24: /* B G R */
-        c = 0;
-        c |= r;
-        c |= g << 8;
-        c |= b << 16;
-        break;
+
     case 8: /* we only support paletted 8bpp, so we don't do anything
                to the value we grabbed from the palette above (it's not
                RGB) */
         break;
 
-    case 15: /* MBBBBBGG GGGRRRRR I think? */
     default:
         c = 0;
         d_error_push("d_color_fromrgb: Attempted to convert with an "
@@ -64,6 +60,65 @@ d_color_t d_color_fromrgb(d_image_t *p, byte r, byte g, byte b)
 d_color_t d_color_frompackedrgb(d_image_t *p, dword rgb)
 {
     return d_color_fromrgb(p, (rgb>>16)&0xFF, (rgb>>8)&0xFF, rgb&0xFF);
+}
+
+void d_color_unpack(byte bpp, d_color_t c, byte *r, byte *g, byte *b)
+{
+    switch(bpp) {
+    case 15:
+        *r = c&((1<<6)-1);
+        *g = (c>>5)&((1<<6)-1);
+        *b = (c>>10)&((1<<6)-1);
+        break;
+
+    case 16:
+        *r = c&((1<<6)-1);
+        *g = (c>>5)&((1<<7)-1);
+        *b = (c>>11)&((1<<6)-1);
+        break;
+
+    case 24:
+        *r = c;
+        *g = c >> 8;
+        *b = c >> 16;
+        break;
+    }
+
+    return;
+}
+
+d_color_t d_color_pack(byte bpp, byte r, byte g, byte b)
+{
+    d_color_t c;
+
+    switch(bpp) {
+    case 15: /* MBBBBBGG GGGRRRRR I think? FIXME */
+        c = 0;
+        c |= r&((1<<6)-1);
+        c |= (g&((1<<6)-1))<<5;
+        c |= (b&((1<<6)-1))<<10;
+        break;
+
+    case 16: /* BBBBBGGG GGGRRRRR */
+        c = 0;
+        c |= r&((1<<6)-1);
+        c |= (g&((1<<7)-1))<<5;
+        c |= (b&((1<<6)-1))<<11;
+        break;
+
+    case 24: /* B G R */
+        c = 0;
+        c |= r;
+        c |= g << 8;
+        c |= b << 16;
+        break;
+
+    default:
+        c = 0;
+        d_error_push("d_color_pack: Attempted to convert with an "
+                     "unsupported depth.");
+    }
+    return c;
 }
 
 #define abs(x) ((x)>0?(x):-(x))

@@ -1,7 +1,7 @@
 /* 
  * types.h
  * Created: Sat Jan  8 23:25:47 2000 by tek@wiw.org
- * Revised: Mon Jan 29 12:06:36 2001 by tek@wiw.org
+ * Revised: Sun Feb 25 05:04:35 2001 by tek@wiw.org
  * Copyright 2000 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -37,6 +37,8 @@ typedef struct d_rasterdescription_s {
 
 #define D_NCLUTITEMS    256
 #define D_BYTESPERCOLOR 3
+
+typedef dword d_color_t;
 
 typedef struct d_palette_s {
     byte alphaent;
