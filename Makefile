@@ -1,7 +1,7 @@
 # 
 # Makefile
 # Created: Mon Jan  8 07:00:27 2001 by tek@wiw.org
-# Revised: Sat Jun 23 02:24:11 2001 by tek@wiw.org
+# Revised: Sun Jun 24 23:41:35 2001 by tek@wiw.org
 # Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 # This program comes with ABSOLUTELY NO WARRANTY.
 # $Id$
@@ -30,6 +30,7 @@ LDFLAGS=$(LIBS)
 #   dos
 #   unix-svgalib
 #   unix-x11
+#   gba
 TARGET=unix-x11
 
 # Some of the things that can be tweaked below are:
@@ -38,14 +39,17 @@ TARGET=unix-x11
 #   x11     -- X11
 #   svgalib -- SVGAlib
 #   dos     -- VGA/SVGA under MSDOS
+#   gba     -- Gameboy Advance
 #   null    -- empty stubs
 ###
 # TARGETOS -- operating system
 #   unix    -- UNIX/POSIX (Linux, OpenBSD, DOS w/DJGPP, et cetera)
+#   gba     -- Gameboy Advance
 #   null    -- empty stubs
 ###
 # TARGETARCH -- architecture
 #   generic -- don't use architecture specific code
+#   arm     -- use ARM/Thumb specific code
 #   x86     -- use IA32 specific code
 
 ifeq ($(TARGET),dos)
@@ -77,6 +81,13 @@ TARGETARCH=generic
 TARGETOS=unix
 LIBS=-L/usr/X11R6/lib -lXext -lX11
 CPPFLAGS:=$(CPPFLAGS) -I/usr/X11R6/include
+endif
+
+ifeq ($(TARGET),gba)
+TARGETGFX=gba
+TARGETARCH=arm
+TARGETOS=gba
+LIBS=
 endif
 
 ### End of user configurable section ###
