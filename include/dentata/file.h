@@ -1,7 +1,7 @@
 /* 
  * file.h
  * Created: Mon Feb  5 15:51:30 2001 by tek@wiw.org
- * Revised: Sun Feb 25 03:48:35 2001 by tek@wiw.org
+ * Revised: Sun Apr 15 17:10:54 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -91,6 +91,15 @@ extern char *    d_file_getasciizstring(d_file_t *);
  *              the end of the file.
  */
 extern void      d_file_seek(d_file_t *, int, d_fileseekrel_t);
+
+/**
+ * d_file_tell(d_file_t *fp)
+ * Tells the current position in a file.
+ *
+ * Takes: fp - the file handle.
+ * Returns: the position relative to the start of the file.
+ */
+extern dword     d_file_tell(d_file_t *);
 
 /**
  * d_file_read(d_file_t *fp, byte *data, dword nbytes)

@@ -1,7 +1,7 @@
 /* 
  * blit_common.c
  * Created: Mon Jan 29 13:42:41 2001 by tek@wiw.org
- * Revised: Wed Apr 11 08:21:08 2001 by tek@wiw.org
+ * Revised: Fri Apr 13 23:05:42 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -10,11 +10,14 @@
 
 #include <dentata/types.h>
 #include <dentata/blit.h>
+#include <dentata/error.h>
 
 typedef void(*blitfunction_t)(byte *, byte *, byte *, byte *, dword, dword,
                               dword, dword, dword, dword);
 
 extern void _blit80(byte *, byte *, byte *, byte *, dword, dword, dword,
+                    dword, dword, dword);
+extern void _blit81(byte *, byte *, byte *, byte *, dword, dword, dword,
                     dword, dword, dword);
 extern void _blit160(byte *, byte *, byte *, byte *, dword, dword, dword,
                      dword, dword, dword);
@@ -22,12 +25,18 @@ extern void _blit161(byte *, byte *, byte *, byte *, dword, dword, dword,
                      dword, dword, dword);
 extern void _blit162(byte *, byte *, byte *, byte *, dword, dword, dword,
                      dword, dword, dword);
+extern void _blit164(byte *, byte *, byte *, byte *, dword, dword, dword,
+                     dword, dword, dword);
+extern void _blit168(byte *, byte *, byte *, byte *, dword, dword, dword,
+                     dword, dword, dword);
+extern void _blit240(byte *, byte *, byte *, byte *, dword, dword, dword,
+                     dword, dword, dword);
 
 static blitfunction_t blits[4][5] = {
-    /* 8 bpp */ { _blit80, 0, 0, 0, 0 },
+    /* 8 bpp */ { _blit80, _blit81, 0, 0, 0 },
     /* 15 bpp */ { 0, 0, 0, 0, 0 },
-    /* 16 bpp */ { _blit160, _blit161, _blit162, 0, 0 },
-    /* 24 bpp */ { 0, 0, 0, 0, 0 }
+    /* 16 bpp */ { _blit160, _blit161, _blit162, _blit164, _blit168 },
+    /* 24 bpp */ { _blit240, 0, 0, 0, 0 }
 //    /*  8 bpp */ { _blit80,  _blit81,  _blit82,  _blit84,  _blit88 },
 //    /* 15 bpp */ { _blit150, _blit151, _blit152, _blit154, _blit158 },
 //    /* 16 bpp */ { _blit160, _blit161, _blit162, _blit164, _blit168 },
@@ -42,6 +51,13 @@ void d_blit(d_image_t *d, d_image_t *s, d_point_t p)
 {
     dword dstoffset, dstscanoff, scanlen, endoffset, srcoffset, srcscanoff;
     int i, j;
+    bool sdirty = false;
+
+    if(s->desc.bpp != d->desc.bpp) {
+        s = d_image_dup(s);
+        d_image_convertdepth(s, d->desc.bpp);
+        sdirty = true;
+    }
 
     clip(d, s, p, &dstoffset, &dstscanoff, &scanlen, &endoffset,
          &srcoffset, &srcscanoff);
@@ -57,9 +73,12 @@ void d_blit(d_image_t *d, d_image_t *s, d_point_t p)
     case 24:
         i = 3;
         break;
+    default:
+        d_error_fatal("d_blit: Unsupported bpp.");
+        return;
     }
 
-    switch(d->desc.alpha) {
+    switch(s->desc.alpha) {
     case 0:
         j = 0;
         break;
@@ -75,9 +94,18 @@ void d_blit(d_image_t *d, d_image_t *s, d_point_t p)
     case 8:
         j = 4;
         break;
+    default:
+        j = 0;
+        break;
     }
-    (*blits[i][j])(d->data, d->alpha, s->data, s->alpha, dstoffset,
-                   dstscanoff, scanlen, endoffset, srcoffset, srcscanoff);
+    if(dstoffset < d->desc.w*d->desc.h && scanlen > 0 &&
+       dstoffset < endoffset)
+        (*blits[i][j])(d->data, d->alpha, s->data, s->alpha, dstoffset,
+                       dstscanoff, scanlen, endoffset, srcoffset, srcscanoff);
+
+    if(sdirty)
+        d_image_delete(s);
+
     return;
 }
 
@@ -94,10 +122,10 @@ static void clip(d_image_t *d, d_image_t *s, d_point_t p, dword *dstoffset,
     maxx = max(0, -p.x);
     *srcoffset = s->desc.w*maxy+maxx;
     *dstoffset = d->desc.w*(maxy+p.y)+(maxx+p.x);
-    *scanlen = min(s->desc.w-maxx, d->desc.w-(p.x+maxx));
-    *dstscanoff = d->desc.w-(*scanlen+p.x)+maxx+p.x;
-    *srcscanoff = s->desc.w-*scanlen+maxx;
-    i = min(s->desc.h-maxy, s->desc.h-(maxy+p.y));
+    *scanlen = max(0, min(s->desc.w-maxx, d->desc.w-(p.x+maxx)));
+    *dstscanoff = d->desc.w-(*scanlen+(p.x+maxx))+(p.x+maxx);
+    *srcscanoff = s->desc.w-(*scanlen+(p.x+maxx))+(p.x+maxx);
+    i = max(0, min(s->desc.h-maxy, d->desc.h-(maxy+p.y)));
     *endoffset = *dstoffset+(*dstscanoff+*scanlen)*i;
     return;
 }

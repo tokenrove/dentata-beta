@@ -1,7 +1,7 @@
 /* 
  * primitives.h
  * Created: Wed Jan 24 11:20:18 2001 by tek@wiw.org
- * Revised: Mon Jan 29 13:30:40 2001 by tek@wiw.org
+ * Revised: Thu Apr 12 03:46:05 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -17,7 +17,7 @@
 #include <dentata/random.h>
 
 typedef struct d_point_s {
-    word x, y;
+    int x, y;
 } d_point_t;
 
 typedef struct d_rect_s {
@@ -25,8 +25,8 @@ typedef struct d_rect_s {
     word w, h;
 } d_rect_t;
 
-extern d_point_t d_point_center(word, word);
-extern d_point_t d_point_random(d_random_t *, word, word);
+extern d_point_t d_point_center(d_rect_t);
+extern d_point_t d_point_random(d_random_t *, d_rect_t);
 
 #endif
 

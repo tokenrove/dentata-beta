@@ -1,7 +1,7 @@
 /* 
  * time_unix.c
  * Created: Wed Apr  4 21:47:19 2001 by tek@wiw.org
- * Revised: Wed Apr  4 21:54:27 2001 by tek@wiw.org
+ * Revised: Sun Apr 15 18:35:25 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -17,6 +17,7 @@
 void d_time_wait(dword);
 void *d_time_startcount(int);
 void d_time_endcount(void *th);
+extern bool d_time_iscountfinished(void *th);
 
 struct timehandle_s {
     struct timeval end;
@@ -41,6 +42,20 @@ void *d_time_startcount(int fps)
     handle->end.tv_usec = (handle->end.tv_usec+diff)%(int)1e6;
 
     return (void *)handle;
+}
+
+bool d_time_iscountfinished(void *th)
+{
+    struct timeval curtv;
+    struct timehandle_s *handle = (struct timehandle_s *)th;
+
+    gettimeofday(&curtv, NULL);
+    if(curtv.tv_sec < handle->end.tv_sec ||
+       (curtv.tv_sec == handle->end.tv_sec &&
+        curtv.tv_usec < handle->end.tv_usec)) {
+        return false;
+    }
+    return true;
 }
 
 void d_time_endcount(void *th)

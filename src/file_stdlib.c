@@ -1,7 +1,7 @@
 /* 
  * file_stdlib.c
  * Created: Sun Feb 25 03:46:39 2001 by tek@wiw.org
- * Revised: Sun Feb 25 03:57:36 2001 by tek@wiw.org
+ * Revised: Sun Apr 15 17:11:27 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -21,6 +21,7 @@ word d_file_getword(d_file_t *fp);
 dword d_file_getdword(d_file_t *fp);
 char *d_file_getasciizstring(d_file_t *fp);
 void d_file_seek(d_file_t *fp, int offset, d_fileseekrel_t rel);
+dword d_file_tell(d_file_t *fp);
 dword d_file_read(d_file_t *fp, byte *data, dword len);
 
 d_file_t *d_file_open(char *filename)
@@ -84,6 +85,11 @@ void d_file_seek(d_file_t *fp_, int offset, d_fileseekrel_t rel)
     fseek(fp, offset, (rel == current)?SEEK_CUR:
                       (rel == beginning)?SEEK_SET:SEEK_END);
     return;
+}
+
+dword d_file_tell(d_file_t *fp)
+{
+    return ftell(fp);
 }
 
 dword d_file_read(d_file_t *fp_, byte *data, dword len)

@@ -1,7 +1,7 @@
 # 
 # Makefile
 # Created: Mon Jan  8 07:00:27 2001 by tek@wiw.org
-# Revised: Sun Feb 25 00:23:21 2001 by tek@wiw.org
+# Revised: Thu Apr 12 05:57:42 2001 by tek@wiw.org
 # Copyright 2001 Julian E. C. Squires (tek@wiw.org)
 # This program comes with ABSOLUTELY NO WARRANTY.
 # $Id$
@@ -22,7 +22,7 @@ TOPDIR=$(CURDIR)
 #
 DEFINES=-DUSE_X86_ASM -DDEBUG
 DENT_CPPFLAGS=-I$(TOPDIR)/include -L$(TOPDIR)/lib $(DEFINES)
-DENT_CFLAGS=-Wall -pedantic -g $(DENT_CPPFLAGS)
+DENT_CFLAGS=-Wall -pedantic -g -O6 $(DENT_CPPFLAGS)
 DENT_LDFLAGS=$(LIBS)
 DIRS=lib tests docs demos tools
 
@@ -35,7 +35,7 @@ LIBS=-L/usr/X11R6/lib -lXext -lX11
 #LIBS=-lvga
 # null
 #TARGET=null
-#LIBS=
+#LIBS=-lefence
 
 default: all
 
@@ -46,7 +46,7 @@ x11:
 	$(MAKE) default TARGET=x11 LIBS='-L/usr/X11R6/lib -lXext -lX11'
 
 null:
-	$(MAKE) default TARGET=null LIBS=
+	$(MAKE) default TARGET=null LIBS='-lefence'
 
 .PHONY: default svgalib x11 all clean realclean test profile $(DIRS)
 

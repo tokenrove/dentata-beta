@@ -1,7 +1,7 @@
 /* 
  * tga.c
  * Created: Sun Feb 25 02:56:14 2001 by tek@wiw.org
- * Revised: Sun Feb 25 05:04:20 2001 by tek@wiw.org
+ * Revised: Sat Apr 14 16:43:08 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -115,13 +115,13 @@ void readrletga(d_file_t *fp, d_image_t *p)
 
             for(j = 0; j < run+1; j++, i++) {
                 for(k = 0; k < inc; k++)
-                    p->data[inc*i+k] = c>>(8*k);
+                    p->data[inc*i+(inc-k-1)] = c>>(8*k);
                 if(p->desc.alpha == 8) p->alpha[i] = c>>(8*k);
             }
         } else {
             for(j = 0; j < run+1; j++, i++) {
                 for(k = 0; k < inc; k++)
-                    p->data[inc*i+k] = d_file_getbyte(fp);
+                    p->data[inc*i+(inc-k-1)] = d_file_getbyte(fp);
                 if(p->desc.alpha == 8)
                     p->alpha[i] = d_file_getbyte(fp);
             }
@@ -144,16 +144,16 @@ void readtgacmap(d_file_t *fp, d_palette_t *cmap, struct tgaheader_s head)
             break;
             
         case 24:
-            cmap->clut[3*i+0] = d_file_getbyte(fp);
-            cmap->clut[3*i+1] = d_file_getbyte(fp);
             cmap->clut[3*i+2] = d_file_getbyte(fp);
+            cmap->clut[3*i+1] = d_file_getbyte(fp);
+            cmap->clut[3*i+0] = d_file_getbyte(fp);
             break;
 
             /* FIXME might be a different order */
         case 32:
-            cmap->clut[3*i+0] = d_file_getbyte(fp);
-            cmap->clut[3*i+1] = d_file_getbyte(fp);
             cmap->clut[3*i+2] = d_file_getbyte(fp);
+            cmap->clut[3*i+1] = d_file_getbyte(fp);
+            cmap->clut[3*i+0] = d_file_getbyte(fp);
             d_file_seek(fp, 1, current);
             break;
 

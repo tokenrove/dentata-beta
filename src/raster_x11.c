@@ -1,7 +1,7 @@
 /* 
  * x11.c
  * Created: Mon Jan  8 05:12:00 2001 by tek@wiw.org
- * Revised: Thu Apr 12 01:47:18 2001 by tek@wiw.org
+ * Revised: Sat Apr 14 23:44:34 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -31,12 +31,15 @@ void d_raster_update(void);
 
 /* static variables */
 static byte *vbuf;
-enum { NAVAILMODES = 4 };
+enum { NAVAILMODES = 7 };
 static d_rasterdescription_t availmodes[NAVAILMODES] = {
   { 320, 200, 0, 0, false, RGB },
+  { 640, 400, 0, 0, false, RGB },
   { 640, 480, 0, 0, false, RGB },
   { 800, 600, 0, 0, false, RGB },
-  {1024, 768, 0, 0, false, RGB }
+  {1024, 768, 0, 0, false, RGB },
+  {1192, 864, 0, 0, false, RGB },
+  {1280, 1024, 0, 0, false, RGB }
 };
 static d_rasterdescription_t curmode;
 static XImage *xim;
@@ -45,6 +48,9 @@ Display *_d_x11_display;
 Window _d_x11_window;
 static XShmSegmentInfo shminfo;
 static int depth;
+static bool useshm;
+static Colormap cmap;
+static XColor colors[D_NCLUTITEMS];
 
 bool d_raster_new(void)
 {
@@ -65,6 +71,7 @@ bool d_raster_new(void)
     }
     graphcont = DefaultGCOfScreen(screen);
     depth = DefaultDepthOfScreen(screen);
+    useshm = (XShmQueryExtension(_d_x11_display) == True)?true:false;
 
     return success;
 }
@@ -72,14 +79,17 @@ bool d_raster_new(void)
 static void d_raster_closewindow(void)
 {
     if(_d_x11_window) {
-        XShmDetach(_d_x11_display, &shminfo);
-        if(shminfo.shmaddr)
+        if(useshm) {
+            XShmDetach(_d_x11_display, &shminfo);
+            XDestroyImage(xim);
             shmdt(shminfo.shmaddr);
-        if(shminfo.shmid >= 0)
             shmctl(shminfo.shmid, IPC_RMID, 0);
-        XDestroyImage(xim);
+        } else {
+            d_memory_delete(xim->data);
+            xim->data = NULL;
+            XDestroyImage(xim);
+        }
         XDestroyWindow(_d_x11_display, _d_x11_window);
-        XFlush(_d_x11_display);
         _d_x11_window = 0;
     }
     vbuf = NULL;
@@ -101,7 +111,7 @@ bool d_raster_setmode(d_rasterdescription_t mode)
     for(i = 0; i < NAVAILMODES; i++) {
         if(mode.w      == availmodes[i].w &&
            mode.h      == availmodes[i].h &&
-           mode.bpp    == depth &&
+           mode.bpp    == depth && /* FIXME should check XListDepths */
            mode.cspace == RGB) {
             curmode = mode;
             break;
@@ -132,34 +142,57 @@ bool d_raster_setmode(d_rasterdescription_t mode)
 
     XStoreName(_d_x11_display, _d_x11_window, "dentata gen beta");
 
-    xim = XShmCreateImage(_d_x11_display, DefaultVisualOfScreen(screen), depth,
-                          ZPixmap, NULL, &shminfo, mode.w, mode.h);
+    if(useshm)
+        xim = XShmCreateImage(_d_x11_display, DefaultVisualOfScreen(screen),
+                              mode.bpp, ZPixmap, NULL, &shminfo, mode.w,
+                              mode.h);
+    else
+        xim = XCreateImage(_d_x11_display, DefaultVisualOfScreen(screen),
+                           mode.bpp, ZPixmap, 0, NULL, mode.w, mode.h,
+                           mode.bpp, 0);
     if(xim == NULL) {
-        d_error_push("d_raster_setmode: XShmCreateImage failed for video "
-                     "buffer.");
+        d_error_push("d_raster_setmode: Failed to create video buffer.");
         return failure;
     }
 
-    shminfo.shmid = shmget(IPC_PRIVATE, xim->bytes_per_line*xim->height,
-                           IPC_CREAT|0777);
-    if(shminfo.shmid < 0) {
-        d_error_push("d_raster_setmode: shmget failed for video buffer "
-                     "image.");
-        return failure;
-    }
+    if(useshm) {
+        shminfo.shmid = shmget(IPC_PRIVATE, xim->bytes_per_line*xim->height,
+                               IPC_CREAT|0777);
+        if(shminfo.shmid < 0) {
+            d_error_push("d_raster_setmode: shmget failed for video buffer "
+                         "image.");
+            return failure;
+        }
 
-    shminfo.shmaddr = shmat(shminfo.shmid, 0, 0);
-    xim->data = shminfo.shmaddr;
+        shminfo.shmaddr = shmat(shminfo.shmid, 0, 0);
+        xim->data = shminfo.shmaddr;
+    } else {
+        xim->data = d_memory_new(xim->bytes_per_line*xim->height);
+    }
     if(xim->data == NULL) {
-        d_error_push("d_raster_setmode: shmat failed for video buffer image.");
+        d_error_push("d_raster_setmode: Failed to create video buffer image.");
         return failure;
     }
-    
-    shminfo.readOnly = False;
-    if(XShmAttach(_d_x11_display, &shminfo) == 0) {
-        d_error_push("d_raster_setmode: XShmAttach failed.");
-        return failure;
+
+    if(useshm) {
+        shminfo.readOnly = False;
+        if(XShmAttach(_d_x11_display, &shminfo) == 0) {
+            d_error_push("d_raster_setmode: XShmAttach failed.");
+            return failure;
+        }
     }
+
+    if(mode.paletted) {
+        cmap = XCreateColormap(_d_x11_display, _d_x11_window,
+                               DefaultVisualOfScreen(screen), True);
+        XSetWindowColormap(_d_x11_display, _d_x11_window, cmap);
+        for(i = 0; i < D_NCLUTITEMS; i++) {
+            colors[i].red = colors[i].blue = colors[i].green = 0;
+            colors[i].pixel = i; colors[i].flags = DoRed | DoGreen | DoBlue;
+        }
+        XStoreColors(_d_x11_display, cmap, colors, D_NCLUTITEMS);
+    }
+
     XMapRaised(_d_x11_display, _d_x11_window);
     XClearWindow(_d_x11_display, _d_x11_window);
     XFlush(_d_x11_display);
@@ -171,9 +204,12 @@ bool d_raster_setmode(d_rasterdescription_t mode)
 d_rasterdescription_t *d_raster_getmodes(int *nmodes)
 {
     d_rasterdescription_t *modes;
-    int i;
+    int i, j, ndepths, *depths;
+    int scr = DefaultScreen(_d_x11_display);
 
-    *nmodes = NAVAILMODES;
+    depths = XListDepths(_d_x11_display, scr, &ndepths);
+
+    *nmodes = NAVAILMODES*ndepths;
     modes = d_memory_new(*nmodes*sizeof(d_rasterdescription_t));
     if(modes == NULL) {
         d_error_push("d_raster_getmodes: failed to allocate memory for mode "
@@ -181,13 +217,20 @@ d_rasterdescription_t *d_raster_getmodes(int *nmodes)
         return NULL;
     }
 
-    for(i = 0; i < NAVAILMODES; i++) {
-        modes[i] = availmodes[i];
-        modes[i].bpp = depth;
-        if(depth == 8)
-            modes[i].paletted = true;
+    for(i = 0, j = 0; i < NAVAILMODES*ndepths; i++) {
+        if(availmodes[i/ndepths].w > DisplayWidth(_d_x11_display, scr) ||
+           availmodes[i/ndepths].h > DisplayHeight(_d_x11_display, scr)) {
+            continue;
+        }
+        modes[j] = availmodes[i/ndepths];
+        modes[j].bpp = depths[i%ndepths];
+        if(depths[i%ndepths] == 8)
+            modes[j].paletted = true;
+        j++;
     }
+    XFree(depths);
 
+    *nmodes = j;
     return modes;
 }
 
@@ -203,25 +246,42 @@ byte *d_raster_getgfxpointer(void)
 
 void d_raster_update(void)
 {
-    XShmPutImage(_d_x11_display, _d_x11_window, graphcont, xim, 0, 0, 0, 0,
-                 curmode.w, curmode.h, False);
+    if(useshm)
+        XShmPutImage(_d_x11_display, _d_x11_window, graphcont, xim, 0, 0, 0, 0,
+                     curmode.w, curmode.h, False);
+    else
+        XPutImage(_d_x11_display, _d_x11_window, graphcont, xim, 0, 0, 0, 0,
+                  curmode.w, curmode.h);
     XFlush(_d_x11_display);
     return;
 }
 
 void d_raster_setpalette(d_palette_t *p)
 {
-    d_error_fatal("d_raster_setpalette: Palette functions unimplemented!");
+    int i;
+
+    if(curmode.paletted) {
+        for(i = 0; i < D_NCLUTITEMS; i++) {
+            colors[i].red = p->clut[3*i+0];
+            colors[i].green = p->clut[3*i+1];
+            colors[i].blue = p->clut[3*i+2];
+            colors[i].pixel = i;
+            colors[i].flags = DoRed|DoGreen|DoBlue;
+        }
+        XStoreColors(_d_x11_display, cmap, colors, D_NCLUTITEMS);
+    }
     return;
 }
 
 void d_raster_getpalette(d_palette_t *p)
 {
-    int i, pal[D_NCLUTITEMS*D_BYTESPERCOLOR];
+    int i;
 
-    d_error_push("d_raster_getpalette: unimplemented.");
-    for(i = 0; i < D_NCLUTITEMS; i++)
-        p->clut[i] = pal[i];
+    for(i = 0; i < D_NCLUTITEMS; i++) {
+        p->clut[3*i+0] = colors[i].red;
+        p->clut[3*i+1] = colors[i].green;
+        p->clut[3*i+2] = colors[i].blue;
+    }
     return;
 }
 

@@ -1,7 +1,7 @@
 /* 
  * event_x11.c
  * Created: Sun Feb 25 01:04:11 2001 by tek@wiw.org
- * Revised: Thu Apr 12 01:53:04 2001 by tek@wiw.org
+ * Revised: Thu Apr 12 03:42:19 2001 by tek@wiw.org
  * Copyright 2001 Julian E. C. Squires (tek@wiw.org)
  * This program comes with ABSOLUTELY NO WARRANTY.
  * $Id$
@@ -42,7 +42,7 @@ static int transtable[D_KBD_LAST+1] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* 79 */
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* 89 */
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* 99 */
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* 109 */
+    0, 0, 0, XK_Up, 0, XK_Left, XK_Right, 0, XK_Down, 0, /* 109 */
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* 119 */
     0, 0, 0, 0, 0, 0, 0, 0        /* 127 */
 };
