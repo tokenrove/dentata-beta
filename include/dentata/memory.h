@@ -55,7 +55,7 @@ extern void *d_memory_resize(void *, dword);
  *        src - the source address.
  *        nbytes - the number of bytes to copy.
  */
-extern void  d_memory_copy(void *, void *, dword);
+extern void  d_memory_copy(void *, const void *, dword);
 
 /**
  * d_memory_move(void *dst, void *src, dword nbytes)
@@ -67,7 +67,7 @@ extern void  d_memory_copy(void *, void *, dword);
  *        src - the source address.
  *        nbytes - the number of bytes to copy.
  */
-extern void  d_memory_move(void *, void *, dword);
+extern void  d_memory_move(void *, const void *, dword);
 
 /**
  * d_memory_set(void *dst, byte value, dword nbytes)

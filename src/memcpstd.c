@@ -13,16 +13,16 @@
 #include <dentata/memory.h>
 #include <string.h>
 
-void  d_memory_copy(void *, void *, dword);
-void  d_memory_move(void *, void *, dword);
-void  d_memory_set(void *, byte, dword);
+void d_memory_copy(void *, const void *, dword);
+void d_memory_move(void *, const void *, dword);
+void d_memory_set(void *, byte, dword);
 
-void d_memory_copy(void *d, void *s, dword len)
+void d_memory_copy(void *d, const void *s, dword len)
 {
     memcpy(d, s, len);
 }
 
-void d_memory_move(void *d, void *s, dword len)
+void d_memory_move(void *d, const void *s, dword len)
 {
     memmove(d, s, len);
 }

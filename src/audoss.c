@@ -143,7 +143,6 @@ void d_audio_update(void)
 {
     int i, j, a, b, c;
     short mix;
-    char smix;
     d_sample_t *s;
     char *p;
 
