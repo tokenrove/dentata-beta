@@ -72,12 +72,14 @@ int d_util_printflen(byte *fmt, void **args)
             case 'd':
             case 'i':
                 integer = *(int *)args;
+		if(integer < 0) j++;
                 do j++; while(integer/=10);
                 args++;
                 break;
 
             case 'o':
                 integer = *(int *)args;
+		if(integer < 0) j++;
                 do j++; while(integer/=8);
                 args++;
                 break;
@@ -85,6 +87,7 @@ int d_util_printflen(byte *fmt, void **args)
             case 'X':
             case 'x':
                 integer = *(int *)args;
+		if(integer < 0) j++;
                 do j++; while(integer/=16);
                 args++;
                 break;
@@ -124,7 +127,12 @@ void d_util_sprintf(byte *s, byte *fmt, void **args)
             switch(fmt[i]) {
             case 'd':
             case 'i':
-                k = integer = *(int *)args;
+                integer = *(int *)args;
+		if(integer < 0) {
+		    *s++ = '-';
+		    integer = -integer;
+		}
+		k = integer;
                 width = 1;
                 while(k/=10) width++;
                 s+=width-1;
@@ -137,7 +145,12 @@ void d_util_sprintf(byte *s, byte *fmt, void **args)
                 break;
 
             case 'o':
-                k = integer = *(int *)args;
+                integer = *(int *)args;
+		if(integer < 0) {
+		    *s++ = '-';
+		    integer = -integer;
+		}
+		k = integer;
                 width = 1;
                 do width++; while(k/=8);
                 s+=width-1;
@@ -151,7 +164,12 @@ void d_util_sprintf(byte *s, byte *fmt, void **args)
 
             case 'X':
             case 'x':
-                k = integer = *(int *)args;
+                integer = *(int *)args;
+		if(integer < 0) {
+		    *s++ = '-';
+		    integer = -integer;
+		}
+		k = integer;
                 width = 1;
                 while(k/=16) width++;
                 s+=width-1;

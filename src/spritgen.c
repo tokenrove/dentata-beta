@@ -21,6 +21,7 @@ typedef struct sprite_s {
     dword magic;
     word nanims, curanim;
     word *nframes, curframe, framelag;
+    bool looped;
     d_image_t ***frames;
 } sprite_t;
 
@@ -49,6 +50,7 @@ d_image_t *d_sprite_getcurframe(d_sprite_t *);
 void d_sprite_setcurframe(d_sprite_t *, word);
 void d_sprite_stepframe(d_sprite_t *);
 void d_sprite_setcuranim(d_sprite_t *, word);
+bool d_sprite_haslooped(d_sprite_t *);
 
 
 d_sprite_t *d_sprite_new(void)
@@ -67,9 +69,11 @@ d_sprite_t *d_sprite_new(void)
     p->nanims = 0;
     p->frames = NULL;
     p->nframes = NULL;
+    p->looped = false;
 
     return (d_sprite_t *)p;
 }
+
 
 void d_sprite_delete(d_sprite_t *p_)
 {
@@ -92,6 +96,7 @@ void d_sprite_delete(d_sprite_t *p_)
     p->magic = DEADMAGIC;
     return;
 }
+
 
 d_sprite_t *d_sprite_dup(d_sprite_t *p_)
 {
@@ -132,6 +137,7 @@ d_sprite_t *d_sprite_dup(d_sprite_t *p_)
     return q_;
 }
 
+
 int d_sprite_addanim(d_sprite_t *p_)
 {
     sprite_t *p;
@@ -146,6 +152,7 @@ int d_sprite_addanim(d_sprite_t *p_)
     p->frames[p->nanims-1] = NULL;
     return p->nanims-1;
 }
+
 
 void d_sprite_addframe(d_sprite_t *p_, int anim, d_image_t *frame)
 {
@@ -165,6 +172,7 @@ void d_sprite_addframe(d_sprite_t *p_, int anim, d_image_t *frame)
     return;
 }
 
+
 void d_sprite_setanimparameters(d_sprite_t *p_, int framelag)
 {
     sprite_t *p;
@@ -177,6 +185,7 @@ void d_sprite_setanimparameters(d_sprite_t *p_, int framelag)
     return;
 }
 
+
 d_image_t *d_sprite_getcurframe(d_sprite_t *p_)
 {
     sprite_t *p;
@@ -185,6 +194,7 @@ d_image_t *d_sprite_getcurframe(d_sprite_t *p_)
     MAGICCHECK(p, NULL);
     return p->frames[p->curanim][p->curframe/p->framelag];
 }
+
 
 void d_sprite_setcurframe(d_sprite_t *p_, word curframe)
 {
@@ -196,6 +206,7 @@ void d_sprite_setcurframe(d_sprite_t *p_, word curframe)
     return;
 }
 
+
 void d_sprite_stepframe(d_sprite_t *p_)
 {
     sprite_t *p;
@@ -203,10 +214,13 @@ void d_sprite_stepframe(d_sprite_t *p_)
     p = p_;
     MAGICCHECK(p, /* void */);
     p->curframe++;
-    if(p->curframe/p->framelag >= p->nframes[p->curanim])
+    if(p->curframe/p->framelag >= p->nframes[p->curanim]) {
         p->curframe = 0;
+	p->looped = true;
+    }
     return;
 }
+
 
 void d_sprite_setcuranim(d_sprite_t *p_, word curanim)
 {
@@ -222,7 +236,18 @@ void d_sprite_setcuranim(d_sprite_t *p_, word curanim)
     if(curanim != p->curanim)
         p->curframe = 0;
     p->curanim = curanim;
+    p->looped = false;
     return;
+}
+
+
+bool d_sprite_haslooped(d_sprite_t *p_)
+{
+    sprite_t *p;
+
+    p = p_;
+    MAGICCHECK(p, false);
+    return p->looped;
 }
 
 /* EOF spritgen.c */

@@ -97,7 +97,7 @@ dword d_file_read(d_file_t *fp_, byte *data, dword len)
 {
     FILE *fp = (FILE *)fp_;
 
-    return fread(data, len, 1, fp);
+    return fread(data, 1, len, fp);
 }
 
 /* EOF filestd.c */

@@ -69,6 +69,7 @@ extern d_image_t *d_sprite_getcurframe(d_sprite_t *);
 extern void d_sprite_setcurframe(d_sprite_t *, word);
 extern void d_sprite_stepframe(d_sprite_t *);
 extern void d_sprite_setcuranim(d_sprite_t *, word);
+bool d_sprite_haslooped(d_sprite_t *);
 
 #endif
 
