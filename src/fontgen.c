@@ -129,29 +129,34 @@ bool loadv0font(d_file_t *fp, d_font_t *fnt)
 void d_font_printf(d_image_t *image, d_font_t *fnt, d_point_t pt, byte *fmt,
                    ...)
 {
-    void **args;
+    va_list ap;
     byte *p;
     int i, len;
 
-    args = (void **)&fmt; args++;
-    len = d_util_printflen(fmt, args);
+    va_start(ap, fmt);
+    len = d_util_vprintflen(fmt, ap);
+    va_end(ap);
     p = d_memory_new(len+1);
-    d_util_sprintf(p, fmt, args);
+    va_start(ap, fmt);
+    d_util_vsprintf(p, fmt, ap);
 
     for(i = 0; i < len; i++) {
         d_image_blit(image, fnt->chars[(unsigned)p[i]-fnt->start], pt);
         pt.x += fnt->desc.w;
     }
     d_memory_delete(p);
+    va_end(ap);
     return;
 }
 
 word d_font_gettextwidth(d_font_t *fnt, byte *fmt, ...)
 {
-    void **args;
+    va_list ap;
 
-    args = (void **)&fmt; args++;
-    return d_util_printflen(fmt, args)*(fnt->desc.w);
+    va_start(ap, fmt);
+    word rv = d_util_vprintflen(fmt, ap)*(fnt->desc.w);
+    va_end(ap);
+    return rv;
 }
 
 bool d_font_convertdepth(d_font_t *fnt, byte bpp)

@@ -18,8 +18,8 @@ d_point_t d_point_center(d_rect_t r);
 d_point_t d_point_origin(void);
 d_point_t d_point_random(d_random_t *rand, d_rect_t rect);
 void d_iterator_reset(d_iterator_t *it);
-int d_util_printflen(byte *fmt, void **args);
-void d_util_sprintf(byte *s, byte *fmt, void **args);
+int d_util_vprintflen(byte *fmt, va_list ap);
+void d_util_vsprintf(byte *s, byte *fmt, va_list ap);
 
 
 d_point_t d_point_center(d_rect_t r)
@@ -60,7 +60,7 @@ void d_iterator_reset(d_iterator_t *it)
 }
 
 
-int d_util_printflen(byte *fmt, void **args)
+int d_util_vprintflen(byte *fmt, va_list ap)
 {
     int i, j, integer;
     char *string;
@@ -71,36 +71,31 @@ int d_util_printflen(byte *fmt, void **args)
             switch(fmt[i]) {
             case 'd':
             case 'i':
-                integer = *(int *)args;
+                integer = va_arg(ap, int);
 		if(integer < 0) j++;
                 do j++; while(integer/=10);
-                args++;
                 break;
 
             case 'o':
-                integer = *(int *)args;
+                integer = va_arg(ap, int);
 		if(integer < 0) j++;
                 do j++; while(integer/=8);
-                args++;
                 break;
 
             case 'X':
             case 'x':
-                integer = *(int *)args;
+                integer = va_arg(ap, int);
 		if(integer < 0) j++;
                 do j++; while(integer/=16);
-                args++;
                 break;
 
             case 's':
-                string = *(char **)args;
+                string = va_arg(ap, char *);
                 while(*(string++)) j++;
-                args++;
                 break;
 
             case 'c':
-                string = (char *)args;
-                args++;
+                (void)va_arg(ap, int);
                 j++;
                 break;
 
@@ -116,7 +111,7 @@ int d_util_printflen(byte *fmt, void **args)
 }
 
 
-void d_util_sprintf(byte *s, byte *fmt, void **args)
+void d_util_vsprintf(byte *s, byte *fmt, va_list ap)
 {
     int i, k, integer, width;
     char *string;
@@ -127,7 +122,7 @@ void d_util_sprintf(byte *s, byte *fmt, void **args)
             switch(fmt[i]) {
             case 'd':
             case 'i':
-                integer = *(int *)args;
+                integer = va_arg(ap, int);
 		if(integer < 0) {
 		    *s++ = '-';
 		    integer = -integer;
@@ -141,11 +136,10 @@ void d_util_sprintf(byte *s, byte *fmt, void **args)
                     integer /= 10;
                 } while(integer);
                 s+=width+1;
-                args++;
                 break;
 
             case 'o':
-                integer = *(int *)args;
+                integer = va_arg(ap, int);
 		if(integer < 0) {
 		    *s++ = '-';
 		    integer = -integer;
@@ -159,12 +153,11 @@ void d_util_sprintf(byte *s, byte *fmt, void **args)
                     integer /= 8;
                 } while(integer);
                 s+=width+1;
-                args++;
                 break;
 
             case 'X':
             case 'x':
-                integer = *(int *)args;
+                integer = va_arg(ap, int);
 		if(integer < 0) {
 		    *s++ = '-';
 		    integer = -integer;
@@ -181,18 +174,15 @@ void d_util_sprintf(byte *s, byte *fmt, void **args)
                     integer /= 16;
                 } while(integer);
                 s+=width+1;
-                args++;
                 break;
 
             case 's':
-                string = *(char **)args;
+                string = va_arg(ap, char *);
                 while(*string) *(s++) = *(string++);
-                args++;
                 break;
 
             case 'c':
-                *(s++) = *(char *)args;
-                args++;
+                *(s++) = va_arg(ap, int);
                 break;
 
             default:
