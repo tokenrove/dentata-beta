@@ -1,0 +1,17 @@
+*.o
+libdentata.a
+
+docs/funcref.tex
+*.aux
+*.log
+*.toc
+*.pdf
+
+tests/colortst
+tests/imagetst
+tests/memcptst
+tests/test-set
+tools/fontcnvt
+tools/lstmodes
+tools/plays3m
+tools/viewtga
