@@ -39,7 +39,7 @@ typedef struct set_s {
 
 #define CHECKMAGIC(p, ret) { \
     if(p == NULL || p->magic != SETMAGIC) { \
-        d_error_push(__FUNCTION__": set is not valid."); \
+        d_error_push("set is not valid."); \
         return ret; \
     } }
 

@@ -148,7 +148,7 @@ bool readinstrument(d_file_t *fp, d_s3m_instrument_t *inst)
         inst->flags = d_file_getbyte(fp);
         if(inst->flags&1) inst->sample->hasloop = true;
         if(inst->flags&2) {
-            d_error_fatal(__FUNCTION__": stereo sample (%s)\n", inst->name);
+            d_error_fatal("stereo sample (%s)\n", inst->name);
             inst->sample->mode.nchannels = 2;
             inst->sample->len *= 2;
         }
@@ -289,7 +289,7 @@ d_s3mhandle_t *d_s3m_play(d_s3m_t *s3m)
         for(i = d_audio_nchannels(); i < S3M_NCHANNELS; i++)
             status &= d_audio_addchannel(props);
     if(status != success) {
-        d_error_push(__FUNCTION__": Unable to allocate sufficient audio "
+        d_error_push("Unable to allocate sufficient audio "
                      "channels.");
         return NULL;
     }
@@ -325,7 +325,7 @@ void d_s3m_pause(d_s3mhandle_t *p_)
 {
     s3mplayback_t *p = (s3mplayback_t *)p_;
     if(p->magic != S3MMAGIC)
-        d_error_fatal(__FUNCTION__": Internal magic doesn't match!");
+        d_error_fatal("Internal magic doesn't match!");
     p->playing = false;
     return;
 }
@@ -334,7 +334,7 @@ void d_s3m_resume(d_s3mhandle_t *p_)
 {
     s3mplayback_t *p = (s3mplayback_t *)p_;
     if(p->magic != S3MMAGIC)
-        d_error_fatal(__FUNCTION__": Internal magic doesn't match!");
+        d_error_fatal("Internal magic doesn't match!");
     if(p->cursong != NULL)
         p->playing = true;
     return;
@@ -345,7 +345,7 @@ void d_s3m_stop(d_s3mhandle_t *p_)
     s3mplayback_t *p = (s3mplayback_t *)p_;
 
     if(p->magic != S3MMAGIC)
-        d_error_fatal(__FUNCTION__": Internal magic doesn't match!");
+        d_error_fatal("Internal magic doesn't match!");
     d_memory_delete(p);
     return;
 }
@@ -356,7 +356,7 @@ bool d_s3m_update(d_s3mhandle_t *pb_)
     byte chan;
 
     if(pb->magic != S3MMAGIC)
-        d_error_fatal(__FUNCTION__": Internal magic doesn't match!");
+        d_error_fatal("Internal magic doesn't match!");
 
     if(pb->cursong->orders[pb->curorder] == 255)
         return true;
@@ -459,7 +459,7 @@ void updatechannel(s3mplayback_t *pb, byte chan)
         if(p->operand[pb->currow][chan] < 0x20) {
             pb->speed = p->operand[pb->currow][chan];
         } else {
-            d_error_debug(__FUNCTION__": A%2x\n",p->operand[pb->currow][chan]);
+            d_error_debug("A%2x\n",p->operand[pb->currow][chan]);
         }
         break;
 
@@ -489,7 +489,7 @@ void updatechannel(s3mplayback_t *pb, byte chan)
         if((p->operand[pb->currow][chan]>>4) == 0xf) {
             pb->finepitch[chan] = -p->operand[pb->currow][chan]&0xf;
         } else if((p->operand[pb->currow][chan]>>4) == 0xe) {
-            d_error_debug(__FUNCTION__": E%2x\n",p->operand[pb->currow][chan]);
+            d_error_debug("E%2x\n",p->operand[pb->currow][chan]);
         }
         break;
 
@@ -497,7 +497,7 @@ void updatechannel(s3mplayback_t *pb, byte chan)
         if((p->operand[pb->currow][chan]>>4) == 0xf) {
             pb->finepitch[chan] = p->operand[pb->currow][chan]&0xf;
         } else if((p->operand[pb->currow][chan]>>4) == 0xe) {
-            d_error_debug(__FUNCTION__": F%2x\n",p->operand[pb->currow][chan]);
+            d_error_debug("F%2x\n",p->operand[pb->currow][chan]);
         }
         break;
 
@@ -513,7 +513,7 @@ void updatechannel(s3mplayback_t *pb, byte chan)
             break;
 
         default:
-            d_error_debug(__FUNCTION__": S%2x\n",p->operand[pb->currow][chan]);
+            d_error_debug("S%2x\n",p->operand[pb->currow][chan]);
         }
         break;
 
@@ -522,11 +522,11 @@ void updatechannel(s3mplayback_t *pb, byte chan)
         break;
 
     case 0x16: /* Vxx -- set global volume */
-        d_error_debug(__FUNCTION__": V%2x\n",p->operand[pb->currow][chan]);
+        d_error_debug("V%2x\n",p->operand[pb->currow][chan]);
         if(p->operand[pb->currow][chan] <= MAXVOLUME)
             pb->gvolume = p->operand[pb->currow][chan];
         else {
-            d_error_debug(__FUNCTION__": V%2x\n",p->operand[pb->currow][chan]);
+            d_error_debug("V%2x\n",p->operand[pb->currow][chan]);
         }
         break;
 
@@ -534,7 +534,7 @@ void updatechannel(s3mplayback_t *pb, byte chan)
         break;
 
     default:
-        d_error_debug(__FUNCTION__": hit effect %x (%x)\n",
+        d_error_debug("hit effect %x (%x)\n",
                       p->command[pb->currow][chan], p->operand[pb->currow][chan]);
     }
 

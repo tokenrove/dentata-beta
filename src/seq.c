@@ -25,7 +25,7 @@ typedef struct seq_s {
 
 #define CHECKMAGIC(p, ret) { \
     if(p == NULL || p->magic != SEQMAGIC) { \\
-        d_error_push(__FUNCTION__": sequence is not valid."); \\
+        d_error_push("sequence is not valid."); \\
         return ret; \\
     } }
 
@@ -76,7 +76,7 @@ bool d_seq_add(d_seq_t *p_, void *key, void *datum)
         p->nallocated += GROWALLOC;
         etmp = d_memory_resize(p->elements, p->nallocated*sizeof(element_t));
         if(etmp == NULL) {
-            d_error_push(__FUNCTION__": failed to resize element pool.");
+            d_error_push("failed to resize element pool.");
             return failure;
         }
         p->elements = etmp;
@@ -87,7 +87,7 @@ bool d_seq_add(d_seq_t *p_, void *key, void *datum)
     } else if(pos == p->nelements) {
         p->elements[pos] = el;
     } else {
-        d_error_push(__FUNCTION__": weird value for pos.");
+        d_error_push("weird value for pos.");
         return failure;
     }
     p->nelements++;
@@ -106,7 +106,7 @@ bool d_seq_remove(d_seq_t *p_, void *key)
         return failure;
 
     if(pos >= p->nelements) {
-        d_error_push(__FUNCTION__": weird value for pos.");
+        d_error_push("weird value for pos.");
         return failure;
     }
     d_memory_move(&p->elements[pos], &p->elements[pos+1], p->nelements-1-pos);
@@ -125,7 +125,7 @@ bool d_seq_fetch(d_seq_t *p_, void *key, void **datum)
         return failure;
 
     if(pos >= p->nelements) {
-        d_error_push(__FUNCTION__": weird value for pos.");
+        d_error_push("weird value for pos.");
         return failure;
     }
 

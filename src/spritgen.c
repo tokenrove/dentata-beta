@@ -28,11 +28,11 @@ typedef struct sprite_s {
 #ifdef DEBUG
 #define MAGICCHECK(p, ret) { \
     if(p == NULL) { \
-        d_error_push(__FUNCTION__": Passed a NULL pointer."); \
+        d_error_push("Passed a NULL pointer."); \
         return ret; \
     } \
     if(p->magic != SPRITEMAGIC) { \
-        d_error_push(__FUNCTION__": Bad sprite magic."); \
+        d_error_push("Bad sprite magic."); \
         return ret; \
     } \
 }
@@ -59,7 +59,7 @@ d_sprite_t *d_sprite_new(void)
 
     p = d_memory_new(sizeof(sprite_t));
     if(p == NULL) {
-        d_error_push(__FUNCTION__": failed to allocate sprite structure.");
+        d_error_push("failed to allocate sprite structure.");
         return NULL;
     }
     p->magic = SPRITEMAGIC;
@@ -161,7 +161,7 @@ void d_sprite_addframe(d_sprite_t *p_, int anim, d_image_t *frame)
     p = p_;
     MAGICCHECK(p, /* void */);
     if(anim >= p->nanims) {
-        d_error_push(__FUNCTION__": invalid animation.");
+        d_error_push("invalid animation.");
         return;
     }
 
@@ -229,7 +229,7 @@ void d_sprite_setcuranim(d_sprite_t *p_, word curanim)
     p = p_;
     MAGICCHECK(p, /* void */);
     if(curanim >= p->nanims) {
-        d_error_push(__FUNCTION__": invalid animation.");
+        d_error_push("invalid animation.");
         return;
     }
 

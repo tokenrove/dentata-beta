@@ -200,13 +200,13 @@ void d_audio_update(void)
 void d_audio_playsample(byte chan, d_sample_t *p, dword frequency)
 {
     if(chan >= nchannels) {
-        d_error_push(__FUNCTION__": bad channel supplied.");
+        d_error_push("bad channel supplied.");
         return;
     }
 
     if(p->mode.bitspersample != 8 || p->mode.nchannels != 1 ||
        p->mode.encoding != PCM) {
-        d_error_push(__FUNCTION__": unsupported sample parameters.");
+        d_error_push("unsupported sample parameters.");
         return;
     }
 
@@ -254,7 +254,7 @@ bool d_audio_addchannel(d_channelprops_t props)
 void d_audio_setchanprops(byte chan, d_channelprops_t props)
 {
     if(chan >= nchannels) {
-        d_error_push(__FUNCTION__": bad channel supplied.");
+        d_error_push("bad channel supplied.");
         return;
     }
 
@@ -266,12 +266,12 @@ void d_audio_setchanprops(byte chan, d_channelprops_t props)
 void d_audio_getchanprops(byte chan, d_channelprops_t *props)
 {
     if(props == NULL) {
-        d_error_push(__FUNCTION__": slipped a NULL pointer.");
+        d_error_push("slipped a NULL pointer.");
         return;
     }
 
     if(chan >= nchannels) {
-        d_error_push(__FUNCTION__": bad channel supplied.");
+        d_error_push("bad channel supplied.");
         return;
     }
 
@@ -281,7 +281,7 @@ void d_audio_getchanprops(byte chan, d_channelprops_t *props)
 void d_audio_setsamplepos(byte chan, dword pos)
 {
     if(chan >= nchannels) {
-        d_error_push(__FUNCTION__": bad channel supplied.");
+        d_error_push("bad channel supplied.");
         return;
     }
 
@@ -292,7 +292,7 @@ void d_audio_setsamplepos(byte chan, dword pos)
 void d_audio_getsamplepos(byte chan, dword *pos)
 {
     if(chan >= nchannels) {
-        d_error_push(__FUNCTION__": bad channel supplied.");
+        d_error_push("bad channel supplied.");
         return;
     }
 

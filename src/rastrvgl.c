@@ -38,7 +38,7 @@ bool d_raster_new(void)
     
     ret = vga_init();
     if(ret != 0) {
-        d_error_push(__FUNCTION__": vga_init failed.");
+        d_error_push("vga_init failed.");
         return failure;
     }
     raster_vbuf = NULL;
@@ -58,7 +58,7 @@ bool d_raster_setmode(d_rasterdescription_t mode)
     int i, ret;
 
     if(mode.cspace == grayscale) {
-        d_error_push(__FUNCTION__": grayscale modes are not supported "
+        d_error_push("grayscale modes are not supported "
                      "with this driver.");
         return failure;
     }
@@ -73,7 +73,7 @@ bool d_raster_setmode(d_rasterdescription_t mode)
             
             ret = vga_setmode(i);
             if(ret != 0) {
-                d_error_push(__FUNCTION__": vga_setmode failed.");
+                d_error_push("vga_setmode failed.");
                 return failure;
             }
 
@@ -84,7 +84,7 @@ bool d_raster_setmode(d_rasterdescription_t mode)
 
             raster_vbuf = d_memory_new((mode.w*mode.h*mode.bpp+7)/8);
             if(raster_vbuf == NULL) {
-                d_error_push(__FUNCTION__": memory allocation failed for "
+                d_error_push("memory allocation failed for "
                              "raster_vbuf.");
                 return failure;
             }
@@ -92,7 +92,7 @@ bool d_raster_setmode(d_rasterdescription_t mode)
             return success;
         }
     }
-    d_error_push(__FUNCTION__": no such mode available.");
+    d_error_push("no such mode available.");
     return failure;
 }
 

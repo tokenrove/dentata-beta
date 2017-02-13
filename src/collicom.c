@@ -79,7 +79,7 @@ bool d_image_collide(d_image_t *a, d_image_t *b, d_point_t p,
         j = 4;
         break;
     default:
-        d_error_push(__FUNCTION__": unsupported alpha.");
+        d_error_push("unsupported alpha.");
         j = 0;
         break;
     }

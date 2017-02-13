@@ -125,13 +125,13 @@ bool d_manager_addsprite(d_sprite_t *spr, word *handle, char priority)
 
     key = d_set_getunusedkey(spriteset);
     if(key > KEYMAX) {
-        d_error_push(__FUNCTION__": invalid key.");
+        d_error_push("invalid key.");
         return failure;
     }
 
     p = d_memory_new(sizeof(sprite_t));
     if(p == NULL) {
-        d_error_push(__FUNCTION__": failed to allocate internal sprite "
+        d_error_push("failed to allocate internal sprite "
                      "structure.");
         return failure;
     }
@@ -142,7 +142,7 @@ bool d_manager_addsprite(d_sprite_t *spr, word *handle, char priority)
 
     status = d_set_add(spriteset, key, p);
     if(status == failure) {
-        d_error_push(__FUNCTION__": failed to add sprite to internal set.");
+        d_error_push("failed to add sprite to internal set.");
         return failure;
     }
 
